@@ -10,7 +10,7 @@ import (
 )
 
 func TestTemplate(t *testing.T) {
-	temp, e := template.New("message").Parse(defaultTemplate)
+	temp, e := template.New("message").Parse(defaultTemplateBody)
 	if e != nil {
 		t.Fatalf("Template has failed. %s", e)
 	}

@@ -28,11 +28,11 @@ func (server *BotServer) Run() error {
 	gin.SetMode(gin.ReleaseMode)
 	engine := gin.Default()
 	engine.GET("/", func(c *gin.Context) {
-		c.String(200, "Running ReviewBot")
+		c.String(200, "Running rivi")
 	})
 	if server.Uri != "/" {
 		engine.GET(server.Uri, func(c *gin.Context) {
-			c.String(200, "Running ReviewBot")
+			c.String(200, "Running rivi")
 		})
 	}
 	engine.POST(server.Uri, func(c *gin.Context) {

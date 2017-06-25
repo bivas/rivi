@@ -3,6 +3,10 @@ package mock
 type MockEventData struct {
 	Number           int
 	Title            string
+	State            string
+	Owner            string
+	Repo             string
+	Origin           string
 	Assignees        []string
 	AddedAssignees   []string
 	RemovedAssignees []string
@@ -22,20 +26,20 @@ func (m *MockEventData) GetTitle() string {
 	return m.Title
 }
 
-func (*MockEventData) GetState() string {
-	panic("implement me")
+func (m *MockEventData) GetState() string {
+	return m.State
 }
 
-func (*MockEventData) GetOrigin() string {
-	panic("implement me")
+func (m *MockEventData) GetOrigin() string {
+	return m.Origin
 }
 
-func (*MockEventData) GetOwner() string {
-	panic("implement me")
+func (m *MockEventData) GetOwner() string {
+	return m.Owner
 }
 
-func (*MockEventData) GetRepo() string {
-	panic("implement me")
+func (m *MockEventData) GetRepo() string {
+	return m.Repo
 }
 
 func (m *MockEventData) GetLabels() []string {

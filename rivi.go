@@ -20,17 +20,6 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
-	/**
-	1. build bot configuration
-	2. Parse rules
-	3. Run bot server
-
-	Run:
-	1. Parse github json
-	2. Get labels, latest comment, latest update
-	3. Get list of allowed rules
-	4. apply rules
-	*/
 	run, err := bot.New(*config)
 	if err != nil {
 		log.Fatalln("Unable to start bot handler", err)

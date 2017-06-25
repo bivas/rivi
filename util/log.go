@@ -43,7 +43,7 @@ func (c *ColoredLog) Output(format string, a ...interface{}) {
 }
 
 func (ColoredLog) appendTime(stamp time.Time, str string) string {
-	return fmt.Sprintf("%s [reviewbot] %s", stamp.Format(timeFormat), str)
+	return fmt.Sprintf("%s [rivi] %s", stamp.Format(timeFormat), str)
 }
 
 func (c *ColoredLog) Message(format string, a ...interface{}) {
