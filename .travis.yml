@@ -1,28 +1,33 @@
 sudo: required
 services:
- - docker
+- docker
 language: go
 go:
- - 1.8
- - tip
+- 1.8
+- tip
 go_import_path: github.com/bivas/rivi
-install: true
+install:
+- go get golang.org/x/tools/cmd/cover
+- go get github.com/mattn/goveralls
 script:
-  - go list ./... | grep -v vendor | xargs go test -v
-  - go build
+- go list ./... | grep -v vendor | xargs go test -v -covermode=count -coverprofile=coverage.out
+  $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken
+  $COVERALLS_TOKEN
+- go build
 env:
   global:
-    - VERSION=$(echo $TRAVIS_TAG)
+  - VERSION=$(echo $TRAVIS_TAG)
+  - secure: IPpGCmHU15iGJZh96vujgnVP1me5/3+1gxpCvPY7GA2SJxd/k4CQhfp6wU8N6G31vDd1CTsFs2g+eoyJ/InwfBA8YJLtfo6rNVOxFHL9R8i9f7RwlcYuorOAqWzr1mz8pOcu1V7JYMV/lr8X7ltykSIYX4Jp2mE7NN+njL6BGf96wV34BeQgMG0jCB+zTml7VFCBUmBS33Vvx+TUUHNP3bF8VHZqzoFyfJlawCSHF893qpHUQOGfhCgb43hSVMpqbLv8dk14JkNik2as/GmfV8bwSnyCFH57T3NGLAKbabGrhd5jffzHvqcn/YZylAkK/5MElM3O8VkPPu1drAvHVDEXuSzUT6zi9yBlaB+h1tar9xwQEgWSQQsRTBFV8a6YV1usSkrrt0iHNhajpP5Th9nK+Fx9DKaHiV3FaN/tL/z2Q0ZeaabTvbiROj/n/BfyHoWT6xFrbWtbyUApLDIqn3PEgPX3NE+cUcTU1PSzZ3kppbTLiPgHSRCufbKXb11T5ilXusI7thXeE0kHD6IXc0NqtZT282SaOfthFwbcNQ8ybBKnG1Zb673yc/ikm9nRrZEZwMSZUyFbjpVdvJ2J8VH1oix11L6IGAAiw47NNohS/lLKjdDxA2F72K2tIkBk7hWzZ+G9MIvL/J3dGiu2JUCUMkOwRxvYeqF8m3o+0WE=
 before_deploy:
-  - "GOOS=linux  GOARCH=amd64 go build -o rivi-${VERSION}-linux-amd64"
-  - "GOOS=darwin GOARCH=amd64 go build -o rivi-${VERSION}-darwin-amd64"
+- GOOS=linux  GOARCH=amd64 go build -o rivi-${VERSION}-linux-amd64
+- GOOS=darwin GOARCH=amd64 go build -o rivi-${VERSION}-darwin-amd64
 deploy:
   provider: releases
   api_key:
     secure: awpl9niknI0uPR7hf8UuZqPNaY53AzhxVGBEQ05sn5HCxAtELHz874HjwOorI2kOxSaUSNnTpRLaRtTloAhGFjoYVWOpo0NlnpbSlu7qVZdi7dtRFb2mEttcmZcV+6gu6Wv0eZQHKrhtKIPdFe9J5dcb135iH7g7YFdiTOGVUIrzuun8WU6wfylGwMX4Ipzh+zD5W76PeFanP4C2gTN7Tu/Sn7SKkgFrV4t08+0FuTnmxu8GLnnT0GqlIDHYeitRRfctwXOO+WiAKJnFK/4IIJqCck/dAVsAQFcqM5pdWkWrbwQZr37aZm9aSYEFFm2AYlo6xg9mUDZqLefm2OFs5E+x89N15nKSH9NCerGzoXZ/YXDJl/OcS4SJfCzQN8LwOU+sxl3CSKWzA6vV46jJaxp327JeIaIVqTV8nKStmaUnY1gRz0xoQn98yDApkcLUtvp4rH+wE/p+XSeMwURpx6YWcvvagKaymoUuLeJtjSAaAEy733maiu/qs7lLhD3drxQjohefyNNHoI971T8Gix7Tsutuzon7V1SZEs7UM8mgCO/KPF1x3EhkwEePEVUYNjH+1tZZoz/yF6dsHmLV5x2HVO93ncfaQ6AvydbmwtOpMPLFrFwrXG3K2FRPyZ7CHUppckpvB53wCQEZNeacWEt1JbjlsVhFys6aFremrjk=
   file:
-      - "rivi-$VERSION-darwin-amd64"
-      - "rivi-$VERSION-linux-amd64"
+  - rivi-$VERSION-darwin-amd64
+  - rivi-$VERSION-linux-amd64
   skip_cleanup: true
   on:
-      tags: true
+    tags: true
