@@ -1,0 +1,24 @@
+sudo: required
+services:
+ - docker
+language: go
+go:
+ - 1.8
+ - tip
+go_import_path: github.com/bivas/rivi
+env:
+  global:
+    - VERSION=$(echo $TRAVIS_TAG)
+before_deploy:
+  - "GOOS=linux  GOARCH=amd64 go build -o rivi-${VERSION}-linux-amd64"
+  - "GOOS=darwin GOARCH=amd64 go build -o rivi-${VERSION}-darwin-amd64"
+deploy:
+  provider: releases
+  api_key:
+    secure: scniEWeFWLPgcrMQKd7+ByB+fEYqbwo/Nu+P6nH57oUew4N6a4Si4hrphXFBCRzdsC9bFyHMFs6rzqHxjMGtYy5DU4v/fT3f279u3eVtTJ991f5cu6qI20+FBgMGHRNy8Emk74KG9YwMwOSysx8Xc6B49Mpf9atYTIWUBgU/O3y59QvMuO8qEz5FCoG3OmSiyyqMWXt6qyh1m6tur/XxfCSd70HjVbL88yTNvlF1JuEsFpmeka5BZvjM4rlkD7/NubILh1P5JQEqkTEGd+HYQm76kmYSdf0YhYJaorCWztOI10rXNF42HKoFlCPLdyYF/M3IVZAyiw+eHA6HxdJ+tRNNTpBUf1ahTs6k9e+4YSbqdEGXma8w7/MJ/K0xWOWuBI73825y4r5Z7f70MIiZRSamLS1vYEaj3r/zpqsrEPMGcxtKBbFv7BDkp2lyye0d/AbunlVRhb8qF/XqlBfU9wPhLa2XO/iEvSf+leXXbQ+QyFvcdorsRMshFkOWJ+EI/6xxQveZm5sItVOJ12kDGF0ND/GlCgtvfNw7np9BYLcd6SLuHlNtfgntRH+85/SnrlVDft5+QV/hoSK8VF5XaOz/BxKKdRUde2rfyt8U2wkZxK5DE+639xjgcjSBEhJrheKz+4F/FZ1xIAuZ+SjHQ990WI73+p6165gi5sQTXMc=
+  file:
+      - "rivi-$VERSION-darwin-amd64"
+      - "rivi-$VERSION-linux-amd64"
+  skip_cleanup: true
+  on:
+      tags: true
