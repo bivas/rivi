@@ -6,6 +6,7 @@ go:
  - 1.8
  - tip
 go_import_path: github.com/bivas/rivi
+install: true
 script:
   - go list ./... | grep -v vendor | xargs go test -v
   - go build
