@@ -1,0 +1,34 @@
+# test
+
+config:
+  provider: github
+  token: github-token
+  secret: github-secret
+
+roles:
+  admins:
+      - user1
+      - user2
+  reviewers:
+      - user1
+      - user3
+  testers:
+      - user2
+
+rules:
+  rule1:
+      condition:
+        if-labeled:
+          - label1
+  rule2:
+      condition:
+        skip-if-labeled:
+          - pending-approval
+  rule3:
+      condition:
+        filter:
+          extension: ".go"
+  rule4:
+      condition:
+        filter:
+          pattern: ".*/docs/.*"
