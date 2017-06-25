@@ -10,7 +10,7 @@ Automate your review process with Rivi the review bot
 config:
   provider: github
   token: my-very-secret-token
-  secret: my-secret-shhhhh
+  secret: my-hook-secret-shhhhh
 
 roles:
   admins:
