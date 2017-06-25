@@ -6,6 +6,9 @@ go:
  - 1.8
  - tip
 go_import_path: github.com/bivas/rivi
+script:
+  - go list ./... | grep -v vendor | xargs go test -v
+  - go build
 env:
   global:
     - VERSION=$(echo $TRAVIS_TAG)
