@@ -62,6 +62,20 @@ roles:
 ## Rules Section
 
 Configure rules to be processed by the bot on each issue event
+### Structure
+
+```yaml
+rules:
+  rule-name1:
+    <condition>
+    <action-name>
+  rule-name2:
+    <condition>
+    <action-name>
+...
+```
+
+### Example
 ```yaml
 rules:
   rule-name:
