@@ -27,24 +27,66 @@ Usage of rivi:
     - Pull request review
     - Pull request review comment
 
-# Rule Structure
+# Configuration File Structure
 
-## Condition
+## Config Section
+
+Configure the Git client for repository access and webhook validation
 ```yaml
-rule-name:
-    condition:
-      if-labeled:
-        - label1
-        - label2
-      skip-if-labeled:
-        - label3
-      filter:
-        pattern: "docs/.*"
-        extension: ".go"
-    commenter:
-      comment: "We have a match!"
+config:
+  provider: github
+  token: my-very-secret-token
+  secret: my-hook-secret-shhhhh 
 ```
-## Available Actions
+
+- `provider` (optional) - which client to use for git connection (currently only `github` is supported but other are on the way)
+- `token` (required) - the client OAuth token the bot will connect with (and assign issues, add comments and lables)
+- `secret` (required) - webhook secret to be used for content validation
+
+## Roles Section
+
+List of roles for selecting (login) users for assignment. 
+```yaml
+roles:
+  admins:
+      - user1
+      - user2
+  reviewers:
+      - user3
+      - user4
+  testers:
+      - user2
+      - user4
+```
+
+## Rules Section
+
+Configure rules to be processed by the bot on each issue event
+```yaml
+rules:
+  rule-name:
+      condition:
+        if-labeled:
+          - label1
+          - label2
+        skip-if-labeled:
+          - label3
+        filter:
+          pattern: "docs/.*"
+          extension: ".go"
+      commenter:
+        comment: "We have a match!"
+```
+### Condition
+
+The entire `condition` section is optional - you can run all rules all the time and see if it helps :smile:
+- `if-labeled` - apply the rule if the issue has any of the provided labels
+- `skip-if-labeled` - skip rule processing if issue has any of the provided labels
+- `filter`
+  - `pattern` - [pattern](https://golang.org/s/re2syntax) matching the pull request file list
+  - `extension` - which file extension to match on pull request file list (must start with a dot [`.`])
+
+### Available Actions
 - [`autoassign`](bot/actions/autoassign/autoassign.md) - Automatic assignment of issue reviewers
 - [`commenter`](bot/actions/commenter/commenter.md) - Add comment to an issue
 - [`labeler`](bot/actions/labeler/labeler.md) - Add label to an issue
