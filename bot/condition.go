@@ -33,11 +33,13 @@ func (c *Condition) checkPattern(meta EventData) bool {
 	if c.Filter.Pattern == "" {
 		return true
 	} else {
+		re, err := regexp.Compile(c.Filter.Pattern)
+		if err != nil {
+			util.Logger.Error("Unable to compile regex '%s'. %s", c.Filter.Pattern, err)
+			return false
+		}
 		for _, check := range meta.GetFileNames() {
-			matched, e := regexp.MatchString(c.Filter.Pattern, check)
-			if e != nil {
-				util.Logger.Debug("Error checking filter %s", e)
-			} else if matched {
+			if re.MatchString(check) {
 				return true
 			}
 		}

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/bivas/rivi/util"
 	"github.com/spf13/viper"
-	"regexp"
 )
 
 type Action interface {
@@ -28,51 +27,7 @@ func (r *rule) Name() string {
 }
 
 func (r *rule) String() string {
-	return fmt.Sprintf("%T[name: %s,condition: %+v,action: %+v]", r, r.name, r.condition, r.action)
-}
-
-func (r *rule) checkIfLabeled(meta *EventData) bool {
-	accept := false
-	if len(r.condition.IfLabeled) == 0 {
-		accept = true
-	} else {
-		for _, check := range r.condition.IfLabeled {
-			for _, label := range (*meta).GetLabels() {
-				accept = accept || check == label
-			}
-		}
-	}
-	return accept
-}
-
-func (r *rule) checkPattern(meta *EventData) bool {
-	if r.condition.Filter.Pattern == "" {
-		return true
-	} else {
-		for _, check := range (*meta).GetFileNames() {
-			matched, e := regexp.MatchString(r.condition.Filter.Pattern, check)
-			if e != nil {
-				util.Logger.Debug("Error checking filter %s", e)
-			} else if matched {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-func (r *rule) checkExt(meta *EventData) bool {
-	if r.condition.Filter.Extension == "" {
-		return true
-	} else {
-		for _, check := range (*meta).GetFileExtensions() {
-			accept := r.condition.Filter.Extension == check
-			if accept {
-				return true
-			}
-		}
-	}
-	return false
+	return fmt.Sprintf("%#v", r)
 }
 
 func (r *rule) Accept(meta EventData) bool {
