@@ -19,7 +19,7 @@ type Log interface {
 }
 
 const (
-	timeFormat = "2006/01/02 15:04:05"
+	timeFormat = time.RFC3339
 )
 
 type ColoredLog struct {
@@ -42,7 +42,7 @@ func (c *ColoredLog) Output(format string, a ...interface{}) {
 	color.White(format, a...)
 }
 
-func (ColoredLog) appendTime(stamp time.Time, str string) string {
+func (*ColoredLog) appendTime(stamp time.Time, str string) string {
 	return fmt.Sprintf("%s [rivi] %s", stamp.Format(timeFormat), str)
 }
 
