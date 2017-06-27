@@ -52,8 +52,7 @@ func (c *Condition) checkExt(meta EventData) bool {
 		return true
 	} else {
 		for _, check := range meta.GetFileExtensions() {
-			accept := c.Filter.Extension == check
-			if accept {
+			if c.Filter.Extension == check {
 				return true
 			}
 		}
