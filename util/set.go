@@ -28,10 +28,28 @@ func (s *StringSet) AddAll(add []string) *StringSet {
 	return s
 }
 
+func (s *StringSet) Remove(remove string) bool {
+	if s.items == nil {
+		return false
+	}
+	item := remove
+	if s.Transformer != nil {
+		item = s.Transformer(remove)
+	}
+	_, exists := s.items[item]
+	if exists {
+		delete(s.items, item)
+		return true
+	}
+	return false
+}
+
 func (s *StringSet) Values() []string {
-	result := make([]string, 0)
+	result := make([]string, len(s.items))
+	i := 0
 	for item := range s.items {
-		result = append(result, item)
+		result[i] = item
+		i++
 	}
 	return result
 }
