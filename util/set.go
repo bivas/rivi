@@ -44,6 +44,18 @@ func (s *StringSet) Remove(remove string) bool {
 	return false
 }
 
+func (s *StringSet) Contains(contains string) bool {
+	if s.items == nil {
+		return false
+	}
+	item := contains
+	if s.Transformer != nil {
+		item = s.Transformer(contains)
+	}
+	_, exists := s.items[item]
+	return exists
+}
+
 func (s *StringSet) Values() []string {
 	result := make([]string, len(s.items))
 	i := 0
