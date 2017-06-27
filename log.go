@@ -16,7 +16,7 @@ func isDebug() bool {
 func logSetup() {
 	log.SetOutput(os.Stderr)
 	if !isDebug() {
-		temp, e := ioutil.TempFile("", "review-bot-log.")
+		temp, e := ioutil.TempFile("", "rivi-bot-log.")
 		if e != nil {
 			panic(e)
 		}
