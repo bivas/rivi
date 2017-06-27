@@ -8,13 +8,18 @@ import (
 	"fmt"
 	"github.com/bivas/rivi/bot"
 	"github.com/bivas/rivi/util"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
 )
 
 var (
-	supportedEventTypes = []string{"issue_comment", "pull_request", "pull_request_review", "pull_request_review_comment"}
+	supportedEventTypes = []string{
+		"issue_comment",
+		"pull_request",
+		"pull_request_review",
+		"pull_request_review_comment"}
 )
 
 type eventDataBuilder struct {
@@ -36,7 +41,7 @@ func (builder *eventDataBuilder) validate(payload []byte, request *http.Request)
 func (builder *eventDataBuilder) readPayload(r *http.Request) (*payload, error) {
 	body := r.Body
 	defer body.Close()
-	raw, err := ioutil.ReadAll(body)
+	raw, err := ioutil.ReadAll(io.LimitReader(body, r.ContentLength))
 	if err != nil {
 		return nil, err
 	}
