@@ -6,9 +6,16 @@ import (
 	"os"
 )
 
+func isDebug() bool {
+	if len(os.Getenv("BOT_DEBUG")) > 0 {
+		return true
+	}
+	return false
+}
+
 func logSetup() {
 	log.SetOutput(os.Stderr)
-	if len(os.Getenv("BOT_DEBUG")) == 0 {
+	if !isDebug() {
 		temp, e := ioutil.TempFile("", "review-bot-log.")
 		if e != nil {
 			panic(e)
