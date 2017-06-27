@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/bivas/rivi.svg?branch=development)](https://travis-ci.org/bivas/rivi)
+[![Go Report Card](https://goreportcard.com/badge/github.com/bivas/rivi)](https://goreportcard.com/report/github.com/bivas/rivi)
 
 # rivi
 Automate your review process with Rivi the review bot
