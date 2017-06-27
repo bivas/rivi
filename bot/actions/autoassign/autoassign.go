@@ -47,12 +47,14 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 	assignedRoles := findAssignedRoles(assignees, config)
 	lookupRoles := a.findLookupRoles(config, assignedRoles)
 
-	winners := a.randomUsers(config, lookupRoles)
+	winners := a.randomUsers(config, meta, lookupRoles)
 	meta.AddAssignees(winners...)
 }
 
-func (a *action) randomUsers(config bot.Configuration, lookupRoles []string) []string {
-	possible := config.GetRoleMembers(lookupRoles...)
+func (a *action) randomUsers(config bot.Configuration, meta bot.EventData, lookupRoles []string) []string {
+	possibleSet := util.StringSet{}
+	possibleSet.AddAll(config.GetRoleMembers(lookupRoles...)).Remove(meta.GetOrigin())
+	possible := possibleSet.Values()
 	util.Logger.Debug("There are %d possible assignees from %d roles", len(possible), len(lookupRoles))
 	winners := make([]string, a.rule.Require)
 	for i := 0; i < a.rule.Require; i++ {

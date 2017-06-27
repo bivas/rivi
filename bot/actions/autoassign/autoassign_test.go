@@ -42,3 +42,17 @@ func TestActionApplyRequireFromRole(t *testing.T) {
 	assert.NotContains(t, meta.AddedAssignees, "user3", "matched group")
 	assert.Contains(t, meta.AddedAssignees, "user4", "matched group")
 }
+
+func TestActionApplyWithoutOrigin(t *testing.T) {
+	action := action{rule: &rule{Require: 1, FromRoles: []string{"default"}}}
+	roles := make(map[string][]string)
+	roles["default"] = []string{"user1", "user2"}
+	for i := 0; i < 10; i++ {
+		config := &mock.MockConfiguration{RoleMembers: roles}
+		meta := &mock.MockEventData{Assignees: []string{}, Origin: "user1"}
+		action.Apply(config, meta)
+		assert.Len(t, meta.AddedAssignees, 1, "assignment")
+		assert.NotContains(t, meta.AddedAssignees, "user1", "matched group")
+		assert.Contains(t, meta.AddedAssignees, "user2", "matched group")
+	}
+}

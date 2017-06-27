@@ -54,6 +54,10 @@ func (s *StringSet) Values() []string {
 	return result
 }
 
+func (s *StringSet) Len() int {
+	return len(s.items)
+}
+
 func StringSliceContains(s []string, e string) bool {
 	for _, a := range s {
 		if a == e {
