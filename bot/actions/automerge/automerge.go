@@ -54,5 +54,5 @@ func (*factory) BuildAction(config map[string]interface{}) bot.Action {
 }
 
 func init() {
-	bot.RegisterAction("commenter", &factory{})
+	bot.RegisterAction("automerge", &factory{})
 }

@@ -103,6 +103,7 @@ The entire `condition` section is optional - you can run all rules all the time 
 
 ### Available Actions
 - [`autoassign`](bot/actions/autoassign/autoassign.md) - Automatic assignment of issue reviewers
+- [`automerge`](bot/actions/automerge/automerge.md) - Automatic merge for approved pull requests
 - [`commenter`](bot/actions/commenter/commenter.md) - Add comment to an issue
 - [`labeler`](bot/actions/labeler/labeler.md) - Add label to an issue
 - [`sizing`](bot/actions/sizing/sizing.md) - Size a pull request
