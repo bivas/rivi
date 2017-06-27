@@ -39,8 +39,5 @@ func (server *BotServer) Run() error {
 		server.Bot.HandleEvent(c.Request)
 		c.Status(200)
 	})
-	if server.Port == 0 {
-		server.Port = 8080
-	}
 	return engine.Run(fmt.Sprintf(":%d", server.Port))
 }
