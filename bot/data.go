@@ -6,6 +6,11 @@ import (
 	"strings"
 )
 
+type Comment struct {
+	Commenter string
+	Comment   string
+}
+
 type EventData interface {
 	GetNumber() int
 	GetTitle() string
@@ -19,9 +24,9 @@ type EventData interface {
 	RemoveLabel(label string)
 	GetAssignees() []string
 	HasAssignee(assignee string) bool
-	AddAssignees(assignees... string)
-	RemoveAssignees(assignees... string)
-	GetComments() []string
+	AddAssignees(assignees ...string)
+	RemoveAssignees(assignees ...string)
+	GetComments() []Comment
 	AddComment(comment string)
 	GetFileNames() []string
 	GetChangedFiles() int

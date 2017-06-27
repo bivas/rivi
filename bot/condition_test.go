@@ -67,7 +67,7 @@ func (*mockConditionEventData) RemoveAssignees(assignees ...string) {
 	panic("implement me")
 }
 
-func (*mockConditionEventData) GetComments() []string {
+func (*mockConditionEventData) GetComments() []Comment {
 	panic("implement me")
 }
 

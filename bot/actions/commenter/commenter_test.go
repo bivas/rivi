@@ -1,6 +1,7 @@
 package commenter
 
 import (
+	"github.com/bivas/rivi/bot"
 	"github.com/bivas/rivi/bot/mock"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -8,16 +9,16 @@ import (
 
 func TestCommentNoComments(t *testing.T) {
 	action := action{rule: &rule{Comment: "comment1"}}
-	meta := &mock.MockEventData{Comments: []string{}}
+	meta := &mock.MockEventData{Comments: []bot.Comment{}}
 	config := &mock.MockConfiguration{}
 	action.Apply(config, meta)
 	assert.Len(t, meta.AddedComments, 1, "added comments")
-	assert.Equal(t, meta.Comments, []string{"comment1"}, "comments")
+	assert.Len(t, meta.Comments, 1, "comments")
 }
 
 func TestNewCommentWithExisting(t *testing.T) {
 	action := action{rule: &rule{Comment: "comment1"}}
-	meta := &mock.MockEventData{Comments: []string{"comment2"}}
+	meta := &mock.MockEventData{Comments: []bot.Comment{bot.Comment{Comment: "comment2"}}}
 	config := &mock.MockConfiguration{}
 	action.Apply(config, meta)
 	assert.Len(t, meta.AddedComments, 1, "added Comments")

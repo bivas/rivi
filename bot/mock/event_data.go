@@ -1,5 +1,7 @@
 package mock
 
+import "github.com/bivas/rivi/bot"
+
 type MockEventData struct {
 	Number           int
 	Title            string
@@ -14,7 +16,7 @@ type MockEventData struct {
 	AddedLabels      []string
 	RemovedLabels    []string
 	FileExtensions   []string
-	Comments         []string
+	Comments         []bot.Comment
 	AddedComments    []string
 }
 
@@ -86,13 +88,13 @@ func (m *MockEventData) RemoveAssignees(assignees ...string) {
 	m.RemovedLabels = append(m.RemovedLabels, assignees...)
 }
 
-func (m *MockEventData) GetComments() []string {
+func (m *MockEventData) GetComments() []bot.Comment {
 	return m.Comments
 }
 
 func (m *MockEventData) AddComment(comment string) {
 	m.AddedComments = append(m.AddedComments, comment)
-	m.Comments = append(m.Comments, comment)
+	m.Comments = append(m.Comments, bot.Comment{Commenter: "mock", Comment: comment})
 }
 
 func (*MockEventData) GetFileNames() []string {

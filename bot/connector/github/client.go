@@ -122,24 +122,42 @@ func (c *ghClient) GetFileNames(issue int) []string {
 	return result
 }
 
-func (c *ghClient) GetComments(issue int) []string {
+func (c *ghClient) GetComments(issue int) []bot.Comment {
 	comments, _, err := c.client.Issues.ListComments(context.Background(), c.owner, c.repo, issue, nil)
-	result := make([]string, 0)
+	result := make([]bot.Comment, 0)
 	if err != nil {
 		util.Logger.Error("Unable to get comments for issue %d. %s", issue, err)
 	} else {
 		for _, p := range comments {
-			result = append(result, *p.Body)
+			comment := bot.Comment{
+				Commenter: *p.User.Login,
+				Comment:   *p.Body,
+			}
+			result = append(result, comment)
 		}
 	}
 	return result
 }
 
-func (c *ghClient) AddComment(issue int, comment string) {
+func (c *ghClient) AddComment(issue int, comment string) bot.Comment {
 	commentObject := &github.IssueComment{Body: github.String(comment)}
-	_, _, err := c.client.Issues.CreateComment(context.Background(), c.owner, c.repo, issue, commentObject)
+	posted, _, err := c.client.Issues.CreateComment(context.Background(), c.owner, c.repo, issue, commentObject)
 	if err != nil {
 		util.Logger.Error("Unable to add comment for issue %d. %s", issue, err)
+		return bot.Comment{}
+	} else {
+		return bot.Comment{
+			Commenter: *posted.User.Login,
+			Comment:   *posted.Body,
+		}
+	}
+}
+
+func (c *ghClient) Merge(issue int, mergeMethod string) {
+	options := &github.PullRequestOptions{MergeMethod: mergeMethod}
+	_, _, err := c.client.PullRequests.Merge(context.Background(), c.owner, c.repo, issue, "", options)
+	if err != nil {
+		util.Logger.Error("Error trying to merge issue %d. %s", issue, err)
 	}
 }
 

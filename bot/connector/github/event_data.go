@@ -1,5 +1,7 @@
 package github
 
+import "github.com/bivas/rivi/bot"
+
 type eventData struct {
 	client       *ghClient
 	number       int
@@ -15,7 +17,11 @@ type eventData struct {
 	deletions    int
 	labels       []string
 	assignees    []string
-	comments     []string
+	comments     []bot.Comment
+}
+
+func (d *eventData) Merge(mergeMethod string) {
+	d.client.Merge(d.number, mergeMethod)
 }
 
 func (d *eventData) GetState() string {
@@ -43,11 +49,11 @@ func (d *eventData) HasLabel(label string) bool {
 	return false
 }
 
-func (d *eventData) AddAssignees(assignees... string) {
+func (d *eventData) AddAssignees(assignees ...string) {
 	d.assignees = d.client.AddAssignees(d.number, assignees...)
 }
 
-func (d *eventData) RemoveAssignees(assignees... string) {
+func (d *eventData) RemoveAssignees(assignees ...string) {
 	d.assignees = d.client.RemoveAssignees(d.number, assignees...)
 }
 
@@ -64,13 +70,12 @@ func (d *eventData) HasAssignee(assignee string) bool {
 	return false
 }
 
-func (d *eventData) GetComments() []string {
+func (d *eventData) GetComments() []bot.Comment {
 	return d.comments
 }
 
 func (d *eventData) AddComment(comment string) {
-	d.comments = append(d.comments, comment)
-	d.client.AddComment(d.number, comment)
+	d.comments = append(d.comments, d.client.AddComment(d.number, comment))
 }
 
 func (d *eventData) GetNumber() int {
