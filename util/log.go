@@ -42,7 +42,7 @@ func (c *ColoredLog) Output(format string, a ...interface{}) {
 	color.White(format, a...)
 }
 
-func (*ColoredLog) appendTime(stamp time.Time, str string) string {
+func (c *ColoredLog) appendTime(stamp time.Time, str string) string {
 	return fmt.Sprintf("%s [rivi] %s", stamp.Format(timeFormat), str)
 }
 
