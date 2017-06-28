@@ -40,9 +40,9 @@ config:
   secret: my-hook-secret-shhhhh 
 ```
 
-- `provider` (optional) - which client to use for git connection (currently only `github` is supported but other are on the way)
+- `provider` (optional) - which client to use for git connection - the bot tries to figure out which client to use automatically (currently only `github` is supported but others are on the way)
 - `token` (required) - the client OAuth token the bot will connect with (and assign issues, add comments and lables)
-- `secret` (required) - webhook secret to be used for content validation
+- `secret` (optional) - webhook secret to be used for content validation (recommended)
 
 ## Roles Section
 
