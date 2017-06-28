@@ -1,6 +1,7 @@
 package automerge
 
 import (
+	"fmt"
 	"github.com/bivas/rivi/bot"
 	"github.com/bivas/rivi/util"
 	"github.com/mitchellh/mapstructure"
@@ -9,6 +10,7 @@ import (
 
 type action struct {
 	rule *rule
+	err  error
 }
 
 type MergeableEventData interface {
@@ -19,6 +21,7 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 	mergeable, ok := meta.(MergeableEventData)
 	if !ok {
 		util.Logger.Warning("Event data does not support merge. Check your configurations")
+		a.err = fmt.Errorf("Event data does not support merge")
 		return
 	}
 	approvals := 0
@@ -30,6 +33,7 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 		}
 		clean := strings.ToLower(strings.TrimSpace(comment.Comment))
 		if _, ok := approvedSearchPhrases[clean]; ok {
+			assignees.Remove(comment.Commenter)
 			approvals++
 		}
 	}
@@ -38,7 +42,6 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 			meta.AddComment(a.rule.Comment)
 		}
 		mergeable.Merge(a.rule.Strategy)
-
 	}
 }
 
