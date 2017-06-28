@@ -14,6 +14,10 @@ Usage of rivi:
   -uri string
     	Bot URI path (default "/")
 ```
+### Example
+```
+$ rivi -port 9000 -config repo-x.yaml
+```
 
 ## Requirements
 
@@ -21,9 +25,9 @@ Usage of rivi:
 - Create a webhook and make sure the following are configured:
 
 
-  - **content type** is `application/json`
-  - Set a **secret** (this will be used by the bot to validate webhook content
-  - Register the following event
+  - Select **content type** as `application/json`
+  - Optionally, set a **secret** (this will be used by the bot to validate webhook content)
+  - Register the following events
     - Pull request
     - Pull request review
     - Pull request review comment
