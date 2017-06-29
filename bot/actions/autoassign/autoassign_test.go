@@ -17,7 +17,7 @@ func TestActionApplyRequire1NoAssignees(t *testing.T) {
 }
 
 func TestActionApplyRequire2With1Assignee(t *testing.T) {
-	action := action{rule: &rule{Require: 1}}
+	action := action{rule: &rule{Require: 2}}
 	roles := make(map[string][]string)
 	roles["default"] = []string{"user1", "user2", "user3"}
 	config := &mock.MockConfiguration{RoleMembers: roles}
@@ -55,4 +55,15 @@ func TestActionApplyWithoutOrigin(t *testing.T) {
 		assert.NotContains(t, meta.AddedAssignees, "user1", "matched group")
 		assert.Contains(t, meta.AddedAssignees, "user2", "matched group")
 	}
+}
+
+func TestActionApplyHasAssignee(t *testing.T) {
+	action := action{rule: &rule{Require: 1, FromRoles: []string{"group"}}}
+	roles := make(map[string][]string)
+	roles["default"] = []string{"user1", "user2", "user3"}
+	roles["group"] = []string{"user4"}
+	config := &mock.MockConfiguration{RoleMembers: roles}
+	meta := &mock.MockEventData{Assignees: []string{"user1"}}
+	action.Apply(config, meta)
+	assert.Len(t, meta.AddedAssignees, 0, "assignment")
 }

@@ -44,6 +44,10 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 		util.Logger.Debug("Skipping as there are assignees and no more are allowed")
 		return
 	}
+	if len(assignees) >= a.rule.Require {
+		util.Logger.Debug("Skipping as there are matched required assignees")
+		return
+	}
 	assignedRoles := findAssignedRoles(assignees, config)
 	lookupRoles := a.findLookupRoles(config, assignedRoles)
 
@@ -54,10 +58,17 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 func (a *action) randomUsers(config bot.Configuration, meta bot.EventData, lookupRoles []string) []string {
 	possibleSet := util.StringSet{}
 	possibleSet.AddAll(config.GetRoleMembers(lookupRoles...)).Remove(meta.GetOrigin())
+	for _, assignee := range meta.GetAssignees() {
+		possibleSet.Remove(assignee)
+	}
 	possible := possibleSet.Values()
 	util.Logger.Debug("There are %d possible assignees from %d roles", len(possible), len(lookupRoles))
-	winners := make([]string, a.rule.Require)
-	for i := 0; i < a.rule.Require; i++ {
+	remainingRequired := a.rule.Require - len(meta.GetAssignees())
+	if remainingRequired < 0 {
+		remainingRequired = 0
+	}
+	winners := make([]string, remainingRequired)
+	for i := 0; i < remainingRequired; i++ {
 		index := rand.Intn(len(possible))
 		if possible[index] == "" {
 			i--
