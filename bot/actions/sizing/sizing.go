@@ -4,10 +4,11 @@ import (
 	"github.com/bivas/rivi/bot"
 	"github.com/bivas/rivi/util"
 	"github.com/mitchellh/mapstructure"
+	"sort"
 )
 
 type action struct {
-	items          []sizingRule
+	items          rules
 	possibleLabels []string
 }
 
@@ -26,6 +27,7 @@ func (s *action) findMatchedLabel(meta bot.EventData) (*sizingRule, string, bool
 	defaultLabel := ""
 	defaultExists := false
 	var defaultRule sizingRule
+	sort.Sort(s.items)
 	for _, rule := range s.items {
 		if rule.Name == "default" {
 			defaultLabel = rule.Label

@@ -18,6 +18,9 @@ type MockEventData struct {
 	FileExtensions   []string
 	Comments         []bot.Comment
 	AddedComments    []string
+	ChangedFiles     int
+	ChangesAdd       int
+	ChangesRemove    int
 }
 
 func (m *MockEventData) GetNumber() int {
@@ -101,14 +104,14 @@ func (*MockEventData) GetFileNames() []string {
 	panic("implement me")
 }
 
-func (*MockEventData) GetChangedFiles() int {
-	panic("implement me")
+func (m *MockEventData) GetChangedFiles() int {
+	return m.ChangedFiles
 }
 
 func (m *MockEventData) GetFileExtensions() []string {
 	return m.FileExtensions
 }
 
-func (*MockEventData) GetChanges() (int, int) {
-	panic("implement me")
+func (m *MockEventData) GetChanges() (int, int) {
+	return m.ChangesAdd, m.ChangesRemove
 }

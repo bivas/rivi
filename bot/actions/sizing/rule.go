@@ -20,3 +20,17 @@ func (rule *sizingRule) Defaults() {
 		rule.ChangedFilesThreshold = math.MaxInt32
 	}
 }
+
+type rules []sizingRule
+
+func (r rules) Len() int {
+	return len(r)
+}
+
+func (r rules) Less(i, j int) bool {
+	return r[i].ChangedFilesThreshold < r[j].ChangedFilesThreshold && r[i].ChangesThreshold < r[j].ChangesThreshold
+}
+
+func (r rules) Swap(i, j int) {
+	r[i], r[j] = r[j], r[i]
+}
