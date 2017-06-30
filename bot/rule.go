@@ -13,13 +13,13 @@ type Action interface {
 type Rule interface {
 	Name() string
 	Accept(meta EventData) bool
-	Action() Action
+	Actions() []Action
 }
 
 type rule struct {
 	name      string
 	condition Condition
-	action    Action
+	actions   []Action
 }
 
 func (r *rule) Name() string {
@@ -38,8 +38,8 @@ func (r *rule) Accept(meta EventData) bool {
 	return accept
 }
 
-func (r *rule) Action() Action {
-	return r.action
+func (r *rule) Actions() []Action {
+	return r.actions
 }
 
 type ActionFactory interface {
@@ -55,7 +55,8 @@ func RegisterAction(kind string, action ActionFactory) {
 	util.Logger.Debug("running with support for %s", kind)
 }
 
-func buildActionFromConfiguration(config *viper.Viper) Action {
+func buildActionsFromConfiguration(config *viper.Viper) []Action {
+	result := make([]Action, 0)
 	for setting := range config.AllSettings() {
 		if setting == "condition" {
 			continue
@@ -63,9 +64,9 @@ func buildActionFromConfiguration(config *viper.Viper) Action {
 		for _, support := range supportedActions {
 			if setting == support {
 				factory := actions[setting]
-				return factory.BuildAction(config.GetStringMap(setting))
+				result = append(result, factory.BuildAction(config.GetStringMap(setting)))
 			}
 		}
 	}
-	return nil
+	return result
 }

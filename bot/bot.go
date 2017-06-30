@@ -27,7 +27,9 @@ func (b *bot) HandleEvent(r *http.Request) {
 	}
 	for _, rule := range applied {
 		util.Logger.Debug("Applying rule %s for '%s'", rule.Name(), data.GetTitle())
-		rule.Action().Apply(b.configuration, data)
+		for _, action := range rule.Actions() {
+			action.Apply(b.configuration, data)
+		}
 	}
 }
 

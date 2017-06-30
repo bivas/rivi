@@ -100,7 +100,7 @@ func (c *config) readRulesSection() error {
 		r := &rule{
 			name:      name,
 			condition: buildConditionFromConfiguration(subname),
-			action:    buildActionFromConfiguration(subname),
+			actions:   buildActionsFromConfiguration(subname),
 		}
 		util.Logger.Debug("appending rule %s", r)
 		c.rules = append(c.rules, r)
