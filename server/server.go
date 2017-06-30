@@ -36,8 +36,8 @@ func (server *BotServer) Run() error {
 		})
 	}
 	engine.POST(server.Uri, func(c *gin.Context) {
-		server.Bot.HandleEvent(c.Request)
-		c.Status(200)
+		result := server.Bot.HandleEvent(c.Request)
+		c.JSON(200, result)
 	})
 	return engine.Run(fmt.Sprintf(":%d", server.Port))
 }

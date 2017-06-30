@@ -25,5 +25,7 @@ func main() {
 		log.Fatalln("Unable to start bot handler", err)
 	}
 	s := server.BotServer{Port: *port, Uri: *uri, Bot: run}
-	s.Run()
+	if err := s.Run(); err != nil {
+		log.Fatalln("Bot exited with error. %s", err)
+	}
 }
