@@ -66,7 +66,7 @@ roles:
 
 ## Rules Section
 
-Configure rules to be processed by the bot on each issue event
+Configure rules to be processed by the bot on each issue event. Each rule may have several actions.
 ### Structure
 
 ```yaml
@@ -74,6 +74,9 @@ rules:
   rule-name1:
     <condition>
     <action-name>
+    <action-name>
+    <action-name>
+    ...
   rule-name2:
     <condition>
     <action-name>
@@ -95,6 +98,8 @@ rules:
           extension: ".go"
       commenter:
         comment: "We have a match!"
+      labeler:
+        label: ready-for-review
 ```
 ### Condition
 
