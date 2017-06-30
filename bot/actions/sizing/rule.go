@@ -28,7 +28,7 @@ func (r rules) Len() int {
 }
 
 func (r rules) Less(i, j int) bool {
-	return r[i].ChangedFilesThreshold < r[j].ChangedFilesThreshold && r[i].ChangesThreshold < r[j].ChangesThreshold
+	return r[i].ChangedFilesThreshold < r[j].ChangedFilesThreshold || r[i].ChangesThreshold < r[j].ChangesThreshold
 }
 
 func (r rules) Swap(i, j int) {

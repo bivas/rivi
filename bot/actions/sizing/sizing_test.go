@@ -3,7 +3,6 @@ package sizing
 import (
 	"github.com/bivas/rivi/bot/mock"
 	"github.com/stretchr/testify/assert"
-	"sort"
 	"testing"
 )
 
@@ -15,6 +14,7 @@ func buildRule(name, label string, changedFiles int) *sizingRule {
 
 func buildRules(withDefault bool) *action {
 	result := &action{items: rules{
+		*buildRule("l", "size/l", 150),
 		*buildRule("xs", "size/xs", 5),
 		*buildRule("s", "size/s", 15),
 		*buildRule("m", "size/m", 75),
@@ -27,8 +27,16 @@ func buildRules(withDefault bool) *action {
 		result.possibleLabels = append(result.possibleLabels, "default-label")
 		result.items = append(result.items, sizingRule{Name: "default", Label: "default-label"})
 	}
-	sort.Sort(sort.Reverse(result.items))
 	return result
+}
+
+func TestSizingXS(t *testing.T) {
+	action := buildRules(false)
+	config := &mock.MockConfiguration{}
+	meta := &mock.MockEventData{Labels: []string{}, ChangedFiles: 1, ChangesAdd: 24, ChangesRemove: 31}
+	action.Apply(config, meta)
+	assert.Len(t, meta.AddedLabels, 1, "labels")
+	assert.Equal(t, "size/xs", meta.AddedLabels[0], "size label")
 }
 
 func TestSizing(t *testing.T) {
