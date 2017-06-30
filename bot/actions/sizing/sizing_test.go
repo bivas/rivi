@@ -27,7 +27,7 @@ func buildRules(withDefault bool) *action {
 		result.possibleLabels = append(result.possibleLabels, "default-label")
 		result.items = append(result.items, sizingRule{Name: "default", Label: "default-label"})
 	}
-	sort.Reverse(result.items)
+	sort.Sort(sort.Reverse(result.items))
 	return result
 }
 
