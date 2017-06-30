@@ -10,8 +10,8 @@ type Condition struct {
 	IfLabeled     []string `mapstructure:"if-labeled,omitempty"`
 	SkipIfLabeled []string `mapstructure:"skip-if-labeled,omitempty"`
 	Filter        struct {
-		Pattern   string `mapstructure:"pattern,omitempty"`
-		Extension string `mapstructure:"extension,omitempty"`
+		Patterns   []string `mapstructure:"patterns,omitempty"`
+		Extensions []string `mapstructure:"extensions,omitempty"`
 	} `mapstructure:"filter,omitempty"`
 }
 
@@ -30,17 +30,27 @@ func (c *Condition) checkIfLabeled(meta EventData) bool {
 }
 
 func (c *Condition) checkPattern(meta EventData) bool {
-	if c.Filter.Pattern == "" {
+	if len(c.Filter.Patterns) == 0 {
 		return true
 	} else {
-		re, err := regexp.Compile(c.Filter.Pattern)
-		if err != nil {
-			util.Logger.Error("Unable to compile regex '%s'. %s", c.Filter.Pattern, err)
+		compiled := make([]*regexp.Regexp, 0)
+		for _, pattern := range c.Filter.Patterns {
+			re, err := regexp.Compile(pattern)
+			if err != nil {
+				util.Logger.Warning("Unable to compile regex '%s'. %s", pattern, err)
+				continue
+			}
+			compiled = append(compiled, re)
+		}
+		if len(compiled) == 0 {
+			util.Logger.Error("All configured patterns have failed to compile")
 			return false
 		}
 		for _, check := range meta.GetFileNames() {
-			if re.MatchString(check) {
-				return true
+			for _, reg := range compiled {
+				if reg.MatchString(check) {
+					return true
+				}
 			}
 		}
 	}
@@ -48,12 +58,14 @@ func (c *Condition) checkPattern(meta EventData) bool {
 }
 
 func (c *Condition) checkExt(meta EventData) bool {
-	if c.Filter.Extension == "" {
+	if len(c.Filter.Extensions) == 0 {
 		return true
 	} else {
 		for _, check := range meta.GetFileExtensions() {
-			if c.Filter.Extension == check {
-				return true
+			for _, ext := range c.Filter.Extensions {
+				if ext == check {
+					return true
+				}
 			}
 		}
 	}

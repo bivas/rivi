@@ -27,8 +27,10 @@ rules:
   rule3:
       condition:
         filter:
-          extension: ".go"
+          extensions:
+            - ".go"
   rule4:
       condition:
         filter:
-          pattern: ".*/docs/.*"
+          patterns:
+            - ".*/docs/.*"
