@@ -14,7 +14,6 @@ None
 
 ## Options
 
-- `comment` (optional) - the comment to post when merging
 - `strategy` (optional) - which strategy to use when merging. can be `merge`, `squash` or `rebase` (default: `merge`)
 - `require` (optional) - the number of approvals required (default: **1**)
 
@@ -25,6 +24,5 @@ rules:
       automerge:
         require: 2
         strategy: squash
-        comment: "A merge comment by Rivi"
         
 ```

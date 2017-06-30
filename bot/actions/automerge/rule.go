@@ -21,7 +21,6 @@ var (
 type rule struct {
 	Require  int    `mapstructure:"require"`
 	Strategy string `mapstructure:"strategy"`
-	Comment  string `mapstructure:"comment"`
 }
 
 func (r *rule) Defaults() {

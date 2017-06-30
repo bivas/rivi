@@ -38,9 +38,6 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 		}
 	}
 	if approvals >= a.rule.Require {
-		if a.rule.Comment != "" {
-			meta.AddComment(a.rule.Comment)
-		}
 		mergeable.Merge(a.rule.Strategy)
 	}
 }
