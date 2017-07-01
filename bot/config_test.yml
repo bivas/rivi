@@ -18,14 +18,17 @@ roles:
 rules:
   rule1:
       condition:
+        order: 5
         if-labeled:
           - label1
   rule2:
       condition:
+        order: 2
         skip-if-labeled:
           - pending-approval
   rule3:
       condition:
+        order: 1
         filter:
           extensions:
             - ".go"

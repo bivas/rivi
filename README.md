@@ -98,6 +98,7 @@ rules:
             - "docs/.*"
           extension: 
             - ".go"
+        order: 5
       commenter:
         comment: "We have a match!"
       labeler:
@@ -111,6 +112,8 @@ The entire `condition` section is optional - you can run all rules all the time 
 - `filter`
   - `patterns` - [pattern](https://golang.org/s/re2syntax) matching the pull request file list (any of the patterns)
   - `extensions` - which file extension to match on pull request file list (must start with a dot [`.`])
+- `order` - apply order hint to a rule. All rules are given order index **0**. 
+**Important**: This will not place a rule in the exact position, but can assist in re-order rules. 
 
 ### Available Actions
 - [`autoassign`](bot/actions/autoassign/autoassign.md) - Automatic assignment of issue reviewers

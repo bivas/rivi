@@ -5,6 +5,7 @@ import (
 	"github.com/bivas/rivi/util"
 	"github.com/spf13/viper"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -105,6 +106,7 @@ func (c *config) readRulesSection() error {
 		util.Logger.Debug("appending rule %s", r)
 		c.rules = append(c.rules, r)
 	}
+	sort.Sort(rulesByConditionOrder(c.rules))
 	return nil
 }
 

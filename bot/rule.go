@@ -12,8 +12,23 @@ type Action interface {
 
 type Rule interface {
 	Name() string
+	Order() int
 	Accept(meta EventData) bool
 	Actions() []Action
+}
+
+type rulesByConditionOrder []Rule
+
+func (r rulesByConditionOrder) Len() int {
+	return len(r)
+}
+
+func (r rulesByConditionOrder) Less(i, j int) bool {
+	return r[i].Order() < r[j].Order()
+}
+
+func (r rulesByConditionOrder) Swap(i, j int) {
+	r[i], r[j] = r[j], r[i]
 }
 
 type rule struct {
@@ -24,6 +39,10 @@ type rule struct {
 
 func (r *rule) Name() string {
 	return r.name
+}
+
+func (r *rule) Order() int {
+	return r.condition.Order
 }
 
 func (r *rule) String() string {
