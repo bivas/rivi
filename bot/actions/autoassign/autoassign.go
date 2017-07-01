@@ -35,6 +35,7 @@ func (a *action) findLookupRoles(config bot.Configuration, assignedRoles []strin
 	if len(a.rule.FromRoles) > 0 {
 		lookupRoles = a.rule.FromRoles
 	}
+	util.Logger.Debug("lookup roles are %s", lookupRoles)
 	return lookupRoles
 }
 
@@ -67,6 +68,7 @@ func (a *action) randomUsers(config bot.Configuration, meta bot.EventData, looku
 	if remainingRequired < 0 {
 		remainingRequired = 0
 	}
+	util.Logger.Debug("Require %d assignees", remainingRequired)
 	winners := make([]string, remainingRequired)
 	for i := 0; i < remainingRequired; i++ {
 		index := rand.Intn(len(possible))
