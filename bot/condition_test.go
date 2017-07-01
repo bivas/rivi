@@ -147,10 +147,16 @@ func TestMatchExt(t *testing.T) {
 	meta := &mockConditionEventData{FileExtensions: []string{".scala", ".go"}}
 	matched := false
 	for _, rule := range c.GetRules() {
-		if rule.Name() == "rule2" {
+		if rule.Name() == "rule3" {
 			matched = true
 			assert.True(t, rule.Accept(meta), "extension")
 		}
 	}
 	assert.True(t, matched, "matched")
+}
+
+func TestMatchEmptyCondition(t *testing.T) {
+	meta := &mockConditionEventData{}
+	rule := rule{condition: Condition{}}
+	assert.True(t, rule.Accept(meta), "none")
 }

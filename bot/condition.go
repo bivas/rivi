@@ -7,6 +7,7 @@ import (
 )
 
 type Condition struct {
+	Order         int      `mapstructure:"order,omitempty"`
 	IfLabeled     []string `mapstructure:"if-labeled,omitempty"`
 	SkipIfLabeled []string `mapstructure:"skip-if-labeled,omitempty"`
 	Filter        struct {
@@ -16,22 +17,23 @@ type Condition struct {
 }
 
 func (c *Condition) checkIfLabeled(meta EventData) bool {
-	accept := false
 	if len(c.IfLabeled) == 0 {
-		accept = true
+		return false
 	} else {
 		for _, check := range c.IfLabeled {
 			for _, label := range meta.GetLabels() {
-				accept = accept || check == label
+				if check == label {
+					return true
+				}
 			}
 		}
 	}
-	return accept
+	return false
 }
 
 func (c *Condition) checkPattern(meta EventData) bool {
 	if len(c.Filter.Patterns) == 0 {
-		return true
+		return false
 	} else {
 		compiled := make([]*regexp.Regexp, 0)
 		for _, pattern := range c.Filter.Patterns {
@@ -59,7 +61,7 @@ func (c *Condition) checkPattern(meta EventData) bool {
 
 func (c *Condition) checkExt(meta EventData) bool {
 	if len(c.Filter.Extensions) == 0 {
-		return true
+		return false
 	} else {
 		for _, check := range meta.GetFileExtensions() {
 			for _, ext := range c.Filter.Extensions {
@@ -72,8 +74,12 @@ func (c *Condition) checkExt(meta EventData) bool {
 	return false
 }
 
+func (c *Condition) checkAllEmpty(meta EventData) bool {
+	return len(c.IfLabeled) == 0 && len(c.Filter.Patterns) == 0 && len(c.Filter.Extensions) == 0
+}
+
 func (c *Condition) Match(meta EventData) bool {
-	match := c.checkIfLabeled(meta) && c.checkPattern(meta) && c.checkExt(meta)
+	match := c.checkAllEmpty(meta) || c.checkIfLabeled(meta) || c.checkPattern(meta) || c.checkExt(meta)
 
 	if match {
 		for _, check := range c.SkipIfLabeled {

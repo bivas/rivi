@@ -44,6 +44,10 @@ func assertRules(t *T, configuration Configuration) {
 	assert.Contains(t, ruleNames, "rule2", "rule name")
 	assert.Contains(t, ruleNames, "rule3", "rule name")
 	assert.Contains(t, ruleNames, "rule4", "rule name")
+	assert.Equal(t, "rule4", ruleNames[0], "first rule")
+	assert.Equal(t, "rule3", ruleNames[1], "second rule")
+	assert.Equal(t, "rule2", ruleNames[2], "third rule")
+	assert.Equal(t, "rule1", ruleNames[3], "fourth rule")
 }
 
 func TestReadConfig(t *T) {
