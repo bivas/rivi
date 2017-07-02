@@ -15,7 +15,7 @@ rules:
       condition:
         order: 5
         if-labeled:
-          - label1
+          - label2
   rule2:
       condition:
         order: 2
