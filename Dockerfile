@@ -1,6 +1,8 @@
-FROM alpine
+FROM debian:jessie
 
-RUN apk add --no-cache ca-certificates
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
 EXPOSE 8080
 
