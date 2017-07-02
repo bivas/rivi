@@ -19,10 +19,14 @@ type clientConfig struct {
 }
 
 func (c *clientConfig) GetOAuthToken() string {
+	c.internal.SetEnvPrefix("rivi_config")
+	c.internal.BindEnv("token")
 	return c.internal.GetString("token")
 }
 
 func (c *clientConfig) GetSecret() string {
+	c.internal.SetEnvPrefix("rivi_config")
+	c.internal.BindEnv("secret")
 	return c.internal.GetString("secret")
 }
 
@@ -80,7 +84,11 @@ func (c *config) GetRules() []Rule {
 }
 
 func (c *config) readConfigSection() error {
-	c.clientConfig = &clientConfig{c.internal["config"]}
+	internal := c.internal["config"]
+	if internal == nil {
+		internal = viper.New()
+	}
+	c.clientConfig = &clientConfig{internal}
 	return nil
 }
 

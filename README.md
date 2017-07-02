@@ -48,6 +48,13 @@ config:
 - `provider` (optional) - which client to use for git connection - the bot tries to figure out which client to use automatically (currently only `github` is supported but others are on the way)
 - `secret` (optional) - webhook secret to be used for content validation (recommended)
 
+### Environment Variables
+
+You can set the values for `token` and `secret` via environment variables: 
+`RIVI_CONFIG_TOKEN` and `RIVI_CONFIG_SECRET` respectively.
+
+It is common to configure the bot by injecting environment variables via CI server.
+
 ## Roles Section
 
 List of roles for selecting (login) users for assignment. 
