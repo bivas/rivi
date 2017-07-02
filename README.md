@@ -168,7 +168,7 @@ rules:
           skip-if-labeled:
             - pending-approval
         autoassign:
-          from-roles:
+          roles:
             - admins
             - reviewers
 ```
