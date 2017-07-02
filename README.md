@@ -8,7 +8,7 @@ Automate your review process with Rivi the review bot
 ```
 Usage of rivi:
   -config string
-    	Bot configuration file
+    	Bot configuration file(s)
   -port int
     	Bot listening port (default 8080)
   -uri string
@@ -16,14 +16,13 @@ Usage of rivi:
 ```
 ### Example
 ```
-$ rivi -port 9000 -config repo-x.yaml
+$ rivi -port 9000 -config repo-x.yaml -config repo-y.yaml
 ```
 
 ## Requirements
 
-- Create a token with `repo` persmissions
+- Create a token with `repo` permissions
 - Create a webhook and make sure the following are configured:
-
 
   - Select **content type** as `application/json`
   - Optionally, set a **secret** (this will be used by the bot to validate webhook content)
@@ -31,6 +30,9 @@ $ rivi -port 9000 -config repo-x.yaml
     - Pull request
     - Pull request review
     - Pull request review comment
+    
+  - If you have started rivi with several configuration files, you can set the hook URL to access each different file by passing `namespace` query param with the file name (without the `yaml` extension)
+  Example: `http://rivi-url/?namespace=repo-x`
 
 # Configuration File Structure
 
