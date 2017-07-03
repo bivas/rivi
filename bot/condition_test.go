@@ -156,6 +156,35 @@ func TestMatchExt(t *testing.T) {
 	assert.True(t, matched, "matched")
 }
 
+func TestTitleStartsWith(t *testing.T) {
+	var rule rule
+	rule.condition.Title.StartsWith = "BUGFIX"
+	meta := &mockConditionEventData{Title: "NOT A BUGFIX"}
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	meta.Title = "BUGFIX it"
+	assert.True(t, rule.Accept(meta), "should match")
+}
+
+func TestTitleEndsWith(t *testing.T) {
+	var rule rule
+	rule.condition.Title.EndsWith = "WIP"
+	meta := &mockConditionEventData{Title: "NOT A BUGFIX"}
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	meta.Title = "BUGFIX WIP"
+	assert.True(t, rule.Accept(meta), "should match")
+}
+
+func TestTitlePattern(t *testing.T) {
+	var rule rule
+	rule.condition.Title.Patterns = []string{".* Bug( )?[0-9]{5} .*"}
+	meta := &mockConditionEventData{Title: "NOT A BUGFIX"}
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	meta.Title = "This PR for Bug1 with comment"
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	meta.Title = "This PR for Bug 45456 with comment"
+	assert.True(t, rule.Accept(meta), "should match")
+}
+
 func TestMatchEmptyCondition(t *testing.T) {
 	meta := &mockConditionEventData{}
 	rule := rule{condition: Condition{}}

@@ -29,11 +29,11 @@ rules:
   rule3:
       condition:
         order: 1
-        filter:
+        files:
           extensions:
             - ".go"
   rule4:
       condition:
-        filter:
+        files:
           patterns:
             - ".*/docs/.*"
