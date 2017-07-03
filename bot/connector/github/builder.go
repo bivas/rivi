@@ -61,6 +61,7 @@ func (builder *eventDataBuilder) readFromJson(payload *payload) {
 	builder.data.changedFiles = payload.PullRequest.ChangedFiles
 	builder.data.additions = payload.PullRequest.Additions
 	builder.data.deletions = payload.PullRequest.Deletions
+	builder.data.ref = payload.PullRequest.Base.Ref
 	assignees := make([]string, 0)
 	for _, assignee := range payload.PullRequest.Assignees {
 		assignees = append(assignees, assignee.Login)

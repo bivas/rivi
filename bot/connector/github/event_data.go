@@ -9,6 +9,7 @@ type eventData struct {
 	origin       string
 	owner        string
 	repo         string
+	ref          string
 	title        string
 	changedFiles int
 	fileNames    []string
@@ -96,6 +97,10 @@ func (d *eventData) GetOwner() string {
 
 func (d *eventData) GetRepo() string {
 	return d.repo
+}
+
+func (d *eventData) GetRef() string {
+	return d.ref
 }
 
 func (d *eventData) GetFileNames() []string {

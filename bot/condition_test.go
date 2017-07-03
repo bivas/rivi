@@ -10,6 +10,11 @@ type mockConditionEventData struct {
 	FileNames      []string
 	FileExtensions []string
 	Title          string
+	Ref            string
+}
+
+func (m *mockConditionEventData) GetRef() string {
+	return m.Ref
 }
 
 func (*mockConditionEventData) GetNumber() int {
@@ -189,4 +194,22 @@ func TestMatchEmptyCondition(t *testing.T) {
 	meta := &mockConditionEventData{}
 	rule := rule{condition: Condition{}}
 	assert.True(t, rule.Accept(meta), "none")
+}
+
+func TestMatchRef(t *testing.T) {
+	var rule rule
+	rule.condition.Ref.Equals = "master"
+	meta := &mockConditionEventData{Ref: "development"}
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	meta.Ref = "master"
+	assert.True(t, rule.Accept(meta), "should match")
+}
+
+func TestRefPatters(t *testing.T) {
+	var rule rule
+	rule.condition.Ref.Patterns = []string{"integration-v[0-9]{2}$"}
+	meta := &mockConditionEventData{Ref: "development"}
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	meta.Ref = "integration-v11"
+	assert.True(t, rule.Accept(meta), "should match")
 }

@@ -112,6 +112,10 @@ rules:
           ends-with: "WIP"
           patterns:
             - ".* Bug( )?[0-9]{5} .*"
+        ref:
+          match: "master"
+          patterns:
+            - "integration_v[0-9]{2}$"
         order: 5
       commenter:
         comment: "We have a match!"
@@ -126,6 +130,9 @@ The entire `condition` section is optional - you can run all rules all the time 
 - `files`
   - `patterns` - [pattern](https://golang.org/s/re2syntax) matching the pull request file list (any of the patterns)
   - `extensions` - which file extension to match on pull request file list (must start with a dot [`.`])
+- `ref`
+  - `patterns` - [pattern](https://golang.org/s/re2syntax) matching the pull request ref name
+  - `match` - matches the pull request ref name
 - `title`
   - `starts-with` - issue title has a prefix
   - `ends-with` - issue title has a suffix

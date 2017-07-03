@@ -8,6 +8,7 @@ type MockEventData struct {
 	State            string
 	Owner            string
 	Repo             string
+	Ref              string
 	Origin           string
 	Assignees        []string
 	AddedAssignees   []string
@@ -45,6 +46,10 @@ func (m *MockEventData) GetOwner() string {
 
 func (m *MockEventData) GetRepo() string {
 	return m.Repo
+}
+
+func (m *MockEventData) GetRef() string {
+	return m.Ref
 }
 
 func (m *MockEventData) GetLabels() []string {

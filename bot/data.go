@@ -18,6 +18,7 @@ type EventData interface {
 	GetOrigin() string
 	GetOwner() string
 	GetRepo() string
+	GetRef() string
 	GetLabels() []string
 	HasLabel(label string) bool
 	AddLabel(label string)
