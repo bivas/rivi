@@ -17,13 +17,21 @@ type MergeableEventData interface {
 	Merge(mergeMethod string)
 }
 
-func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
-	mergeable, ok := meta.(MergeableEventData)
-	if !ok {
-		util.Logger.Warning("Event data does not support merge. Check your configurations")
-		a.err = fmt.Errorf("Event data does not support merge")
-		return
+func (a *action) merge(meta bot.EventData) {
+	if a.rule.Label == "" {
+		mergeable, ok := meta.(MergeableEventData)
+		if !ok {
+			util.Logger.Warning("Event data does not support merge. Check your configurations")
+			a.err = fmt.Errorf("Event data does not support merge")
+			return
+		}
+		mergeable.Merge(a.rule.Strategy)
+	} else {
+		meta.AddLabel(a.rule.Label)
 	}
+}
+
+func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 	approvals := 0
 	assignees := util.StringSet{}
 	assignees.AddAll(meta.GetAssignees())
@@ -37,8 +45,12 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 			approvals++
 		}
 	}
-	if approvals >= a.rule.Require {
-		mergeable.Merge(a.rule.Strategy)
+	if a.rule.Require == 0 && assignees.Len() == 0 {
+		util.Logger.Debug("All assignees have approved the PR - merging")
+		a.merge(meta)
+	} else if a.rule.Require > 0 && approvals >= a.rule.Require {
+		util.Logger.Debug("Got %d required approvals for PR - merging", a.rule.Require)
+		a.merge(meta)
 	}
 }
 
@@ -50,6 +62,7 @@ func (*factory) BuildAction(config map[string]interface{}) bot.Action {
 	if e := mapstructure.Decode(config, &item); e != nil {
 		panic(e)
 	}
+	item.Defaults()
 	return &action{rule: &item}
 }
 

@@ -21,12 +21,10 @@ var (
 type rule struct {
 	Require  int    `mapstructure:"require"`
 	Strategy string `mapstructure:"strategy"`
+	Label    string `mapstructure:"label"`
 }
 
 func (r *rule) Defaults() {
-	if r.Require == 0 {
-		r.Require = 1
-	}
 	if r.Strategy == "" {
 		r.Strategy = "merge"
 	} else {

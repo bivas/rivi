@@ -15,7 +15,8 @@ None
 ## Options
 
 - `strategy` (optional) - which strategy to use when merging. can be `merge`, `squash` or `rebase` (default: `merge`)
-- `require` (optional) - the number of approvals required (default: **1**)
+- `require` (optional) - the number of approvals required (default: **0** meaning require all assignees to approve)
+- `label` (optional) - label the issue instead of merging (dry-run)
 
 ## Example
 ```yaml
@@ -24,5 +25,11 @@ rules:
       automerge:
         require: 2
         strategy: squash
-        
+```
+or
+```yaml
+rules:
+    example:
+      automerge:
+        label: approved
 ```

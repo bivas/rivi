@@ -29,6 +29,18 @@ func TestNotCapableToMerge(t *testing.T) {
 	assert.NotNil(t, action.err, "should be unable to merge")
 }
 
+func TestShouldNotMergeMergeMissingApprovals(t *testing.T) {
+	action := action{rule: &rule{}}
+	action.rule.Defaults()
+	config := &mock.MockConfiguration{}
+	mockEventData := mock.MockEventData{Assignees: []string{"user1", "user2"}, Comments: []bot.Comment{
+		{Commenter: "user1", Comment: "approved"},
+	}}
+	meta := &mockMergableEventData{MockEventData: mockEventData}
+	action.Apply(config, meta)
+	assert.False(t, meta.merged, "should not be merged")
+}
+
 func TestCapableToMerge(t *testing.T) {
 	action := action{rule: &rule{}}
 	action.rule.Defaults()
@@ -77,4 +89,18 @@ func TestSameApprovedComment(t *testing.T) {
 	meta := &mockMergableEventData{MockEventData: mockEventData}
 	action.Apply(config, meta)
 	assert.False(t, meta.merged, "should not be merged")
+}
+
+func TestLabel(t *testing.T) {
+	action := action{rule: &rule{Label: "approved"}}
+	action.rule.Defaults()
+	config := &mock.MockConfiguration{}
+	mockEventData := mock.MockEventData{Assignees: []string{"user1"}, Origin: "user2", Comments: []bot.Comment{
+		{Commenter: "user1", Comment: "approved"},
+	}}
+	meta := &mockMergableEventData{MockEventData: mockEventData}
+	action.Apply(config, meta)
+	assert.False(t, meta.merged, "should not be merged")
+	assert.Len(t, meta.AddedLabels, 1, "should label and not merge")
+	assert.Equal(t, "approved", meta.AddedLabels[0], "approved")
 }
