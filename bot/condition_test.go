@@ -9,17 +9,18 @@ type mockConditionEventData struct {
 	Labels         []string
 	FileNames      []string
 	FileExtensions []string
+	Title          string
 }
 
 func (*mockConditionEventData) GetNumber() int {
 	panic("implement me")
 }
 
-func (*mockConditionEventData) GetTitle() string {
-	panic("implement me")
+func (m *mockConditionEventData) GetTitle() string {
+	return m.Title
 }
 
-func (*mockConditionEventData) GetState() string {
+func (m *mockConditionEventData) GetState() string {
 	panic("implement me")
 }
 

@@ -19,10 +19,14 @@ type clientConfig struct {
 }
 
 func (c *clientConfig) GetOAuthToken() string {
+	c.internal.SetEnvPrefix("rivi_config")
+	c.internal.BindEnv("token")
 	return c.internal.GetString("token")
 }
 
 func (c *clientConfig) GetSecret() string {
+	c.internal.SetEnvPrefix("rivi_config")
+	c.internal.BindEnv("secret")
 	return c.internal.GetString("secret")
 }
 
@@ -80,7 +84,11 @@ func (c *config) GetRules() []Rule {
 }
 
 func (c *config) readConfigSection() error {
-	c.clientConfig = &clientConfig{c.internal["config"]}
+	internal := c.internal["config"]
+	if internal == nil {
+		internal = viper.New()
+	}
+	c.clientConfig = &clientConfig{internal}
 	return nil
 }
 
@@ -91,6 +99,7 @@ func (c *config) readRolesSection() error {
 	for role := range c.roles {
 		c.rolesKeys = append(c.rolesKeys, role)
 	}
+	util.Logger.Debug("Loaded %d roles", len(c.rolesKeys))
 	return nil
 }
 
@@ -107,6 +116,7 @@ func (c *config) readRulesSection() error {
 		c.rules = append(c.rules, r)
 	}
 	sort.Sort(rulesByConditionOrder(c.rules))
+	util.Logger.Debug("Loaded %d rules", len(c.rules))
 	return nil
 }
 
@@ -135,6 +145,7 @@ func (c *config) readConfiguration(configPath string) error {
 	for _, section := range configSections {
 		sectionInclude := c.internal["root"].GetString(fmt.Sprintf("%s.include", section))
 		if sectionInclude != "" {
+			util.Logger.Debug("Attempt loading %s config from file %s", section, sectionInclude)
 			c.internal[section] = viper.New()
 			c.internal[section].SetConfigFile(filepath.Join(rootConfigFir, sectionInclude))
 			if err := c.internal[section].ReadInConfig(); err != nil {
@@ -148,11 +159,9 @@ func (c *config) readConfiguration(configPath string) error {
 }
 
 func newConfiguration(configPath string) (Configuration, error) {
-
 	c := &config{
 		internal: map[string]*viper.Viper{},
 	}
-
 	if err := c.readConfiguration(configPath); err != nil {
 		return nil, err
 	}

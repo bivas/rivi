@@ -42,12 +42,13 @@ type EventDataBuilder interface {
 var builders map[string]EventDataBuilder = make(map[string]EventDataBuilder)
 
 func RegisterNewBuilder(provider string, builder EventDataBuilder) {
-	_, exists := builders[provider]
+	search := strings.ToLower(provider)
+	_, exists := builders[search]
 	if exists {
 		util.Logger.Error("build for %s exists!", provider)
 	} else {
 		util.Logger.Debug("registering builder %s", provider)
-		builders[provider] = builder
+		builders[search] = builder
 	}
 }
 
