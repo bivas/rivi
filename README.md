@@ -46,7 +46,7 @@ config:
   secret: my-hook-secret-shhhhh 
 ```
 
-- `token` (required) - the client OAuth token the bot will connect with (and assign issues, add comments and lables)
+- `token` (required; unless set by env) - the client OAuth token the bot will connect with (and assign issues, add comments and lables)
 - `provider` (optional) - which client to use for git connection - the bot tries to figure out which client to use automatically (currently only `github` is supported but others are on the way)
 - `secret` (optional) - webhook secret to be used for content validation (recommended)
 
@@ -105,7 +105,7 @@ rules:
         filter:
           patterns: 
             - "docs/.*"
-          extension: 
+          extensions: 
             - ".go"
         order: 5
       commenter:
