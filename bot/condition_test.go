@@ -6,6 +6,9 @@ import (
 )
 
 type mockConditionEventData struct {
+	Number         int
+	Owner          string
+	Repo           string
 	Labels         []string
 	FileNames      []string
 	FileExtensions []string
@@ -17,8 +20,8 @@ func (m *mockConditionEventData) GetRef() string {
 	return m.Ref
 }
 
-func (*mockConditionEventData) GetNumber() int {
-	panic("implement me")
+func (m *mockConditionEventData) GetNumber() int {
+	return m.Number
 }
 
 func (m *mockConditionEventData) GetTitle() string {
@@ -33,12 +36,12 @@ func (*mockConditionEventData) GetOrigin() string {
 	panic("implement me")
 }
 
-func (*mockConditionEventData) GetOwner() string {
-	panic("implement me")
+func (m *mockConditionEventData) GetOwner() string {
+	return m.Owner
 }
 
-func (*mockConditionEventData) GetRepo() string {
-	panic("implement me")
+func (m *mockConditionEventData) GetRepo() string {
+	return m.Repo
 }
 
 func (m *mockConditionEventData) GetLabels() []string {
