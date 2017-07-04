@@ -35,20 +35,19 @@ func (b *bot) getCurrentConfiguration(namespace string) (Configuration, error) {
 }
 
 func (b *bot) HandleEvent(r *http.Request) *HandledEventResult {
-	result := &HandledEventResult{
-		AppliedRules: []string{},
-	}
+
 	workingConfiguration, err := b.getCurrentConfiguration(r.URL.Query().Get("namespace"))
 	if err != nil {
-		result.Message = err.Error()
-		return result
+		return &HandledEventResult{Message: err.Error()}
 	}
 	data, process := buildFromRequest(workingConfiguration.GetClientConfig(), r)
 	if !process {
-		result.Message = "Skipping rules processing (could be not supported event type)"
-		return result
+		return &HandledEventResult{Message: "Skipping rules processing (could be not supported event type)"}
 	}
 	applied := make([]Rule, 0)
+	result := &HandledEventResult{
+		AppliedRules: []string{},
+	}
 	for _, rule := range workingConfiguration.GetRules() {
 		if rule.Accept(data) {
 			util.Logger.Debug("Accepting rule %s for '%s'", rule.Name(), data.GetTitle())
