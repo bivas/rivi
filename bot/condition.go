@@ -41,6 +41,7 @@ func (c *FilesCondition) checkPattern(meta EventData) bool {
 		for _, check := range meta.GetFileNames() {
 			for _, reg := range compiled {
 				if reg.MatchString(check) {
+					util.Logger.Debug("Matched FileCondition with regex '%s' on file '%s'", reg.String(), check)
 					return true
 				}
 			}
@@ -56,6 +57,7 @@ func (c *FilesCondition) checkExt(meta EventData) bool {
 		for _, check := range meta.GetFileExtensions() {
 			for _, ext := range c.Extensions {
 				if ext == check {
+					util.Logger.Debug("Matched FileCondition with extension '%s' on file '%s'", ext, check)
 					return true
 				}
 			}
@@ -84,9 +86,11 @@ func (c *TitleCondition) Match(meta EventData) bool {
 	} else {
 		title := meta.GetTitle()
 		if c.StartsWith != "" && strings.HasPrefix(title, c.StartsWith) {
+			util.Logger.Debug("Matched TitleCondition with prefix '%s' on title '%s'", c.StartsWith, title)
 			return true
 		}
 		if c.EndsWith != "" && strings.HasSuffix(title, c.EndsWith) {
+			util.Logger.Debug("Matched TitleCondition with suffix '%s' on title '%s'", c.EndsWith, title)
 			return true
 		}
 		if len(c.Patterns) > 0 {
@@ -105,6 +109,7 @@ func (c *TitleCondition) Match(meta EventData) bool {
 			}
 			for _, reg := range compiled {
 				if reg.MatchString(title) {
+					util.Logger.Debug("Matched TitleCondition with pattern '%s' on title '%s'", reg.String(), title)
 					return true
 				}
 			}
@@ -125,6 +130,7 @@ func (c *RefCondition) IsEmpty() bool {
 func (c *RefCondition) Match(meta EventData) bool {
 	ref := meta.GetRef()
 	if c.Equals != "" && ref == c.Equals {
+		util.Logger.Debug("Matched RefCondition with match on ref '%s'", ref)
 		return true
 	}
 	if len(c.Patterns) > 0 {
@@ -143,6 +149,7 @@ func (c *RefCondition) Match(meta EventData) bool {
 		}
 		for _, reg := range compiled {
 			if reg.MatchString(ref) {
+				util.Logger.Debug("Matched RefCondition with regex '%s' on ref '%s'", reg.String(), ref)
 				return true
 			}
 		}
@@ -166,6 +173,7 @@ func (c *Condition) checkIfLabeled(meta EventData) bool {
 		for _, check := range c.IfLabeled {
 			for _, label := range meta.GetLabels() {
 				if check == label {
+					util.Logger.Debug("Matched Condition with label '%s'", check)
 					return true
 				}
 			}
@@ -175,10 +183,12 @@ func (c *Condition) checkIfLabeled(meta EventData) bool {
 }
 
 func (c *Condition) checkAllEmpty(meta EventData) bool {
-	return len(c.IfLabeled) == 0 &&
+	empty := len(c.IfLabeled) == 0 &&
 		c.Files.IsEmpty() &&
 		c.Title.IsEmpty() &&
 		c.Ref.IsEmpty()
+	util.Logger.Debug("Condition is empty = %s", empty)
+	return empty
 }
 
 func (c *Condition) Match(meta EventData) bool {
@@ -192,6 +202,7 @@ func (c *Condition) Match(meta EventData) bool {
 		for _, check := range c.SkipIfLabeled {
 			for _, label := range meta.GetLabels() {
 				if check == label {
+					util.Logger.Debug("Skipping Condition with label '%s'", check)
 					return false
 				}
 			}
