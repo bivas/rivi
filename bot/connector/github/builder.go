@@ -6,12 +6,13 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/bivas/rivi/bot"
-	"github.com/bivas/rivi/util"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
+
+	"github.com/bivas/rivi/bot"
+	"github.com/bivas/rivi/util"
 )
 
 var (
@@ -83,7 +84,7 @@ func (builder *eventDataBuilder) readFromClient() {
 }
 
 func (builder *eventDataBuilder) checkProcessState() bool {
-	util.Logger.Debug("Current issue [(%d) %s] state is %s",
+	util.Logger.Debug("Current issue [(%d) %s] state is '%s'",
 		builder.data.GetNumber(),
 		builder.data.GetTitle(),
 		builder.data.state)
@@ -91,11 +92,6 @@ func (builder *eventDataBuilder) checkProcessState() bool {
 }
 
 func (builder *eventDataBuilder) BuildFromRequest(config bot.ClientConfig, r *http.Request) (bot.EventData, bool, error) {
-	builder.secret = []byte(config.GetSecret())
-	pl, err := builder.readPayload(r)
-	if err != nil {
-		return nil, false, err
-	}
 	githubEvent := r.Header.Get("X-Github-Event")
 	if githubEvent == "ping" {
 		util.Logger.Message("Got GitHub 'ping' event")
@@ -110,6 +106,16 @@ func (builder *eventDataBuilder) BuildFromRequest(config bot.ClientConfig, r *ht
 	if !supportedEvent {
 		util.Logger.Debug("Got GitHub '%s' event", githubEvent)
 		return nil, false, nil
+	}
+	builder.secret = []byte(config.GetSecret())
+	pl, err := builder.readPayload(r)
+	if err != nil {
+		return nil, false, err
+	}
+	if pl.Number == 0 {
+		util.Logger.Warning("Payload appear to have issue id 0")
+		util.Logger.Debug("Faulty payload %+v", pl)
+		return nil, false, fmt.Errorf("Payload appear to have issue id 0")
 	}
 	repo := pl.Repository.Name
 	owner := pl.Repository.Owner.Login
