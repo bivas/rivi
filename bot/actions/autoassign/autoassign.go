@@ -1,10 +1,11 @@
 package autoassign
 
 import (
+	"math/rand"
+
 	"github.com/bivas/rivi/bot"
 	"github.com/bivas/rivi/util"
 	"github.com/mitchellh/mapstructure"
-	"math/rand"
 )
 
 type action struct {
@@ -53,7 +54,9 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 	lookupRoles := a.findLookupRoles(config, assignedRoles)
 
 	winners := a.randomUsers(config, meta, lookupRoles)
-	meta.AddAssignees(winners...)
+	if len(winners) > 0 {
+		meta.AddAssignees(winners...)
+	}
 }
 
 func (a *action) randomUsers(config bot.Configuration, meta bot.EventData, lookupRoles []string) []string {
@@ -62,13 +65,16 @@ func (a *action) randomUsers(config bot.Configuration, meta bot.EventData, looku
 	for _, assignee := range meta.GetAssignees() {
 		possibleSet.Remove(assignee)
 	}
-	possible := possibleSet.Values()
-	util.Logger.Debug("There are %d possible assignees from %d roles", len(possible), len(lookupRoles))
+	util.Logger.Debug("There are %d possible assignees from %d roles", possibleSet.Len(), len(lookupRoles))
+	if possibleSet.Len() == 0 {
+		return []string{}
+	}
 	remainingRequired := a.rule.Require - len(meta.GetAssignees())
 	if remainingRequired < 0 {
 		remainingRequired = 0
 	}
 	util.Logger.Debug("Require %d assignees", remainingRequired)
+	possible := possibleSet.Values()
 	winners := make([]string, remainingRequired)
 	for i := 0; i < remainingRequired; i++ {
 		index := rand.Intn(len(possible))
