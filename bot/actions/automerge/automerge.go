@@ -2,10 +2,11 @@ package automerge
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/bivas/rivi/bot"
 	"github.com/bivas/rivi/util"
 	"github.com/mitchellh/mapstructure"
-	"strings"
 )
 
 type action struct {
@@ -33,7 +34,7 @@ func (a *action) merge(meta bot.EventData) {
 
 func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 	assigneesList := meta.GetAssignees()
-	if len(assigneesList) {
+	if len(assigneesList) == 0 {
 		util.Logger.Debug("No assignees to issue - skipping")
 		return
 	}
