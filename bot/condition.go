@@ -187,7 +187,7 @@ func (c *Condition) checkAllEmpty(meta EventData) bool {
 		c.Files.IsEmpty() &&
 		c.Title.IsEmpty() &&
 		c.Ref.IsEmpty()
-	util.Logger.Debug("Condition is empty = %s", empty)
+	util.Logger.Debug("Condition is empty = %d", empty)
 	return empty
 }
 

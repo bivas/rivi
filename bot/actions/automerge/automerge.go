@@ -32,9 +32,14 @@ func (a *action) merge(meta bot.EventData) {
 }
 
 func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
+	assigneesList := meta.GetAssignees()
+	if len(assigneesList) {
+		util.Logger.Debug("No assignees to issue - skipping")
+		return
+	}
 	approvals := 0
 	assignees := util.StringSet{}
-	assignees.AddAll(meta.GetAssignees())
+	assignees.AddAll(assigneesList)
 	for _, comment := range meta.GetComments() {
 		if !assignees.Contains(comment.Commenter) {
 			continue
