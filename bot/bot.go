@@ -2,13 +2,14 @@ package bot
 
 import (
 	"fmt"
-	"github.com/bivas/rivi/util"
-	"github.com/patrickmn/go-cache"
 	"net/http"
 	"path/filepath"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/bivas/rivi/util"
+	"github.com/patrickmn/go-cache"
 )
 
 type HandledEventResult struct {
@@ -90,10 +91,12 @@ func (b *bot) HandleEvent(r *http.Request) *HandledEventResult {
 	b.cacheLocker.Unlock()
 	workingConfiguration, err := b.getCurrentConfiguration(namespace)
 	if err != nil {
+		locker.(*sync.Mutex).Unlock()
 		return &HandledEventResult{Message: err.Error()}
 	}
 	data, process := buildFromRequest(workingConfiguration.GetClientConfig(), r)
 	if !process {
+		locker.(*sync.Mutex).Unlock()
 		return &HandledEventResult{Message: "Skipping rules processing (could be not supported event type)"}
 	}
 	util.Logger.Debug("release namespace %s lock", namespace)
