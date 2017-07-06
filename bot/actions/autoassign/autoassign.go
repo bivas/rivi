@@ -2,6 +2,7 @@ package autoassign
 
 import (
 	"math/rand"
+	"strings"
 
 	"github.com/bivas/rivi/bot"
 	"github.com/bivas/rivi/util"
@@ -60,7 +61,7 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 }
 
 func (a *action) randomUsers(config bot.Configuration, meta bot.EventData, lookupRoles []string) []string {
-	possibleSet := util.StringSet{}
+	possibleSet := util.StringSet{Transformer: strings.ToLower}
 	possibleSet.AddAll(config.GetRoleMembers(lookupRoles...)).Remove(meta.GetOrigin())
 	for _, assignee := range meta.GetAssignees() {
 		possibleSet.Remove(assignee)
