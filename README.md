@@ -5,6 +5,7 @@
 Automate your review process with Rivi the review bot
 
 ## Usage
+Rivi can be run as a service which listens to incoming repository webhooks. This service must be internet facing to accept incoming requests (e.g. GitHub).
 ```
 Usage of rivi:
   -config string
@@ -17,6 +18,21 @@ Usage of rivi:
 ### Example
 ```
 $ rivi -port 9000 -config repo-x.yaml -config repo-y.yaml
+```
+
+### Docker
+
+It is also possible to run Rivi as Docker container. Rivi's images are published to Docker Hub as `bivas/rivi`.
+
+You should visit [bivas/rivi](https://hub.docker.com/r/bivas/rivi/) Docker Hub page and check for published [tags](https://hub.docker.com/r/bivas/rivi/tags/).
+
+```
+$ docker run --detach \
+             --name rivi \
+             --publish 8080:8080 \
+             --env RIVI_CONFIG_TOKEN=<rivi oath token> \
+             --volume /path/to/config/files:/config \
+             bivas/rivi rivi -config /config/repo-x.yaml
 ```
 
 ## Requirements

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/bivas/rivi/util"
 	"github.com/spf13/viper"
+	"strings"
 )
 
 type Action interface {
@@ -69,9 +70,15 @@ var actions map[string]ActionFactory = make(map[string]ActionFactory)
 var supportedActions []string = make([]string, 0)
 
 func RegisterAction(kind string, action ActionFactory) {
-	actions[kind] = action
-	supportedActions = append(supportedActions, kind)
-	util.Logger.Debug("running with support for %s", kind)
+	search := strings.ToLower(kind)
+	_, exists := actions[search]
+	if exists {
+		util.Logger.Error("action %s exists!", kind)
+	} else {
+		util.Logger.Debug("registering action %s", kind)
+		actions[search] = action
+		supportedActions = append(supportedActions, kind)
+	}
 }
 
 func buildActionsFromConfiguration(config *viper.Viper) []Action {

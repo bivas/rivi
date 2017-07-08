@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"os"
 	. "testing"
@@ -81,4 +82,39 @@ func TestEmptyConfigTest(t *T) {
 	}
 	assert.Equal(t, "token-from-env", c.GetClientConfig().GetOAuthToken(), "token from env")
 	assert.Equal(t, "secret-from-env", c.GetClientConfig().GetSecret(), "secret from env")
+}
+
+type testActionConfig struct {
+	key, value string
+}
+
+func (t *testActionConfig) Name() string {
+	return "test-section"
+}
+
+type testBuilder struct {
+}
+
+func (*testBuilder) Build(config map[string]interface{}) (ActionConfig, error) {
+	if len(config) != 1 {
+		return nil, fmt.Errorf("Wrong number of values")
+	}
+	for key, value := range config {
+		return &testActionConfig{key, value.(string)}, nil
+	}
+	return nil, fmt.Errorf("Should not reach here")
+}
+
+func TestActionConfigBuilder(t *T) {
+	RegisterActionConfigBuilder("test-section", &testBuilder{})
+	c, err := newConfiguration("config_test.yml")
+	if err != nil {
+		t.Fatalf("Got error during config read. %s", err)
+	}
+	result, err := c.GetActionConfig("test-section")
+	assert.Nil(t, err, "should contain section")
+	exact, ok := result.(*testActionConfig)
+	assert.True(t, ok, "should be of test action config type")
+	assert.Equal(t, "key", exact.key, "key")
+	assert.Equal(t, "value", exact.value, "value")
 }
