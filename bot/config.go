@@ -43,6 +43,7 @@ type Configuration interface {
 	GetRoleMembers(role ...string) []string
 	GetRoles() []string
 	GetRules() []Rule
+	GetActionConfig(kind string) (ActionConfig, error)
 }
 
 var (
@@ -68,6 +69,14 @@ type config struct {
 	roles         map[string][]string
 	rolesKeys     []string
 	actionConfigs map[string]ActionConfig
+}
+
+func (c *config) GetActionConfig(kind string) (ActionConfig, error) {
+	config, exists := c.actionConfigs[kind]
+	if !exists {
+		return nil, fmt.Errorf("No such action config %s", kind)
+	}
+	return config, nil
 }
 
 func (c *config) getSection(path string) (string, *viper.Viper) {

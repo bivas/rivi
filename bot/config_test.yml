@@ -15,6 +15,9 @@ roles:
   testers:
       - user2
 
+test-section:
+  key: value
+
 rules:
   rule1:
       condition:
