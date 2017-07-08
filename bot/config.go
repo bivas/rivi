@@ -30,23 +30,53 @@ func (c *clientConfig) GetSecret() string {
 	return c.internal.GetString("secret")
 }
 
+type ActionConfig interface {
+	Name() string
+}
+
+type ActionConfigBuilder interface {
+	Build(config map[string]interface{}) (ActionConfig, error)
+}
+
 type Configuration interface {
 	GetClientConfig() ClientConfig
 	GetRoleMembers(role ...string) []string
 	GetRoles() []string
 	GetRules() []Rule
+	GetActionConfig(kind string) (ActionConfig, error)
 }
 
 var (
-	configSections = []string{"config", "roles", "rules"}
+	configSections       = []string{"config", "roles", "rules"}
+	actionConfigBuilders = make(map[string]ActionConfigBuilder)
 )
 
+func RegisterActionConfigBuilder(name string, builder ActionConfigBuilder) {
+	search := strings.ToLower(name)
+	_, exists := actionConfigBuilders[search]
+	if exists {
+		util.Logger.Error("action config build for %s exists!", name)
+	} else {
+		util.Logger.Debug("registering action config builder %s", name)
+		actionConfigBuilders[search] = builder
+	}
+}
+
 type config struct {
-	internal     map[string]*viper.Viper
-	clientConfig ClientConfig
-	rules        []Rule
-	roles        map[string][]string
-	rolesKeys    []string
+	internal      map[string]*viper.Viper
+	clientConfig  ClientConfig
+	rules         []Rule
+	roles         map[string][]string
+	rolesKeys     []string
+	actionConfigs map[string]ActionConfig
+}
+
+func (c *config) GetActionConfig(kind string) (ActionConfig, error) {
+	config, exists := c.actionConfigs[kind]
+	if !exists {
+		return nil, fmt.Errorf("No such action config %s", kind)
+	}
+	return config, nil
 }
 
 func (c *config) getSection(path string) (string, *viper.Viper) {
@@ -70,7 +100,7 @@ func (c *config) GetRoleMembers(roles ...string) []string {
 			result = append(result, members...)
 		}
 	}
-	set := util.StringSet{}
+	set := util.StringSet{Transformer: strings.ToLower}
 	set.AddAll(result)
 	return set.Values()
 }
@@ -121,14 +151,30 @@ func (c *config) readRulesSection() error {
 }
 
 func (c *config) readSections() error {
-	if err := c.readConfigSection(); err != nil {
-		return err
+	sections := []func() error{
+		c.readConfigSection,
+		c.readRolesSection,
+		c.readRulesSection,
 	}
-	if err := c.readRolesSection(); err != nil {
-		return err
+	for _, section := range sections {
+		if err := section(); err != nil {
+			return err
+		}
 	}
-	if err := c.readRulesSection(); err != nil {
-		return err
+	c.actionConfigs = make(map[string]ActionConfig)
+	for kind, builder := range actionConfigBuilders {
+		util.Logger.Debug("Building configuration for %s", kind)
+		actionConfig := c.internal["root"].GetStringMap(kind)
+		if actionConfig == nil || len(actionConfig) == 0 {
+			util.Logger.Warning("No matching section for %s", kind)
+			continue
+		}
+		config, err := builder.Build(actionConfig)
+		if err != nil {
+			util.Logger.Error("Error while building %s config. %s", kind, err)
+			continue
+		}
+		c.actionConfigs[kind] = config
 	}
 	return nil
 }
