@@ -63,17 +63,12 @@ func (builder *eventDataBuilder) readFromJson(payload *payload) {
 	builder.data.additions = payload.PullRequest.Additions
 	builder.data.deletions = payload.PullRequest.Deletions
 	builder.data.ref = payload.PullRequest.Base.Ref
-	assignees := make([]string, 0)
-	for _, assignee := range payload.PullRequest.Assignees {
-		assignees = append(assignees, assignee.Login)
-	}
-	builder.data.assignees = assignees
 	builder.data.origin = payload.PullRequest.User.Login
-	builder.data.state = payload.PullRequest.State
 }
 
 func (builder *eventDataBuilder) readFromClient() {
 	id := builder.data.number
+	builder.data.assignees = builder.client.GetAssignees(id)
 	builder.data.state = builder.client.GetState(id)
 	builder.data.labels = builder.client.GetLabels(id)
 	builder.data.comments = builder.client.GetComments(id)
