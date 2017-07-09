@@ -46,9 +46,9 @@ func RegisterNewBuilder(provider string, builder EventDataBuilder) {
 	search := strings.ToLower(provider)
 	_, exists := builders[search]
 	if exists {
-		util.Logger.Error("build for %s exists!", provider)
+		util.Logger.Error("connector for %s exists!", provider)
 	} else {
-		util.Logger.Debug("registering builder %s", provider)
+		util.Logger.Debug("registering connector %s", provider)
 		builders[search] = builder
 	}
 }

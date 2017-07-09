@@ -129,7 +129,7 @@ func (c *config) readRolesSection() error {
 	for role := range c.roles {
 		c.rolesKeys = append(c.rolesKeys, role)
 	}
-	util.Logger.Debug("Loaded %d roles", len(c.rolesKeys))
+	util.Logger.Debug("Loaded %d roles (%s)", len(c.rolesKeys), c.rolesKeys)
 	return nil
 }
 

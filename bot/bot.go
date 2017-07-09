@@ -30,6 +30,23 @@ type bot struct {
 	repoIssueMutexes *cache.Cache
 }
 
+func (b *bot) String() string {
+	format := `
+{
+		defaultNamespace: %s
+		namespaces:
+%s
+}`
+	namespaces := ""
+	for name, value := range b.configurations {
+		namespaces += fmt.Sprintf("			'%s' with %d rules and %d roles\n",
+			name,
+			len(value.GetRules()),
+			len(value.GetRoles()))
+	}
+	return fmt.Sprintf(format, b.defaultNamespace, namespaces)
+}
+
 func (b *bot) getCurrentConfiguration(namespace string) (Configuration, error) {
 	if namespace == "" {
 		namespace = b.defaultNamespace
@@ -127,6 +144,6 @@ func New(configPaths ...string) (Bot, error) {
 	if len(b.configurations) == 0 {
 		return nil, fmt.Errorf("Bot has no readable configuration!")
 	}
-	util.Logger.Debug("Bot is ready %+v", *b)
+	util.Logger.Info("Bot is ready with %s", b)
 	return b, nil
 }

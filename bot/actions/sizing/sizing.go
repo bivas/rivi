@@ -1,6 +1,7 @@
 package sizing
 
 import (
+	"fmt"
 	"github.com/bivas/rivi/bot"
 	"github.com/bivas/rivi/util"
 	"github.com/mitchellh/mapstructure"
@@ -10,6 +11,10 @@ import (
 type action struct {
 	items          rules
 	possibleLabels []string
+}
+
+func (a *action) String() string {
+	return fmt.Sprintf("%T{items: %+v}", *a, a.items)
 }
 
 func (s *action) updatePossibleLabels() {

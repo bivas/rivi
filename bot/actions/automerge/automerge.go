@@ -14,6 +14,10 @@ type action struct {
 	err  error
 }
 
+func (a *action) String() string {
+	return fmt.Sprintf("%T{rule: %+v}", *a, a.rule)
+}
+
 type MergeableEventData interface {
 	Merge(mergeMethod string)
 }
