@@ -14,8 +14,8 @@ func (m *mockEventDataBuilder) BuildFromRequest(config ClientConfig, r *http.Req
 	return &mockConditionEventData{Labels: m.Labels}, true, nil
 }
 
-func (*mockEventDataBuilder) Build(config ClientConfig, json string) (EventData, error) {
-	panic("implement me")
+func (m *mockEventDataBuilder) PartialBuildFromRequest(config ClientConfig, r *http.Request) (EventData, bool, error) {
+	return &mockConditionEventData{Labels: m.Labels}, true, nil
 }
 
 func buildRequest(t *testing.T, url string) *http.Request {

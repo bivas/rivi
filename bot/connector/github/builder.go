@@ -86,7 +86,7 @@ func (builder *eventDataBuilder) checkProcessState() bool {
 	return builder.data.state != "closed"
 }
 
-func (builder *eventDataBuilder) BuildFromRequest(config bot.ClientConfig, r *http.Request) (bot.EventData, bool, error) {
+func (builder *eventDataBuilder) PartialBuildFromRequest(config bot.ClientConfig, r *http.Request) (bot.EventData, bool, error) {
 	githubEvent := r.Header.Get("X-Github-Event")
 	if githubEvent == "ping" {
 		util.Logger.Message("Got GitHub 'ping' event")
@@ -114,15 +114,22 @@ func (builder *eventDataBuilder) BuildFromRequest(config bot.ClientConfig, r *ht
 	}
 	repo := pl.Repository.Name
 	owner := pl.Repository.Owner.Login
-	builder.client = newClient(config, owner, repo)
-	builder.data = &eventData{client: builder.client, owner: owner, repo: repo}
+	builder.data = &eventData{owner: owner, repo: repo}
 	builder.readFromJson(pl)
-	builder.readFromClient()
 	return builder.data, builder.checkProcessState(), nil
 }
 
-func (*eventDataBuilder) Build(config bot.ClientConfig, json string) (bot.EventData, error) {
-	panic("implement me")
+func (builder *eventDataBuilder) BuildFromRequest(config bot.ClientConfig, r *http.Request) (bot.EventData, bool, error) {
+	_, ok, err := builder.PartialBuildFromRequest(config, r)
+	if !ok || err != nil {
+		return nil, ok, err
+	}
+	repo := builder.data.repo
+	owner := builder.data.owner
+	builder.client = newClient(config, owner, repo)
+	builder.data.client = builder.client
+	builder.readFromClient()
+	return builder.data, builder.checkProcessState(), nil
 }
 
 func init() {
