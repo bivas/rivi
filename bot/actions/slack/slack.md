@@ -19,9 +19,10 @@ have `RIVI_SLACK_API_KEY` set as environment variable
 - `translator` (optional) - 
 
 ### Slack Action
-- `notify` (required) - `assignees` or `role` name
 - `message-template` (required) -
 - `channel` (optional) - private message otherwise
+- `notify` (optional) - `assignees` or `role` name.
+  - If both `channel` and `notify` are empty - no message will be outputted
 
 ## Template Fields
 

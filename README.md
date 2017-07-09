@@ -163,6 +163,7 @@ The entire `condition` section is optional - you can run all rules all the time 
 - [`labeler`](bot/actions/labeler/labeler.md) - Add label to an issue
 - [`sizing`](bot/actions/sizing/sizing.md) - Size a pull request
 - [`trigger`](bot/actions/trigger/trigger.md) - Send HTTP triggers
+- [`slack`](bot/actions/slack/slack.md) - Send Slack messages
 
 # Example Configuration
 
