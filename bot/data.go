@@ -36,8 +36,8 @@ type EventData interface {
 }
 
 type EventDataBuilder interface {
+	PartialBuildFromRequest(config ClientConfig, r *http.Request) (EventData, bool, error)
 	BuildFromRequest(config ClientConfig, r *http.Request) (EventData, bool, error)
-	Build(config ClientConfig, json string) (EventData, error)
 }
 
 var builders map[string]EventDataBuilder = make(map[string]EventDataBuilder)
@@ -54,6 +54,31 @@ func RegisterNewBuilder(provider string, builder EventDataBuilder) {
 }
 
 func buildFromRequest(config ClientConfig, r *http.Request) (EventData, bool) {
+	var builder EventDataBuilder
+	for name := range r.Header {
+		for provider := range builders {
+			if strings.Contains(strings.ToLower(name), provider) {
+				builder = builders[provider]
+				break
+			}
+		}
+		if builder != nil {
+			break
+		}
+	}
+	if builder == nil {
+		util.Logger.Error("No Builder to work with!")
+		return nil, false
+	}
+	result, process, err := builder.PartialBuildFromRequest(config, r)
+	if err != nil {
+		util.Logger.Error("Unable to build from request. %s", err)
+		return nil, false
+	}
+	return result, process
+}
+
+func completeBuildFromRequest(config ClientConfig, r *http.Request) (EventData, bool) {
 	var builder EventDataBuilder
 	for name := range r.Header {
 		for provider := range builders {
