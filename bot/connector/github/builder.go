@@ -39,21 +39,21 @@ func (builder *eventDataBuilder) validate(payload []byte, request *http.Request)
 	return request.Header.Get("X-Hub-Signature") == result
 }
 
-func (builder *eventDataBuilder) readPayload(r *http.Request) (*payload, error) {
+func (builder *eventDataBuilder) readPayload(r *http.Request) (*payload, []byte, error) {
 	body := r.Body
 	defer body.Close()
 	raw, err := ioutil.ReadAll(io.LimitReader(body, r.ContentLength))
 	if err != nil {
-		return nil, err
+		return nil, raw, err
 	}
 	if !builder.validate(raw, r) {
-		return nil, fmt.Errorf("Payload could not be validated")
+		return nil, raw, fmt.Errorf("Payload could not be validated")
 	}
 	var pr payload
 	if e := json.Unmarshal(raw, &pr); e != nil {
-		return nil, e
+		return nil, raw, e
 	}
-	return &pr, nil
+	return &pr, raw, nil
 }
 
 func (builder *eventDataBuilder) readFromJson(payload *payload) {
@@ -103,7 +103,7 @@ func (builder *eventDataBuilder) PartialBuildFromRequest(config bot.ClientConfig
 		return nil, false, nil
 	}
 	builder.secret = []byte(config.GetSecret())
-	pl, err := builder.readPayload(r)
+	pl, raw, err := builder.readPayload(r)
 	if err != nil {
 		return nil, false, err
 	}
@@ -114,7 +114,7 @@ func (builder *eventDataBuilder) PartialBuildFromRequest(config bot.ClientConfig
 	}
 	repo := pl.Repository.Name
 	owner := pl.Repository.Owner.Login
-	builder.data = &eventData{owner: owner, repo: repo}
+	builder.data = &eventData{owner: owner, repo: repo, payload: raw}
 	builder.readFromJson(pl)
 	return builder.data, builder.checkProcessState(), nil
 }
@@ -126,6 +126,26 @@ func (builder *eventDataBuilder) BuildFromRequest(config bot.ClientConfig, r *ht
 	}
 	repo := builder.data.repo
 	owner := builder.data.owner
+	builder.client = newClient(config, owner, repo)
+	builder.data.client = builder.client
+	builder.readFromClient()
+	return builder.data, builder.checkProcessState(), nil
+}
+
+func (builder *eventDataBuilder) BuildFromPayload(config bot.ClientConfig, raw []byte) (bot.EventData, bool, error) {
+	var pl payload
+	if e := json.Unmarshal(raw, &pl); e != nil {
+		return nil, false, e
+	}
+	if pl.Number == 0 {
+		util.Logger.Warning("Payload appear to have issue id 0")
+		util.Logger.Debug("Faulty payload %+v", pl)
+		return nil, false, fmt.Errorf("Payload appear to have issue id 0")
+	}
+	repo := pl.Repository.Name
+	owner := pl.Repository.Owner.Login
+	builder.data = &eventData{owner: owner, repo: repo, payload: raw}
+	builder.readFromJson(&pl)
 	builder.client = newClient(config, owner, repo)
 	builder.data.client = builder.client
 	builder.readFromClient()

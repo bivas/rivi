@@ -63,7 +63,7 @@ func (b *bot) processRules(
 	result := &HandledEventResult{
 		AppliedRules: []string{},
 	}
-	data, ok := completeBuildFromRequest(configuration.GetClientConfig(), r)
+	data, ok := completeBuild(configuration.GetClientConfig(), r, partial)
 	if !ok {
 		util.Logger.Debug("Skipping rule processing for %s (couldn't build complete data)", id)
 		return result

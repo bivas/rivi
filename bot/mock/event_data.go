@@ -22,6 +22,11 @@ type MockEventData struct {
 	ChangedFiles     int
 	ChangesAdd       int
 	ChangesRemove    int
+	RawPayload       []byte
+}
+
+func (m *MockEventData) GetRawPayload() []byte {
+	return m.RawPayload
 }
 
 func (m *MockEventData) GetNumber() int {

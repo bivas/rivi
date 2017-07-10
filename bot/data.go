@@ -1,9 +1,10 @@
 package bot
 
 import (
-	"github.com/bivas/rivi/util"
 	"net/http"
 	"strings"
+
+	"github.com/bivas/rivi/util"
 )
 
 type Comment struct {
@@ -33,11 +34,13 @@ type EventData interface {
 	GetChangedFiles() int
 	GetFileExtensions() []string
 	GetChanges() (int, int)
+	GetRawPayload() []byte
 }
 
 type EventDataBuilder interface {
 	PartialBuildFromRequest(config ClientConfig, r *http.Request) (EventData, bool, error)
 	BuildFromRequest(config ClientConfig, r *http.Request) (EventData, bool, error)
+	BuildFromPayload(config ClientConfig, payload []byte) (EventData, bool, error)
 }
 
 var builders map[string]EventDataBuilder = make(map[string]EventDataBuilder)
@@ -98,6 +101,31 @@ func completeBuildFromRequest(config ClientConfig, r *http.Request) (EventData, 
 	result, process, err := builder.BuildFromRequest(config, r)
 	if err != nil {
 		util.Logger.Error("Unable to build from request. %s", err)
+		return nil, false
+	}
+	return result, process
+}
+
+func completeBuild(config ClientConfig, r *http.Request, data EventData) (EventData, bool) {
+	var builder EventDataBuilder
+	for name := range r.Header {
+		for provider := range builders {
+			if strings.Contains(strings.ToLower(name), provider) {
+				builder = builders[provider]
+				break
+			}
+		}
+		if builder != nil {
+			break
+		}
+	}
+	if builder == nil {
+		util.Logger.Error("No Builder to work with!")
+		return nil, false
+	}
+	result, process, err := builder.BuildFromPayload(config, data.GetRawPayload())
+	if err != nil {
+		util.Logger.Error("Unable to build from payload. %s", err)
 		return nil, false
 	}
 	return result, process
