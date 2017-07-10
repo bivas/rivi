@@ -11,6 +11,8 @@ import (
 	"net/http"
 	"path/filepath"
 
+	"strings"
+
 	"github.com/bivas/rivi/bot"
 	"github.com/bivas/rivi/util"
 )
@@ -63,7 +65,7 @@ func (builder *eventDataBuilder) readFromJson(payload *payload) {
 	builder.data.additions = payload.PullRequest.Additions
 	builder.data.deletions = payload.PullRequest.Deletions
 	builder.data.ref = payload.PullRequest.Base.Ref
-	builder.data.origin = payload.PullRequest.User.Login
+	builder.data.origin = strings.ToLower(payload.PullRequest.User.Login)
 	builder.data.state = payload.PullRequest.State
 }
 

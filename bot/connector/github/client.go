@@ -2,6 +2,8 @@ package github
 
 import (
 	"context"
+	"strings"
+
 	"github.com/bivas/rivi/bot"
 	"github.com/bivas/rivi/util"
 	"github.com/google/go-github/github"
@@ -69,12 +71,12 @@ func (c *ghClient) RemoveLabel(issue int, label string) []string {
 func (c *ghClient) GetAssignees(issue int) []string {
 	util.Logger.Debug("Getting assignees for issue %d", issue)
 	result := make([]string, 0)
-	users, _, err := c.client.Issues.ListAssignees(context.Background(), c.owner, c.repo, nil)
+	issueObject, _, err := c.client.Issues.Get(context.Background(), c.owner, c.repo, issue)
 	if err != nil {
 		util.Logger.Error("Unable to get assignees for issue %d. %s", issue, err)
 	} else {
-		for _, p := range users {
-			result = append(result, *p.Login)
+		for _, p := range issueObject.Assignees {
+			result = append(result, strings.ToLower(*p.Login))
 		}
 	}
 	return result
