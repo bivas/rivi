@@ -64,6 +64,7 @@ func (builder *eventDataBuilder) readFromJson(payload *payload) {
 	builder.data.deletions = payload.PullRequest.Deletions
 	builder.data.ref = payload.PullRequest.Base.Ref
 	builder.data.origin = payload.PullRequest.User.Login
+	builder.data.state = payload.PullRequest.State
 }
 
 func (builder *eventDataBuilder) readFromClient() {
@@ -144,10 +145,9 @@ func (builder *eventDataBuilder) BuildFromPayload(config bot.ClientConfig, raw [
 	}
 	repo := pl.Repository.Name
 	owner := pl.Repository.Owner.Login
-	builder.data = &eventData{owner: owner, repo: repo, payload: raw}
-	builder.readFromJson(&pl)
 	builder.client = newClient(config, owner, repo)
-	builder.data.client = builder.client
+	builder.data = &eventData{owner: owner, repo: repo, payload: raw, client: builder.client}
+	builder.readFromJson(&pl)
 	builder.readFromClient()
 	return builder.data, builder.checkProcessState(), nil
 }
