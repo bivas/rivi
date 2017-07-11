@@ -8,8 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"sort"
-
 	"github.com/bivas/rivi/util"
 	"github.com/patrickmn/go-cache"
 )
@@ -56,45 +54,6 @@ func (b *bot) getIssueLock(namespaceLock *sync.Mutex, data EventData) *sync.Mute
 	util.Logger.Debug("acquire repo issue %s lock during rules process", id)
 	issueLocker.(*sync.Mutex).Lock()
 	return issueLocker.(*sync.Mutex)
-}
-
-type rulesGroup struct {
-	key   int
-	rules []Rule
-}
-
-type rulesGroups []rulesGroup
-
-func (r rulesGroups) Len() int {
-	return len(r)
-}
-
-func (r rulesGroups) Less(i, j int) bool {
-	return r[i].key < r[j].key
-}
-
-func (r rulesGroups) Swap(i, j int) {
-	r[i], r[j] = r[j], r[i]
-}
-
-func groupByRuleOrder(rules []Rule) []rulesGroup {
-	groupIndexes := make(map[int]rulesGroup)
-	for _, rule := range rules {
-		key := rule.Order()
-		rules, exists := groupIndexes[key]
-		if !exists {
-			rules = rulesGroup{key, make([]Rule, 0)}
-		}
-		rules.rules = append(rules.rules, rule)
-		groupIndexes[key] = rules
-	}
-	util.Logger.Debug("%d Rules are grouped to %d rule groups", len(rules), len(groupIndexes))
-	groupResult := make([]rulesGroup, 0)
-	for _, group := range groupIndexes {
-		groupResult = append(groupResult, group)
-	}
-	sort.Sort(rulesGroups(groupResult))
-	return groupResult
 }
 
 func (b *bot) processRules(namespaceLock *sync.Mutex, config Configuration, partial EventData, r *http.Request) *HandledEventResult {
