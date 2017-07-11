@@ -28,9 +28,9 @@ after_success:
     export DOCKER_TAG="$TRAVIS_TAG";
     fi
   - if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-      docker build --tag bivas/rivi:$DOCKER_TAG --label "rivi.hash=$TRAVIS_COMMIT" .
-      docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
-      docker push bivas/rivi:$DOCKER_TAG
+    docker build --tag bivas/rivi:$DOCKER_TAG --label "rivi.hash=$TRAVIS_COMMIT" . ;
+    docker login -u="$DOCKER_USER" -p="$DOCKER_PASS";
+    docker push bivas/rivi:$DOCKER_TAG ;
     fi
   - echo "Done"
 before_deploy:
