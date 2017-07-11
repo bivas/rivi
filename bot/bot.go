@@ -8,6 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"sort"
+
 	"github.com/bivas/rivi/util"
 	"github.com/patrickmn/go-cache"
 )
@@ -42,12 +44,9 @@ func (b *bot) getCurrentConfiguration(namespace string) (Configuration, error) {
 	return configuration, nil
 }
 
-func (b *bot) processRules(
-	namespaceLock *sync.Mutex,
-	configuration Configuration,
-	partial EventData,
-	r *http.Request) *HandledEventResult {
-	id := fmt.Sprintf("%s/%s#%d", partial.GetOwner(), partial.GetRepo(), partial.GetNumber())
+func (b *bot) getIssueLock(namespaceLock *sync.Mutex, data EventData) *sync.Mutex {
+	defer namespaceLock.Unlock()
+	id := fmt.Sprintf("%s/%s#%d", data.GetOwner(), data.GetRepo(), data.GetNumber())
 	util.Logger.Debug("acquire namespace lock during rules process")
 	issueLocker, exists := b.repoIssueMutexes.Get(id)
 	if !exists {
@@ -56,29 +55,76 @@ func (b *bot) processRules(
 	}
 	util.Logger.Debug("acquire repo issue %s lock during rules process", id)
 	issueLocker.(*sync.Mutex).Lock()
-	defer issueLocker.(*sync.Mutex).Unlock()
-	util.Logger.Debug("release namespace lock during rules process")
-	namespaceLock.Unlock()
+	return issueLocker.(*sync.Mutex)
+}
+
+type rulesGroup struct {
+	key   int
+	rules []Rule
+}
+
+type rulesGroups []rulesGroup
+
+func (r rulesGroups) Len() int {
+	return len(r)
+}
+
+func (r rulesGroups) Less(i, j int) bool {
+	return r[i].key < r[j].key
+}
+
+func (r rulesGroups) Swap(i, j int) {
+	r[i], r[j] = r[j], r[i]
+}
+
+func groupByRuleOrder(rules []Rule) []rulesGroup {
+	groupIndexes := make(map[int]rulesGroup)
+	for _, rule := range rules {
+		key := rule.Order()
+		rules, exists := groupIndexes[key]
+		if !exists {
+			rules = rulesGroup{key, make([]Rule, 0)}
+		}
+		rules.rules = append(rules.rules, rule)
+		groupIndexes[key] = rules
+	}
+	util.Logger.Debug("%d Rules are grouped to %d rule groups", len(rules), len(groupIndexes))
+	groupResult := make([]rulesGroup, 0)
+	for _, group := range groupIndexes {
+		groupResult = append(groupResult, group)
+	}
+	sort.Sort(rulesGroups(groupResult))
+	return groupResult
+}
+
+func (b *bot) processRules(namespaceLock *sync.Mutex, config Configuration, partial EventData, r *http.Request) *HandledEventResult {
+	rules := groupByRuleOrder(config.GetRules())
+	issueLocker := b.getIssueLock(namespaceLock, partial)
+	defer issueLocker.Unlock()
+
 	applied := make([]Rule, 0)
 	result := &HandledEventResult{
 		AppliedRules: []string{},
 	}
-	data, ok := completeBuild(configuration.GetClientConfig(), r, partial)
+	data, ok := completeBuild(config.GetClientConfig(), r, partial)
 	if !ok {
-		util.Logger.Debug("Skipping rule processing for %s (couldn't build complete data)", id)
+		util.Logger.Debug("Skipping rule processing for %d (couldn't build complete data)", partial.GetNumber())
 		return result
 	}
-	for _, rule := range configuration.GetRules() {
-		if rule.Accept(data) {
-			util.Logger.Debug("Accepting rule %s for '%s'", rule.Name(), data.GetTitle())
-			applied = append(applied, rule)
-			result.AppliedRules = append(result.AppliedRules, rule.Name())
+	for _, group := range rules {
+		util.Logger.Debug("Processing rule group of %d order with %d rules", group.key, len(group.rules))
+		for _, rule := range group.rules {
+			if rule.Accept(data) {
+				util.Logger.Debug("Accepting rule %s for '%s'", rule.Name(), data.GetTitle())
+				applied = append(applied, rule)
+				result.AppliedRules = append(result.AppliedRules, rule.Name())
+			}
 		}
-	}
-	for _, rule := range applied {
-		util.Logger.Debug("Applying rule %s for '%s'", rule.Name(), data.GetTitle())
-		for _, action := range rule.Actions() {
-			action.Apply(configuration, data)
+		for _, rule := range applied {
+			util.Logger.Debug("Applying rule %s for '%s'", rule.Name(), data.GetTitle())
+			for _, action := range rule.Actions() {
+				action.Apply(config, data)
+			}
 		}
 	}
 	return result
@@ -93,7 +139,7 @@ func (b *bot) HandleEvent(r *http.Request) *HandledEventResult {
 		locker = &sync.Mutex{}
 		b.namespaceMutexes.Set(namespace, locker, cache.DefaultExpiration)
 	}
-	util.Logger.Debug("acquire namespace %s lock", namespace)
+	util.Logger.Debug("acquire namespace '%s' lock", namespace)
 	locker.(*sync.Mutex).Lock()
 	util.Logger.Debug("release global lock during namespace process")
 	b.globalLocker.Unlock()
