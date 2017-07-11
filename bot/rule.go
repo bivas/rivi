@@ -87,20 +87,20 @@ func groupByRuleOrder(rules []Rule) []rulesGroup {
 	groupIndexes := make(map[int]rulesGroup)
 	for _, rule := range rules {
 		key := rule.Order()
-		rules, exists := groupIndexes[key]
+		group, exists := groupIndexes[key]
 		if !exists {
-			rules = rulesGroup{key, make([]Rule, 0)}
+			group = rulesGroup{key, make([]Rule, 0)}
 		}
-		rules.rules = append(rules.rules, rule)
-		groupIndexes[key] = rules
+		group.rules = append(group.rules, rule)
+		groupIndexes[key] = group
 	}
 	util.Logger.Debug("%d Rules are grouped to %d rule groups", len(rules), len(groupIndexes))
-	groupResult := make([]rulesGroup, 0)
+	groupsResult := make([]rulesGroup, 0)
 	for _, group := range groupIndexes {
-		groupResult = append(groupResult, group)
+		groupsResult = append(groupsResult, group)
 	}
-	sort.Sort(rulesGroups(groupResult))
-	return groupResult
+	sort.Sort(rulesGroups(groupsResult))
+	return groupsResult
 }
 
 type ActionFactory interface {
