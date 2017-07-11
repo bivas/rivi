@@ -32,6 +32,7 @@ after_success:
       docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
       docker push bivas/rivi:$DOCKER_TAG
     fi
+  - echo "Done"
 before_deploy:
 - GOOS=linux  GOARCH=amd64 go build -o rivi-${VERSION}-linux-amd64
 - GOOS=darwin GOARCH=amd64 go build -o rivi-${VERSION}-darwin-amd64
