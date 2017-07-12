@@ -62,7 +62,11 @@ func (builder *eventDataBuilder) readPayload(context *builderContext, r *http.Re
 }
 
 func (builder *eventDataBuilder) readFromJson(context *builderContext, payload *payload) {
-	context.data.number = payload.Number
+	if payload.PullRequest.Number > 0 {
+		context.data.number = payload.PullRequest.Number
+	} else {
+		context.data.number = payload.Number
+	}
 	context.data.title = payload.PullRequest.Title
 	context.data.changedFiles = payload.PullRequest.ChangedFiles
 	context.data.additions = payload.PullRequest.Additions
