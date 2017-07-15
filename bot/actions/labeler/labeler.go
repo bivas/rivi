@@ -17,10 +17,20 @@ func (a *action) String() string {
 
 func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 	apply := a.rule.Label
-	if meta.HasLabel(apply) {
-		util.Logger.Debug("Skipping label '%s' as it already exists", apply)
-	} else {
-		meta.AddLabel(apply)
+	if apply != "" {
+		if meta.HasLabel(apply) {
+			util.Logger.Debug("Skipping label '%s' as it already exists", apply)
+		} else {
+			meta.AddLabel(apply)
+		}
+	}
+	remove := a.rule.Remove
+	if remove != "" {
+		if !meta.HasLabel(remove) {
+			util.Logger.Debug("Skipping label '%s' removal as it does not exists", remove)
+		} else {
+			meta.RemoveLabel(remove)
+		}
 	}
 }
 

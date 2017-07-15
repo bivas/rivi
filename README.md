@@ -160,7 +160,7 @@ The entire `condition` section is optional - you can run all rules all the time 
 - [`autoassign`](bot/actions/autoassign/autoassign.md) - Automatic assignment of issue reviewers
 - [`automerge`](bot/actions/automerge/automerge.md) - Automatic merge for approved pull requests
 - [`commenter`](bot/actions/commenter/commenter.md) - Add comment to an issue
-- [`labeler`](bot/actions/labeler/labeler.md) - Add label to an issue
+- [`labeler`](bot/actions/labeler/labeler.md) - Add/Remove label to/from an issue
 - [`sizing`](bot/actions/sizing/sizing.md) - Size a pull request
 - [`trigger`](bot/actions/trigger/trigger.md) - Send HTTP triggers
 - [`slack`](bot/actions/slack/slack.md) - Send Slack messages

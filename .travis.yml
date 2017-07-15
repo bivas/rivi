@@ -27,9 +27,12 @@ after_success:
   - if [ "$TRAVIS_TAG" != "" ]; then
     export DOCKER_TAG="$TRAVIS_TAG";
     fi
-  - docker build --tag bivas/rivi:$DOCKER_TAG .
-  - docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
-  - docker push bivas/rivi:$DOCKER_TAG
+  - if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+    docker build --tag bivas/rivi:$DOCKER_TAG --label "rivi.hash=$TRAVIS_COMMIT" . ;
+    docker login -u="$DOCKER_USER" -p="$DOCKER_PASS";
+    docker push bivas/rivi:$DOCKER_TAG ;
+    fi
+  - echo "Done"
 before_deploy:
 - GOOS=linux  GOARCH=amd64 go build -o rivi-${VERSION}-linux-amd64
 - GOOS=darwin GOARCH=amd64 go build -o rivi-${VERSION}-darwin-amd64

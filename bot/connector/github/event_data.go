@@ -19,6 +19,11 @@ type eventData struct {
 	labels       []string
 	assignees    []string
 	comments     []bot.Comment
+	payload      []byte
+}
+
+func (d *eventData) GetRawPayload() []byte {
+	return d.payload
 }
 
 func (d *eventData) Merge(mergeMethod string) {

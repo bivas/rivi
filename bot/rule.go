@@ -2,9 +2,11 @@ package bot
 
 import (
 	"fmt"
+	"sort"
+	"strings"
+
 	"github.com/bivas/rivi/util"
 	"github.com/spf13/viper"
-	"strings"
 )
 
 type Action interface {
@@ -70,6 +72,45 @@ func (r *rule) Accept(meta EventData) bool {
 
 func (r *rule) Actions() []Action {
 	return r.actions
+}
+
+type rulesGroup struct {
+	key   int
+	rules []Rule
+}
+
+type rulesGroups []rulesGroup
+
+func (r rulesGroups) Len() int {
+	return len(r)
+}
+
+func (r rulesGroups) Less(i, j int) bool {
+	return r[i].key < r[j].key
+}
+
+func (r rulesGroups) Swap(i, j int) {
+	r[i], r[j] = r[j], r[i]
+}
+
+func groupByRuleOrder(rules []Rule) []rulesGroup {
+	groupIndexes := make(map[int]rulesGroup)
+	for _, rule := range rules {
+		key := rule.Order()
+		group, exists := groupIndexes[key]
+		if !exists {
+			group = rulesGroup{key, make([]Rule, 0)}
+		}
+		group.rules = append(group.rules, rule)
+		groupIndexes[key] = group
+	}
+	util.Logger.Debug("%d Rules are grouped to %d rule groups", len(rules), len(groupIndexes))
+	groupsResult := make([]rulesGroup, 0)
+	for _, group := range groupIndexes {
+		groupsResult = append(groupsResult, group)
+	}
+	sort.Sort(rulesGroups(groupsResult))
+	return groupsResult
 }
 
 type ActionFactory interface {

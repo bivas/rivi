@@ -59,12 +59,9 @@ func (b *bot) getCurrentConfiguration(namespace string) (Configuration, error) {
 	return configuration, nil
 }
 
-func (b *bot) processRules(
-	namespaceLock *sync.Mutex,
-	configuration Configuration,
-	partial EventData,
-	r *http.Request) *HandledEventResult {
-	id := fmt.Sprintf("%s/%s#%d", partial.GetOwner(), partial.GetRepo(), partial.GetNumber())
+func (b *bot) getIssueLock(namespaceLock *sync.Mutex, data EventData) *sync.Mutex {
+	defer namespaceLock.Unlock()
+	id := fmt.Sprintf("%s/%s#%d", data.GetOwner(), data.GetRepo(), data.GetNumber())
 	util.Logger.Debug("acquire namespace lock during rules process")
 	issueLocker, exists := b.repoIssueMutexes.Get(id)
 	if !exists {
@@ -73,29 +70,37 @@ func (b *bot) processRules(
 	}
 	util.Logger.Debug("acquire repo issue %s lock during rules process", id)
 	issueLocker.(*sync.Mutex).Lock()
-	defer issueLocker.(*sync.Mutex).Unlock()
-	util.Logger.Debug("release namespace lock during rules process")
-	namespaceLock.Unlock()
+	return issueLocker.(*sync.Mutex)
+}
+
+func (b *bot) processRules(namespaceLock *sync.Mutex, config Configuration, partial EventData, r *http.Request) *HandledEventResult {
+	rules := groupByRuleOrder(config.GetRules())
+	issueLocker := b.getIssueLock(namespaceLock, partial)
+	defer issueLocker.Unlock()
+
 	applied := make([]Rule, 0)
 	result := &HandledEventResult{
 		AppliedRules: []string{},
 	}
-	data, ok := completeBuildFromRequest(configuration.GetClientConfig(), r)
+	data, ok := completeBuild(config.GetClientConfig(), r, partial)
 	if !ok {
-		util.Logger.Debug("Skipping rule processing for %s (couldn't build complete data)", id)
+		util.Logger.Debug("Skipping rule processing for %d (couldn't build complete data)", partial.GetNumber())
 		return result
 	}
-	for _, rule := range configuration.GetRules() {
-		if rule.Accept(data) {
-			util.Logger.Debug("Accepting rule %s for '%s'", rule.Name(), data.GetTitle())
-			applied = append(applied, rule)
-			result.AppliedRules = append(result.AppliedRules, rule.Name())
+	for _, group := range rules {
+		util.Logger.Debug("Processing rule group of %d order with %d rules", group.key, len(group.rules))
+		for _, rule := range group.rules {
+			if rule.Accept(data) {
+				util.Logger.Debug("Accepting rule %s for '%s'", rule.Name(), data.GetTitle())
+				applied = append(applied, rule)
+				result.AppliedRules = append(result.AppliedRules, rule.Name())
+			}
 		}
-	}
-	for _, rule := range applied {
-		util.Logger.Debug("Applying rule %s for '%s'", rule.Name(), data.GetTitle())
-		for _, action := range rule.Actions() {
-			action.Apply(configuration, data)
+		for _, rule := range applied {
+			util.Logger.Debug("Applying rule %s for '%s'", rule.Name(), data.GetTitle())
+			for _, action := range rule.Actions() {
+				action.Apply(config, data)
+			}
 		}
 	}
 	return result
@@ -110,7 +115,7 @@ func (b *bot) HandleEvent(r *http.Request) *HandledEventResult {
 		locker = &sync.Mutex{}
 		b.namespaceMutexes.Set(namespace, locker, cache.DefaultExpiration)
 	}
-	util.Logger.Debug("acquire namespace %s lock", namespace)
+	util.Logger.Debug("acquire namespace '%s' lock", namespace)
 	locker.(*sync.Mutex).Lock()
 	util.Logger.Debug("release global lock during namespace process")
 	b.globalLocker.Unlock()
