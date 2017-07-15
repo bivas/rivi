@@ -6,6 +6,7 @@ type eventData struct {
 	client       *ghClient
 	number       int
 	state        string
+	locked       bool
 	origin       string
 	owner        string
 	repo         string
@@ -20,6 +21,20 @@ type eventData struct {
 	assignees    []string
 	comments     []bot.Comment
 	payload      []byte
+}
+
+func (d *eventData) Lock() {
+	d.client.Lock(d.number)
+	d.locked = true
+}
+
+func (d *eventData) Unlock() {
+	d.client.Unlock(d.number)
+	d.locked = false
+}
+
+func (d *eventData) LockState() bool {
+	return d.locked
 }
 
 func (d *eventData) GetRawPayload() []byte {
