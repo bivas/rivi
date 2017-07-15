@@ -25,7 +25,7 @@ type bot struct {
 	defaultNamespace string
 	configurations   map[string]Configuration
 
-	cacheLocker      *sync.Mutex
+	globalLocker     *sync.Mutex
 	namespaceMutexes *cache.Cache
 	repoIssueMutexes *cache.Cache
 }
@@ -42,35 +42,48 @@ func (b *bot) getCurrentConfiguration(namespace string) (Configuration, error) {
 	return configuration, nil
 }
 
-func (b *bot) processRules(configuration Configuration, data EventData) *HandledEventResult {
+func (b *bot) getIssueLock(namespaceLock *sync.Mutex, data EventData) *sync.Mutex {
+	defer namespaceLock.Unlock()
 	id := fmt.Sprintf("%s/%s#%d", data.GetOwner(), data.GetRepo(), data.GetNumber())
-	util.Logger.Debug("acquire global lock during rules process")
-	b.cacheLocker.Lock()
-	locker, exists := b.repoIssueMutexes.Get(id)
+	util.Logger.Debug("acquire namespace lock during rules process")
+	issueLocker, exists := b.repoIssueMutexes.Get(id)
 	if !exists {
-		locker = &sync.Mutex{}
-		b.repoIssueMutexes.Set(id, locker, cache.DefaultExpiration)
+		issueLocker = &sync.Mutex{}
+		b.repoIssueMutexes.Set(id, issueLocker, cache.DefaultExpiration)
 	}
 	util.Logger.Debug("acquire repo issue %s lock during rules process", id)
-	locker.(*sync.Mutex).Lock()
-	defer locker.(*sync.Mutex).Unlock()
-	util.Logger.Debug("release global lock during rules process")
-	b.cacheLocker.Unlock()
+	issueLocker.(*sync.Mutex).Lock()
+	return issueLocker.(*sync.Mutex)
+}
+
+func (b *bot) processRules(namespaceLock *sync.Mutex, config Configuration, partial EventData, r *http.Request) *HandledEventResult {
+	rules := groupByRuleOrder(config.GetRules())
+	issueLocker := b.getIssueLock(namespaceLock, partial)
+	defer issueLocker.Unlock()
+
 	applied := make([]Rule, 0)
 	result := &HandledEventResult{
 		AppliedRules: []string{},
 	}
-	for _, rule := range configuration.GetRules() {
-		if rule.Accept(data) {
-			util.Logger.Debug("Accepting rule %s for '%s'", rule.Name(), data.GetTitle())
-			applied = append(applied, rule)
-			result.AppliedRules = append(result.AppliedRules, rule.Name())
-		}
+	data, ok := completeBuild(config.GetClientConfig(), r, partial)
+	if !ok {
+		util.Logger.Debug("Skipping rule processing for %d (couldn't build complete data)", partial.GetNumber())
+		return result
 	}
-	for _, rule := range applied {
-		util.Logger.Debug("Applying rule %s for '%s'", rule.Name(), data.GetTitle())
-		for _, action := range rule.Actions() {
-			action.Apply(configuration, data)
+	for _, group := range rules {
+		util.Logger.Debug("Processing rule group of %d order with %d rules", group.key, len(group.rules))
+		for _, rule := range group.rules {
+			if rule.Accept(data) {
+				util.Logger.Debug("Accepting rule %s for '%s'", rule.Name(), data.GetTitle())
+				applied = append(applied, rule)
+				result.AppliedRules = append(result.AppliedRules, rule.Name())
+			}
+		}
+		for _, rule := range applied {
+			util.Logger.Debug("Applying rule %s for '%s'", rule.Name(), data.GetTitle())
+			for _, action := range rule.Actions() {
+				action.Apply(config, data)
+			}
 		}
 	}
 	return result
@@ -78,17 +91,17 @@ func (b *bot) processRules(configuration Configuration, data EventData) *Handled
 
 func (b *bot) HandleEvent(r *http.Request) *HandledEventResult {
 	namespace := r.URL.Query().Get("namespace")
-	b.cacheLocker.Lock()
+	b.globalLocker.Lock()
 	util.Logger.Debug("acquire global lock during namespace process")
 	locker, exists := b.namespaceMutexes.Get(namespace)
 	if !exists {
 		locker = &sync.Mutex{}
 		b.namespaceMutexes.Set(namespace, locker, cache.DefaultExpiration)
 	}
-	util.Logger.Debug("acquire namespace %s lock", namespace)
+	util.Logger.Debug("acquire namespace '%s' lock", namespace)
 	locker.(*sync.Mutex).Lock()
 	util.Logger.Debug("release global lock during namespace process")
-	b.cacheLocker.Unlock()
+	b.globalLocker.Unlock()
 	workingConfiguration, err := b.getCurrentConfiguration(namespace)
 	if err != nil {
 		locker.(*sync.Mutex).Unlock()
@@ -100,14 +113,13 @@ func (b *bot) HandleEvent(r *http.Request) *HandledEventResult {
 		return &HandledEventResult{Message: "Skipping rules processing (could be not supported event type)"}
 	}
 	util.Logger.Debug("release namespace %s lock", namespace)
-	locker.(*sync.Mutex).Unlock()
-	return b.processRules(workingConfiguration, data)
+	return b.processRules(locker.(*sync.Mutex), workingConfiguration, data, r)
 }
 
 func New(configPaths ...string) (Bot, error) {
 	b := &bot{
 		configurations:   make(map[string]Configuration),
-		cacheLocker:      &sync.Mutex{},
+		globalLocker:     &sync.Mutex{},
 		namespaceMutexes: cache.New(time.Minute, 30*time.Second),
 		repoIssueMutexes: cache.New(time.Minute, 20*time.Second),
 	}

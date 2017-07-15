@@ -23,6 +23,10 @@ type MockConfiguration struct {
 	RoleMembers      map[string][]string
 }
 
+func (m *MockConfiguration) GetActionConfig(kind string) (bot.ActionConfig, error) {
+	panic("implement me")
+}
+
 func (m *MockConfiguration) GetClientConfig() bot.ClientConfig {
 	return m.MockClientConfig
 }

@@ -11,6 +11,8 @@ import (
 	"net/http"
 	"path/filepath"
 
+	"strings"
+
 	"github.com/bivas/rivi/bot"
 	"github.com/bivas/rivi/util"
 )
@@ -23,75 +25,78 @@ var (
 		"pull_request_review_comment"}
 )
 
-type eventDataBuilder struct {
+type builderContext struct {
 	secret []byte
 	client *ghClient
 	data   *eventData
 }
 
-func (builder *eventDataBuilder) validate(payload []byte, request *http.Request) bool {
-	if len(builder.secret) == 0 {
+type eventDataBuilder struct {
+}
+
+func (builder *eventDataBuilder) validate(context *builderContext, payload []byte, request *http.Request) bool {
+	if len(context.secret) == 0 {
 		return true
 	}
-	h := hmac.New(sha1.New, builder.secret)
+	h := hmac.New(sha1.New, context.secret)
 	h.Write(payload)
 	result := fmt.Sprintf("sha1=%s", hex.EncodeToString(h.Sum(nil)))
 	return request.Header.Get("X-Hub-Signature") == result
 }
 
-func (builder *eventDataBuilder) readPayload(r *http.Request) (*payload, error) {
+func (builder *eventDataBuilder) readPayload(context *builderContext, r *http.Request) (*payload, []byte, error) {
 	body := r.Body
 	defer body.Close()
 	raw, err := ioutil.ReadAll(io.LimitReader(body, r.ContentLength))
 	if err != nil {
-		return nil, err
+		return nil, raw, err
 	}
-	if !builder.validate(raw, r) {
-		return nil, fmt.Errorf("Payload could not be validated")
+	if !builder.validate(context, raw, r) {
+		return nil, raw, fmt.Errorf("Payload could not be validated")
 	}
 	var pr payload
 	if e := json.Unmarshal(raw, &pr); e != nil {
-		return nil, e
+		return nil, raw, e
 	}
-	return &pr, nil
+	return &pr, raw, nil
 }
 
-func (builder *eventDataBuilder) readFromJson(payload *payload) {
-	builder.data.number = payload.Number
-	builder.data.title = payload.PullRequest.Title
-	builder.data.changedFiles = payload.PullRequest.ChangedFiles
-	builder.data.additions = payload.PullRequest.Additions
-	builder.data.deletions = payload.PullRequest.Deletions
-	builder.data.ref = payload.PullRequest.Base.Ref
-	assignees := make([]string, 0)
-	for _, assignee := range payload.PullRequest.Assignees {
-		assignees = append(assignees, assignee.Login)
+func (builder *eventDataBuilder) readFromJson(context *builderContext, payload *payload) {
+	if payload.PullRequest.Number > 0 {
+		context.data.number = payload.PullRequest.Number
+	} else {
+		context.data.number = payload.Number
 	}
-	builder.data.assignees = assignees
-	builder.data.origin = payload.PullRequest.User.Login
-	builder.data.state = payload.PullRequest.State
+	context.data.title = payload.PullRequest.Title
+	context.data.changedFiles = payload.PullRequest.ChangedFiles
+	context.data.additions = payload.PullRequest.Additions
+	context.data.deletions = payload.PullRequest.Deletions
+	context.data.ref = payload.PullRequest.Base.Ref
+	context.data.origin = strings.ToLower(payload.PullRequest.User.Login)
+	context.data.state = payload.PullRequest.State
 }
 
-func (builder *eventDataBuilder) readFromClient() {
-	id := builder.data.number
-	builder.data.state = builder.client.GetState(id)
-	builder.data.labels = builder.client.GetLabels(id)
-	builder.data.comments = builder.client.GetComments(id)
-	fileNames := builder.client.GetFileNames(id)
-	builder.data.fileNames = fileNames
+func (builder *eventDataBuilder) readFromClient(context *builderContext) {
+	id := context.data.number
+	context.data.assignees = context.client.GetAssignees(id)
+	context.data.state = context.client.GetState(id)
+	context.data.labels = context.client.GetLabels(id)
+	context.data.comments = context.client.GetComments(id)
+	fileNames := context.client.GetFileNames(id)
+	context.data.fileNames = fileNames
 	stringSet := util.StringSet{Transformer: filepath.Ext}
-	builder.data.fileExt = stringSet.AddAll(fileNames).Values()
+	context.data.fileExt = stringSet.AddAll(fileNames).Values()
 }
 
-func (builder *eventDataBuilder) checkProcessState() bool {
+func (builder *eventDataBuilder) checkProcessState(context *builderContext) bool {
 	util.Logger.Debug("Current issue [(%d) %s] state is '%s'",
-		builder.data.GetNumber(),
-		builder.data.GetTitle(),
-		builder.data.state)
-	return builder.data.state != "closed"
+		context.data.GetNumber(),
+		context.data.GetTitle(),
+		context.data.state)
+	return context.data.state != "closed"
 }
 
-func (builder *eventDataBuilder) BuildFromRequest(config bot.ClientConfig, r *http.Request) (bot.EventData, bool, error) {
+func (builder *eventDataBuilder) PartialBuildFromRequest(config bot.ClientConfig, r *http.Request) (bot.EventData, bool, error) {
 	githubEvent := r.Header.Get("X-Github-Event")
 	if githubEvent == "ping" {
 		util.Logger.Message("Got GitHub 'ping' event")
@@ -107,8 +112,8 @@ func (builder *eventDataBuilder) BuildFromRequest(config bot.ClientConfig, r *ht
 		util.Logger.Debug("Got GitHub '%s' event", githubEvent)
 		return nil, false, nil
 	}
-	builder.secret = []byte(config.GetSecret())
-	pl, err := builder.readPayload(r)
+	context := &builderContext{secret: []byte(config.GetSecret())}
+	pl, raw, err := builder.readPayload(context, r)
 	if err != nil {
 		return nil, false, err
 	}
@@ -119,15 +124,32 @@ func (builder *eventDataBuilder) BuildFromRequest(config bot.ClientConfig, r *ht
 	}
 	repo := pl.Repository.Name
 	owner := pl.Repository.Owner.Login
-	builder.client = newClient(config, owner, repo)
-	builder.data = &eventData{client: builder.client, owner: owner, repo: repo}
-	builder.readFromJson(pl)
-	builder.readFromClient()
-	return builder.data, builder.checkProcessState(), nil
+	context.data = &eventData{owner: owner, repo: repo, payload: raw}
+	builder.readFromJson(context, pl)
+	return context.data, builder.checkProcessState(context), nil
 }
 
-func (*eventDataBuilder) Build(config bot.ClientConfig, json string) (bot.EventData, error) {
-	panic("implement me")
+func (builder *eventDataBuilder) BuildFromRequest(config bot.ClientConfig, r *http.Request) (bot.EventData, bool, error) {
+	panic("Don't use anymore")
+}
+
+func (builder *eventDataBuilder) BuildFromPayload(config bot.ClientConfig, raw []byte) (bot.EventData, bool, error) {
+	var pl payload
+	if e := json.Unmarshal(raw, &pl); e != nil {
+		return nil, false, e
+	}
+	if pl.Number == 0 {
+		util.Logger.Warning("Payload appear to have issue id 0")
+		util.Logger.Debug("Faulty payload %+v", pl)
+		return nil, false, fmt.Errorf("Payload appear to have issue id 0")
+	}
+	repo := pl.Repository.Name
+	owner := pl.Repository.Owner.Login
+	context := &builderContext{client: newClient(config, owner, repo)}
+	context.data = &eventData{owner: owner, repo: repo, payload: raw, client: context.client}
+	builder.readFromJson(context, &pl)
+	builder.readFromClient(context)
+	return context.data, builder.checkProcessState(context), nil
 }
 
 func init() {

@@ -1,21 +1,26 @@
 package bot
 
 import (
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type mockEventDataBuilder struct {
 	Labels []string
 }
 
+func (m *mockEventDataBuilder) BuildFromPayload(config ClientConfig, payload []byte) (EventData, bool, error) {
+	return &mockConditionEventData{Labels: m.Labels}, true, nil
+}
+
 func (m *mockEventDataBuilder) BuildFromRequest(config ClientConfig, r *http.Request) (EventData, bool, error) {
 	return &mockConditionEventData{Labels: m.Labels}, true, nil
 }
 
-func (*mockEventDataBuilder) Build(config ClientConfig, json string) (EventData, error) {
-	panic("implement me")
+func (m *mockEventDataBuilder) PartialBuildFromRequest(config ClientConfig, r *http.Request) (EventData, bool, error) {
+	return &mockConditionEventData{Labels: m.Labels}, true, nil
 }
 
 func buildRequest(t *testing.T, url string) *http.Request {

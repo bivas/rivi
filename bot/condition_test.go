@@ -1,8 +1,9 @@
 package bot
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type mockConditionEventData struct {
@@ -14,6 +15,11 @@ type mockConditionEventData struct {
 	FileExtensions []string
 	Title          string
 	Ref            string
+	RawPayload     []byte
+}
+
+func (m *mockConditionEventData) GetRawPayload() []byte {
+	return m.RawPayload
 }
 
 func (m *mockConditionEventData) GetRef() string {
