@@ -1,14 +1,19 @@
 package github
 
-import "github.com/bivas/rivi/bot"
+import (
+	"github.com/bivas/rivi/bot"
+	"github.com/bivas/rivi/util"
+)
 
 type eventData struct {
 	client       *ghClient
 	number       int
 	state        string
+	locked       bool
 	origin       string
 	owner        string
 	repo         string
+	ref          string
 	title        string
 	changedFiles int
 	fileNames    []string
@@ -18,6 +23,40 @@ type eventData struct {
 	labels       []string
 	assignees    []string
 	comments     []bot.Comment
+	payload      []byte
+	reviewers    map[string]string
+}
+
+func (d *eventData) GetReviewers() map[string]string {
+	return d.reviewers
+}
+
+func (d *eventData) GetApprovals() []string {
+	result := util.StringSet{}
+	for reviewer, state := range d.reviewers {
+		if state == "approve" {
+			result.Add(reviewer)
+		}
+	}
+	return result.Values()
+}
+
+func (d *eventData) Lock() {
+	d.client.Lock(d.number)
+	d.locked = true
+}
+
+func (d *eventData) Unlock() {
+	d.client.Unlock(d.number)
+	d.locked = false
+}
+
+func (d *eventData) LockState() bool {
+	return d.locked
+}
+
+func (d *eventData) GetRawPayload() []byte {
+	return d.payload
 }
 
 func (d *eventData) Merge(mergeMethod string) {
@@ -96,6 +135,10 @@ func (d *eventData) GetOwner() string {
 
 func (d *eventData) GetRepo() string {
 	return d.repo
+}
+
+func (d *eventData) GetRef() string {
+	return d.ref
 }
 
 func (d *eventData) GetFileNames() []string {

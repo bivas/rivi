@@ -10,10 +10,29 @@ install: true
 script:
 - go list ./... | grep -v vendor | xargs go test -v
 - go list ./... | grep -v vendor | xargs go vet
-- go build
+- GOOS=linux GOARCH=amd64 go build -o rivi
 env:
   global:
   - VERSION=$(echo $TRAVIS_TAG)
+  - secure: L2jJVUBeu6Ki2kNR18QsFngISb+WxVkGFdWrLhNriRFdFBDbcn7SQfpF4RmiddN/r85NLf1v5LyXeQRdo1QwS8Kjzu8zXh7yJ4LnwKviPmGjpKofaPnNc+uxAe2NXyFT483RB4hD7rBDDrLzJdzeg/iKnUcRbEYKaF1HKbM0MO+lXX4galm+CLeGGChOPjXSbtPf+wliJwcq7wOqDnfM2K2OGD9ckq7I0Cj9F6Z6aMLA1GC/UK/0q5ERLKRQO3sLO60Fn4WsxkTOGajkHd1bXp7wkJPoYu+x57orJBQurZ+tTAMFT5AMqaKhMsjq1BOqkgM0XRy1JpSz36DYYr8v5AujXEQsrix9hzJFLHQ2GaPN6zkLxnfY95Y2PrsEMj6HMdsA9uUblg/gG3uDY8fGfnaRDhtDvMOpNZeltnjHT1INDE+icUBpXxPqPp70TUtWqdUzv8Wa9yehMCDgB8oNi8LJO8KPZyZuI1zlZWttfKbXl9tbr7evyWP8bJwbnZWt+FLa4KmlA1bvn693VaU7JarOOzkh2vxlwVXRhB0teFsziY/UvgvLRzlAJU3cuwPFLvN25oR+E1G/IZsXtMhWG//x+gGhdpDSrJ89vmOLIoL9uJ+3AmmmEBpSmFCZZJJlJ9caBSVTompN+4h4LsQaLS2BjQMM8UGrAeg/mn4NLmg=
+  - secure: CTC2IJIrfjwWpL7EGii986sFabzpHzhCXde56JXWFnAFIb0KEXY/WtgAkwJ8GB/3Np4CjEOJ6PJD7QWREVLamNvPCF7fU7ahyBcBW4SCnrljOe9mz9x8QwmleLaQQkZ2ciXY3/PyDDqyAFm/pG3/YmkFt7oDL4sp8eJgjrVzxUCTPd5CiHDv/Ui/vfTXLNCi1CIfZ6Gu6h/J2cc+bpKYjxn3fqao2KUzudshe0e/gcmoUCgfHqfxzkyLQakK6YTq3KwYNPdRyY3A7cyYHGLK1oOhodhnk81H/rfzJxvzXV27R3STSKeqYGPl4Y1Y5PFo6/ryeuGea1Aw0fLXjhrp6yPWaQ5DxeSUx+q2M39Pxwu8DnhPn+PMbDWIaxdiiRkxa3MJrf4jVujnNqlhq3m3y8qhZgMOojyHTeryzYOHb4KwcfEK+ujMaKUZfijjB349dJ26GOvnoGowLOGw1MaWOeufkHl9SmsRTcv1XTBYia6rGUluipReb6Pc4EXJdEJJfErpxTagLVWkG0JanIpg19vHenQAWhkGRz6WUpofxQlmscwvezQZh4jpAYTlFOA+/Pwn9RVhiMPJSF9L6cPxxgol1Z1ZkfQa5ETw7Xsf64i+6obcYETnAaRKbiOyjffnxiUG1BAnFT8X7n3Isiz7OXOWQc6INvYGfO44aO0lqKU=
+after_success:
+  - export DOCKER_TAG="unstable"
+  - if [ "$TRAVIS_BRANCH" == "master" ]; then
+    export DOCKER_TAG="latest"
+    fi
+  - if [ "$TRAVIS_BRANCH" == "development" ]; then
+    export DOCKER_TAG="development";
+    fi
+  - if [ "$TRAVIS_TAG" != "" ]; then
+    export DOCKER_TAG="$TRAVIS_TAG";
+    fi
+  - if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+    docker build --tag bivas/rivi:$DOCKER_TAG --label "rivi.hash=$TRAVIS_COMMIT" . ;
+    docker login -u="$DOCKER_USER" -p="$DOCKER_PASS";
+    docker push bivas/rivi:$DOCKER_TAG ;
+    fi
+  - echo "Done"
 before_deploy:
 - GOOS=linux  GOARCH=amd64 go build -o rivi-${VERSION}-linux-amd64
 - GOOS=darwin GOARCH=amd64 go build -o rivi-${VERSION}-darwin-amd64

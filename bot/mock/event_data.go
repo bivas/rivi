@@ -1,6 +1,9 @@
 package mock
 
-import "github.com/bivas/rivi/bot"
+import (
+	"github.com/bivas/rivi/bot"
+	"github.com/bivas/rivi/util"
+)
 
 type MockEventData struct {
 	Number           int
@@ -8,6 +11,7 @@ type MockEventData struct {
 	State            string
 	Owner            string
 	Repo             string
+	Ref              string
 	Origin           string
 	Assignees        []string
 	AddedAssignees   []string
@@ -21,6 +25,11 @@ type MockEventData struct {
 	ChangedFiles     int
 	ChangesAdd       int
 	ChangesRemove    int
+	RawPayload       []byte
+}
+
+func (m *MockEventData) GetRawPayload() []byte {
+	return m.RawPayload
 }
 
 func (m *MockEventData) GetNumber() int {
@@ -47,6 +56,10 @@ func (m *MockEventData) GetRepo() string {
 	return m.Repo
 }
 
+func (m *MockEventData) GetRef() string {
+	return m.Ref
+}
+
 func (m *MockEventData) GetLabels() []string {
 	return m.Labels
 }
@@ -67,6 +80,9 @@ func (m *MockEventData) AddLabel(label string) {
 
 func (m *MockEventData) RemoveLabel(label string) {
 	m.RemovedLabels = append(m.RemovedLabels, label)
+	set := util.StringSet{}
+	set.AddAll(m.Labels).Remove(label)
+	m.Labels = set.Values()
 }
 
 func (m *MockEventData) GetAssignees() []string {

@@ -5,6 +5,7 @@ import (
 	"github.com/bivas/rivi/util"
 	"github.com/spf13/viper"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -18,11 +19,23 @@ type clientConfig struct {
 }
 
 func (c *clientConfig) GetOAuthToken() string {
+	c.internal.SetEnvPrefix("rivi_config")
+	c.internal.BindEnv("token")
 	return c.internal.GetString("token")
 }
 
 func (c *clientConfig) GetSecret() string {
+	c.internal.SetEnvPrefix("rivi_config")
+	c.internal.BindEnv("secret")
 	return c.internal.GetString("secret")
+}
+
+type ActionConfig interface {
+	Name() string
+}
+
+type ActionConfigBuilder interface {
+	Build(config map[string]interface{}) (ActionConfig, error)
 }
 
 type Configuration interface {
@@ -30,18 +43,40 @@ type Configuration interface {
 	GetRoleMembers(role ...string) []string
 	GetRoles() []string
 	GetRules() []Rule
+	GetActionConfig(kind string) (ActionConfig, error)
 }
 
 var (
-	configSections = []string{"config", "roles", "rules"}
+	configSections       = []string{"config", "roles", "rules"}
+	actionConfigBuilders = make(map[string]ActionConfigBuilder)
 )
 
+func RegisterActionConfigBuilder(name string, builder ActionConfigBuilder) {
+	search := strings.ToLower(name)
+	_, exists := actionConfigBuilders[search]
+	if exists {
+		util.Logger.Error("action config build for %s exists!", name)
+	} else {
+		util.Logger.Debug("registering action config builder %s", name)
+		actionConfigBuilders[search] = builder
+	}
+}
+
 type config struct {
-	internal     map[string]*viper.Viper
-	clientConfig ClientConfig
-	rules        []Rule
-	roles        map[string][]string
-	rolesKeys    []string
+	internal      map[string]*viper.Viper
+	clientConfig  ClientConfig
+	rules         []Rule
+	roles         map[string][]string
+	rolesKeys     []string
+	actionConfigs map[string]ActionConfig
+}
+
+func (c *config) GetActionConfig(kind string) (ActionConfig, error) {
+	config, exists := c.actionConfigs[kind]
+	if !exists {
+		return nil, fmt.Errorf("No such action config %s", kind)
+	}
+	return config, nil
 }
 
 func (c *config) getSection(path string) (string, *viper.Viper) {
@@ -65,7 +100,7 @@ func (c *config) GetRoleMembers(roles ...string) []string {
 			result = append(result, members...)
 		}
 	}
-	set := util.StringSet{}
+	set := util.StringSet{Transformer: strings.ToLower}
 	set.AddAll(result)
 	return set.Values()
 }
@@ -79,7 +114,11 @@ func (c *config) GetRules() []Rule {
 }
 
 func (c *config) readConfigSection() error {
-	c.clientConfig = &clientConfig{c.internal["config"]}
+	internal := c.internal["config"]
+	if internal == nil {
+		internal = viper.New()
+	}
+	c.clientConfig = &clientConfig{internal}
 	return nil
 }
 
@@ -90,6 +129,7 @@ func (c *config) readRolesSection() error {
 	for role := range c.roles {
 		c.rolesKeys = append(c.rolesKeys, role)
 	}
+	util.Logger.Debug("Loaded %d roles", len(c.rolesKeys))
 	return nil
 }
 
@@ -105,18 +145,36 @@ func (c *config) readRulesSection() error {
 		util.Logger.Debug("appending rule %s", r)
 		c.rules = append(c.rules, r)
 	}
+	sort.Sort(rulesByConditionOrder(c.rules))
+	util.Logger.Debug("Loaded %d rules", len(c.rules))
 	return nil
 }
 
 func (c *config) readSections() error {
-	if err := c.readConfigSection(); err != nil {
-		return err
+	sections := []func() error{
+		c.readConfigSection,
+		c.readRolesSection,
+		c.readRulesSection,
 	}
-	if err := c.readRolesSection(); err != nil {
-		return err
+	for _, section := range sections {
+		if err := section(); err != nil {
+			return err
+		}
 	}
-	if err := c.readRulesSection(); err != nil {
-		return err
+	c.actionConfigs = make(map[string]ActionConfig)
+	for kind, builder := range actionConfigBuilders {
+		util.Logger.Debug("Building configuration for %s", kind)
+		actionConfig := c.internal["root"].GetStringMap(kind)
+		if actionConfig == nil || len(actionConfig) == 0 {
+			util.Logger.Warning("No matching section for %s", kind)
+			continue
+		}
+		config, err := builder.Build(actionConfig)
+		if err != nil {
+			util.Logger.Error("Error while building %s config. %s", kind, err)
+			continue
+		}
+		c.actionConfigs[kind] = config
 	}
 	return nil
 }
@@ -133,6 +191,7 @@ func (c *config) readConfiguration(configPath string) error {
 	for _, section := range configSections {
 		sectionInclude := c.internal["root"].GetString(fmt.Sprintf("%s.include", section))
 		if sectionInclude != "" {
+			util.Logger.Debug("Attempt loading %s config from file %s", section, sectionInclude)
 			c.internal[section] = viper.New()
 			c.internal[section].SetConfigFile(filepath.Join(rootConfigFir, sectionInclude))
 			if err := c.internal[section].ReadInConfig(); err != nil {
@@ -146,11 +205,9 @@ func (c *config) readConfiguration(configPath string) error {
 }
 
 func newConfiguration(configPath string) (Configuration, error) {
-
 	c := &config{
 		internal: map[string]*viper.Viper{},
 	}
-
 	if err := c.readConfiguration(configPath); err != nil {
 		return nil, err
 	}

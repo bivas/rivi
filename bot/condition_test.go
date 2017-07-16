@@ -1,25 +1,40 @@
 package bot
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type mockConditionEventData struct {
+	Number         int
+	Owner          string
+	Repo           string
 	Labels         []string
 	FileNames      []string
 	FileExtensions []string
+	Title          string
+	Ref            string
+	RawPayload     []byte
 }
 
-func (*mockConditionEventData) GetNumber() int {
-	panic("implement me")
+func (m *mockConditionEventData) GetRawPayload() []byte {
+	return m.RawPayload
 }
 
-func (*mockConditionEventData) GetTitle() string {
-	panic("implement me")
+func (m *mockConditionEventData) GetRef() string {
+	return m.Ref
 }
 
-func (*mockConditionEventData) GetState() string {
+func (m *mockConditionEventData) GetNumber() int {
+	return m.Number
+}
+
+func (m *mockConditionEventData) GetTitle() string {
+	return m.Title
+}
+
+func (m *mockConditionEventData) GetState() string {
 	panic("implement me")
 }
 
@@ -27,12 +42,12 @@ func (*mockConditionEventData) GetOrigin() string {
 	panic("implement me")
 }
 
-func (*mockConditionEventData) GetOwner() string {
-	panic("implement me")
+func (m *mockConditionEventData) GetOwner() string {
+	return m.Owner
 }
 
-func (*mockConditionEventData) GetRepo() string {
-	panic("implement me")
+func (m *mockConditionEventData) GetRepo() string {
+	return m.Repo
 }
 
 func (m *mockConditionEventData) GetLabels() []string {
@@ -147,10 +162,63 @@ func TestMatchExt(t *testing.T) {
 	meta := &mockConditionEventData{FileExtensions: []string{".scala", ".go"}}
 	matched := false
 	for _, rule := range c.GetRules() {
-		if rule.Name() == "rule2" {
+		if rule.Name() == "rule3" {
 			matched = true
 			assert.True(t, rule.Accept(meta), "extension")
 		}
 	}
 	assert.True(t, matched, "matched")
+}
+
+func TestTitleStartsWith(t *testing.T) {
+	var rule rule
+	rule.condition.Title.StartsWith = "BUGFIX"
+	meta := &mockConditionEventData{Title: "NOT A BUGFIX"}
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	meta.Title = "BUGFIX it"
+	assert.True(t, rule.Accept(meta), "should match")
+}
+
+func TestTitleEndsWith(t *testing.T) {
+	var rule rule
+	rule.condition.Title.EndsWith = "WIP"
+	meta := &mockConditionEventData{Title: "NOT A BUGFIX"}
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	meta.Title = "BUGFIX WIP"
+	assert.True(t, rule.Accept(meta), "should match")
+}
+
+func TestTitlePattern(t *testing.T) {
+	var rule rule
+	rule.condition.Title.Patterns = []string{".* Bug( )?[0-9]{5} .*"}
+	meta := &mockConditionEventData{Title: "NOT A BUGFIX"}
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	meta.Title = "This PR for Bug1 with comment"
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	meta.Title = "This PR for Bug 45456 with comment"
+	assert.True(t, rule.Accept(meta), "should match")
+}
+
+func TestMatchEmptyCondition(t *testing.T) {
+	meta := &mockConditionEventData{}
+	rule := rule{condition: Condition{}}
+	assert.True(t, rule.Accept(meta), "none")
+}
+
+func TestMatchRef(t *testing.T) {
+	var rule rule
+	rule.condition.Ref.Equals = "master"
+	meta := &mockConditionEventData{Ref: "development"}
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	meta.Ref = "master"
+	assert.True(t, rule.Accept(meta), "should match")
+}
+
+func TestRefPatters(t *testing.T) {
+	var rule rule
+	rule.condition.Ref.Patterns = []string{"integration-v[0-9]{2}$"}
+	meta := &mockConditionEventData{Ref: "development"}
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	meta.Ref = "integration-v11"
+	assert.True(t, rule.Accept(meta), "should match")
 }

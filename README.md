@@ -5,10 +5,11 @@
 Automate your review process with Rivi the review bot
 
 ## Usage
+Rivi can be run as a service which listens to incoming repository webhooks. This service must be internet facing to accept incoming requests (e.g. GitHub).
 ```
 Usage of rivi:
   -config string
-    	Bot configuration file
+    	Bot configuration file(s)
   -port int
     	Bot listening port (default 8080)
   -uri string
@@ -16,14 +17,28 @@ Usage of rivi:
 ```
 ### Example
 ```
-$ rivi -port 9000 -config repo-x.yaml
+$ rivi -port 9000 -config repo-x.yaml -config repo-y.yaml
+```
+
+### Docker
+
+It is also possible to run Rivi as Docker container. Rivi's images are published to Docker Hub as `bivas/rivi`.
+
+You should visit [bivas/rivi](https://hub.docker.com/r/bivas/rivi/) Docker Hub page and check for published [tags](https://hub.docker.com/r/bivas/rivi/tags/).
+
+```
+$ docker run --detach \
+             --name rivi \
+             --publish 8080:8080 \
+             --env RIVI_CONFIG_TOKEN=<rivi oath token> \
+             --volume /path/to/config/files:/config \
+             bivas/rivi rivi -config /config/repo-x.yaml
 ```
 
 ## Requirements
 
-- Create a token with `repo` persmissions
+- Create a token with `repo` permissions
 - Create a webhook and make sure the following are configured:
-
 
   - Select **content type** as `application/json`
   - Optionally, set a **secret** (this will be used by the bot to validate webhook content)
@@ -31,6 +46,9 @@ $ rivi -port 9000 -config repo-x.yaml
     - Pull request
     - Pull request review
     - Pull request review comment
+    
+  - If you have started rivi with several configuration files, you can set the hook URL to access each different file by passing `namespace` query param with the file name (without the `yaml` extension)
+  Example: `http://rivi-url/?namespace=repo-x`
 
 # Configuration File Structure
 
@@ -44,9 +62,16 @@ config:
   secret: my-hook-secret-shhhhh 
 ```
 
-- `token` (required) - the client OAuth token the bot will connect with (and assign issues, add comments and lables)
+- `token` (required; unless set by env) - the client OAuth token the bot will connect with (and assign issues, add comments and lables)
 - `provider` (optional) - which client to use for git connection - the bot tries to figure out which client to use automatically (currently only `github` is supported but others are on the way)
 - `secret` (optional) - webhook secret to be used for content validation (recommended)
+
+### Environment Variables
+
+You can set the values for `token` and `secret` via environment variables: 
+`RIVI_CONFIG_TOKEN` and `RIVI_CONFIG_SECRET` respectively.
+
+It is common to configure the bot by injecting environment variables via CI server.
 
 ## Roles Section
 
@@ -93,11 +118,21 @@ rules:
           - label2
         skip-if-labeled:
           - label3
-        filter:
+        files:
           patterns: 
             - "docs/.*"
-          extension: 
+          extensions: 
             - ".go"
+        title:
+          starts-with: "BUGFIX"
+          ends-with: "WIP"
+          patterns:
+            - ".* Bug( )?[0-9]{5} .*"
+        ref:
+          match: "master"
+          patterns:
+            - "integration_v[0-9]{2}$"
+        order: 5
       commenter:
         comment: "We have a match!"
       labeler:
@@ -108,17 +143,27 @@ rules:
 The entire `condition` section is optional - you can run all rules all the time and see if it helps :smile:
 - `if-labeled` - apply the rule if the issue has any of the provided labels
 - `skip-if-labeled` - skip rule processing if issue has any of the provided labels
-- `filter`
+- `files`
   - `patterns` - [pattern](https://golang.org/s/re2syntax) matching the pull request file list (any of the patterns)
   - `extensions` - which file extension to match on pull request file list (must start with a dot [`.`])
+- `ref`
+  - `patterns` - [pattern](https://golang.org/s/re2syntax) matching the pull request ref name
+  - `match` - matches the pull request ref name
+- `title`
+  - `starts-with` - issue title has a prefix
+  - `ends-with` - issue title has a suffix
+  - `patterns` - [pattern](https://golang.org/s/re2syntax) matching issue title (any of the patterns)
+- `order` - apply order hint to a rule. All rules are given order index **0**. 
+**Important**: This will not place a rule in the exact position, but can assist in re-order rules. 
 
 ### Available Actions
 - [`autoassign`](bot/actions/autoassign/autoassign.md) - Automatic assignment of issue reviewers
 - [`automerge`](bot/actions/automerge/automerge.md) - Automatic merge for approved pull requests
 - [`commenter`](bot/actions/commenter/commenter.md) - Add comment to an issue
-- [`labeler`](bot/actions/labeler/labeler.md) - Add label to an issue
+- [`labeler`](bot/actions/labeler/labeler.md) - Add/Remove label to/from an issue
 - [`sizing`](bot/actions/sizing/sizing.md) - Size a pull request
 - [`trigger`](bot/actions/trigger/trigger.md) - Send HTTP triggers
+- [`locker`](bot/actions/locker/locker.md) - Lock an issue
 
 # Example Configuration
 
@@ -154,7 +199,7 @@ rules:
 
   docs:
         condition:
-          filter:
+          files:
             patterns: 
               - "docs/.*"
         labeler:
@@ -165,7 +210,7 @@ rules:
           skip-if-labeled:
             - pending-approval
         autoassign:
-          from-roles:
+          roles:
             - admins
             - reviewers
 ```

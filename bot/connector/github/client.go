@@ -2,6 +2,8 @@ package github
 
 import (
 	"context"
+	"strings"
+
 	"github.com/bivas/rivi/bot"
 	"github.com/bivas/rivi/util"
 	"github.com/google/go-github/github"
@@ -34,6 +36,28 @@ func handleLabelsResult(labels []*github.Label, err error, logError func(error))
 		}
 	}
 	return result
+}
+
+func (c *ghClient) Lock(issue int) {
+	_, err := c.client.Issues.Lock(context.Background(), c.owner, c.repo, issue)
+	if err != nil {
+		util.Logger.Error("Unable to set issue %d lock state. %s", issue, err)
+	}
+}
+
+func (c *ghClient) Unlock(issue int) {
+	_, err := c.client.Issues.Unlock(context.Background(), c.owner, c.repo, issue)
+	if err != nil {
+		util.Logger.Error("Unable to set issue %d unlock state. %s", issue, err)
+	}
+}
+
+func (c *ghClient) Locked(issue int) bool {
+	response, _, err := c.client.Issues.Get(context.Background(), c.owner, c.repo, issue)
+	if err != nil {
+		util.Logger.Error("Unable to get issue %d lock state. %s", issue, err)
+	}
+	return *response.Locked
 }
 
 func (c *ghClient) GetAvailableLabels() []string {
@@ -69,12 +93,12 @@ func (c *ghClient) RemoveLabel(issue int, label string) []string {
 func (c *ghClient) GetAssignees(issue int) []string {
 	util.Logger.Debug("Getting assignees for issue %d", issue)
 	result := make([]string, 0)
-	users, _, err := c.client.Issues.ListAssignees(context.Background(), c.owner, c.repo, nil)
+	issueObject, _, err := c.client.Issues.Get(context.Background(), c.owner, c.repo, issue)
 	if err != nil {
 		util.Logger.Error("Unable to get assignees for issue %d. %s", issue, err)
 	} else {
-		for _, p := range users {
-			result = append(result, *p.Login)
+		for _, p := range issueObject.Assignees {
+			result = append(result, strings.ToLower(*p.Login))
 		}
 	}
 	return result
@@ -151,6 +175,21 @@ func (c *ghClient) AddComment(issue int, comment string) bot.Comment {
 			Comment:   *posted.Body,
 		}
 	}
+}
+
+func (c *ghClient) GetReviewers(issue int) map[string]string {
+	result := make(map[string]string)
+	reviews, _, err := c.client.PullRequests.ListReviews(context.Background(), c.owner, c.repo, issue, nil)
+	if err != nil {
+		util.Logger.Error("Unable to get reviewers for issue %d. %s", issue, err)
+		return result
+	}
+	for _, review := range reviews {
+		user := strings.ToLower(*review.User.Login)
+		state := strings.ToLower(*review.State)
+		result[user] = state
+	}
+	return result
 }
 
 func (c *ghClient) Merge(issue int, mergeMethod string) {

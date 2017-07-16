@@ -1,7 +1,9 @@
 package bot
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
+	"os"
 	. "testing"
 )
 
@@ -44,6 +46,10 @@ func assertRules(t *T, configuration Configuration) {
 	assert.Contains(t, ruleNames, "rule2", "rule name")
 	assert.Contains(t, ruleNames, "rule3", "rule name")
 	assert.Contains(t, ruleNames, "rule4", "rule name")
+	assert.Equal(t, "rule4", ruleNames[0], "first rule")
+	assert.Equal(t, "rule3", ruleNames[1], "second rule")
+	assert.Equal(t, "rule2", ruleNames[2], "third rule")
+	assert.Equal(t, "rule1", ruleNames[3], "fourth rule")
 }
 
 func TestReadConfig(t *T) {
@@ -54,4 +60,61 @@ func TestReadConfig(t *T) {
 	assertClientConfig(t, c.GetClientConfig())
 	assertRoles(t, c)
 	assertRules(t, c)
+}
+
+func TestClientConfigFromEnv(t *T) {
+	os.Setenv("RIVI_CONFIG_TOKEN", "token-from-env")
+	os.Setenv("RIVI_CONFIG_SECRET", "secret-from-env")
+	c, err := newConfiguration("config_test.yml")
+	if err != nil {
+		t.Fatalf("Got error during config read. %s", err)
+	}
+	assert.Equal(t, "token-from-env", c.GetClientConfig().GetOAuthToken(), "token from env")
+	assert.Equal(t, "secret-from-env", c.GetClientConfig().GetSecret(), "secret from env")
+}
+
+func TestEmptyConfigTest(t *T) {
+	os.Setenv("RIVI_CONFIG_TOKEN", "token-from-env")
+	os.Setenv("RIVI_CONFIG_SECRET", "secret-from-env")
+	c, err := newConfiguration("empty_config_test.yml")
+	if err != nil {
+		t.Fatalf("Got error during config read. %s", err)
+	}
+	assert.Equal(t, "token-from-env", c.GetClientConfig().GetOAuthToken(), "token from env")
+	assert.Equal(t, "secret-from-env", c.GetClientConfig().GetSecret(), "secret from env")
+}
+
+type testActionConfig struct {
+	key, value string
+}
+
+func (t *testActionConfig) Name() string {
+	return "test-section"
+}
+
+type testBuilder struct {
+}
+
+func (*testBuilder) Build(config map[string]interface{}) (ActionConfig, error) {
+	if len(config) != 1 {
+		return nil, fmt.Errorf("Wrong number of values")
+	}
+	for key, value := range config {
+		return &testActionConfig{key, value.(string)}, nil
+	}
+	return nil, fmt.Errorf("Should not reach here")
+}
+
+func TestActionConfigBuilder(t *T) {
+	RegisterActionConfigBuilder("test-section", &testBuilder{})
+	c, err := newConfiguration("config_test.yml")
+	if err != nil {
+		t.Fatalf("Got error during config read. %s", err)
+	}
+	result, err := c.GetActionConfig("test-section")
+	assert.Nil(t, err, "should contain section")
+	exact, ok := result.(*testActionConfig)
+	assert.True(t, ok, "should be of test action config type")
+	assert.Equal(t, "key", exact.key, "key")
+	assert.Equal(t, "value", exact.value, "value")
 }

@@ -57,6 +57,20 @@ func TestActionApplyWithoutOrigin(t *testing.T) {
 	}
 }
 
+func TestActionApplyWithoutOriginCaseInsensitive(t *testing.T) {
+	action := action{rule: &rule{Require: 1, FromRoles: []string{"default"}}}
+	roles := make(map[string][]string)
+	roles["default"] = []string{"usEr1", "user2"}
+	for i := 0; i < 10; i++ {
+		config := &mock.MockConfiguration{RoleMembers: roles}
+		meta := &mock.MockEventData{Assignees: []string{}, Origin: "USER1"}
+		action.Apply(config, meta)
+		assert.Len(t, meta.AddedAssignees, 1, "assignment")
+		assert.NotContains(t, meta.AddedAssignees, "user1", "matched group")
+		assert.Contains(t, meta.AddedAssignees, "user2", "matched group")
+	}
+}
+
 func TestActionApplyHasAssignee(t *testing.T) {
 	action := action{rule: &rule{Require: 1, FromRoles: []string{"group"}}}
 	roles := make(map[string][]string)

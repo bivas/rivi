@@ -1,10 +1,5 @@
 # test
 
-config:
-  provider: github
-  token: github-token
-  secret: github-secret
-
 roles:
   admins:
       - user1
@@ -15,15 +10,12 @@ roles:
   testers:
       - user2
 
-test-section:
-  key: value
-
 rules:
   rule1:
       condition:
         order: 5
         if-labeled:
-          - label1
+          - label2
   rule2:
       condition:
         order: 2

@@ -1,6 +1,7 @@
 package github
 
 type pullRequestSection struct {
+	Number       int    `json:"number"`
 	State        string `json:"state"`
 	Title        string `json:"title"`
 	Commits      int    `json:"commits"`
@@ -13,6 +14,9 @@ type pullRequestSection struct {
 	User struct {
 		Login string `json:"login"`
 	} `json:"user"`
+	Base struct {
+		Ref string `json:"ref"`
+	} `json:"base"`
 }
 
 type repositorySection struct {
