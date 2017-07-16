@@ -38,6 +38,28 @@ func handleLabelsResult(labels []*github.Label, err error, logError func(error))
 	return result
 }
 
+func (c *ghClient) Lock(issue int) {
+	_, err := c.client.Issues.Lock(context.Background(), c.owner, c.repo, issue)
+	if err != nil {
+		util.Logger.Error("Unable to set issue %d lock state. %s", issue, err)
+	}
+}
+
+func (c *ghClient) Unlock(issue int) {
+	_, err := c.client.Issues.Unlock(context.Background(), c.owner, c.repo, issue)
+	if err != nil {
+		util.Logger.Error("Unable to set issue %d unlock state. %s", issue, err)
+	}
+}
+
+func (c *ghClient) Locked(issue int) bool {
+	response, _, err := c.client.Issues.Get(context.Background(), c.owner, c.repo, issue)
+	if err != nil {
+		util.Logger.Error("Unable to get issue %d lock state. %s", issue, err)
+	}
+	return *response.Locked
+}
+
 func (c *ghClient) GetAvailableLabels() []string {
 	util.Logger.Debug("Getting available labels")
 	labels, _, e := c.client.Issues.ListLabels(context.Background(), c.owner, c.repo, nil)
