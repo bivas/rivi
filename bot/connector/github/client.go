@@ -155,6 +155,21 @@ func (c *ghClient) AddComment(issue int, comment string) bot.Comment {
 	}
 }
 
+func (c *ghClient) GetReviewers(issue int) map[string]string {
+	result := make(map[string]string)
+	reviews, _, err := c.client.PullRequests.ListReviews(context.Background(), c.owner, c.repo, issue, nil)
+	if err != nil {
+		util.Logger.Error("Unable to get reviewers for issue %d. %s", issue, err)
+		return result
+	}
+	for _, review := range reviews {
+		user := strings.ToLower(*review.User.Login)
+		state := strings.ToLower(*review.State)
+		result[user] = state
+	}
+	return result
+}
+
 func (c *ghClient) Merge(issue int, mergeMethod string) {
 	options := &github.PullRequestOptions{MergeMethod: mergeMethod}
 	_, _, err := c.client.PullRequests.Merge(context.Background(), c.owner, c.repo, issue, "", options)

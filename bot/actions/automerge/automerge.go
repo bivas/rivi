@@ -18,6 +18,11 @@ type MergeableEventData interface {
 	Merge(mergeMethod string)
 }
 
+type HasReviewersAPIEventData interface {
+	GetReviewers() map[string]string
+	GetApprovals() []string
+}
+
 func (a *action) merge(meta bot.EventData) {
 	if a.rule.Label == "" {
 		mergeable, ok := meta.(MergeableEventData)
@@ -32,12 +37,28 @@ func (a *action) merge(meta bot.EventData) {
 	}
 }
 
-func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
+func (a *action) getApprovalsFromAPI(meta bot.EventData) (int, bool) {
 	assigneesList := meta.GetAssignees()
-	if len(assigneesList) == 0 {
-		util.Logger.Debug("No assignees to issue - skipping")
-		return
+	approvals := 0
+	assignees := util.StringSet{}
+	assignees.AddAll(assigneesList)
+	reviewApi, ok := meta.(HasReviewersAPIEventData)
+	if !ok {
+		util.Logger.Warning("Event data does not support reviewers API. Check your configuration")
+		a.err = fmt.Errorf("Event data does not support reviewers API")
+	} else {
+		for _, approver := range reviewApi.GetApprovals() {
+			if assignees.Contains(approver) {
+				assignees.Remove(approver)
+				approvals++
+			}
+		}
 	}
+	return approvals, assignees.Len() == 0
+}
+
+func (a *action) getApprovalsFromComments(meta bot.EventData) (int, bool) {
+	assigneesList := meta.GetAssignees()
 	approvals := 0
 	assignees := util.StringSet{}
 	assignees.AddAll(assigneesList)
@@ -51,12 +72,30 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 			approvals++
 		}
 	}
-	if a.rule.Require == 0 && assignees.Len() == 0 {
-		util.Logger.Debug("All assignees have approved the PR - merging")
-		a.merge(meta)
-	} else if a.rule.Require > 0 && approvals >= a.rule.Require {
-		util.Logger.Debug("Got %d required approvals for PR - merging", a.rule.Require)
-		a.merge(meta)
+	return approvals, assignees.Len() == 0
+}
+
+func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
+	assigneesList := meta.GetAssignees()
+	if len(assigneesList) == 0 {
+		util.Logger.Debug("No assignees to issue - skipping")
+		return
+	}
+	calls := []func(bot.EventData) (int, bool){
+		a.getApprovalsFromAPI,
+		a.getApprovalsFromComments,
+	}
+	for _, call := range calls {
+		approvals, all := call(meta)
+		if a.rule.Require == 0 && all {
+			util.Logger.Debug("All assignees have approved the PR - merging")
+			a.merge(meta)
+			return
+		} else if a.rule.Require > 0 && approvals >= a.rule.Require {
+			util.Logger.Debug("Got %d required approvals for PR - merging", a.rule.Require)
+			a.merge(meta)
+			return
+		}
 	}
 }
 
