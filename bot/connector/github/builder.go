@@ -68,6 +68,7 @@ func (builder *eventDataBuilder) readFromJson(context *builderContext, payload *
 		context.data.number = payload.Number
 	}
 	context.data.title = payload.PullRequest.Title
+	context.data.description = payload.PullRequest.Body
 	context.data.changedFiles = payload.PullRequest.ChangedFiles
 	context.data.additions = payload.PullRequest.Additions
 	context.data.deletions = payload.PullRequest.Deletions

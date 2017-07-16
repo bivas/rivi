@@ -15,6 +15,7 @@ type eventData struct {
 	repo         string
 	ref          string
 	title        string
+	description  string
 	changedFiles int
 	fileNames    []string
 	fileExt      []string
@@ -123,6 +124,10 @@ func (d *eventData) GetNumber() int {
 
 func (d *eventData) GetTitle() string {
 	return d.title
+}
+
+func (d *eventData) GetDescription() string {
+	return d.description
 }
 
 func (d *eventData) GetOrigin() string {
