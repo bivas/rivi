@@ -8,6 +8,12 @@ Assignees must use one of the approval phrases (_Approve_, _Approved_, _LGTM_, _
 
 **Note** If others comment with one of the approval phrases, it will not count as approval
 
+### GitHub Users
+
+Since GitHub API support for pull request reviews API - the lookup will first search the API and only then for comments.
+
+**Note** Approvals can only be read by API or comments. Mixing both approvals from API and comments is not supported.
+
 ## Requirements
 
 None

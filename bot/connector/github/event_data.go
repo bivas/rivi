@@ -1,6 +1,9 @@
 package github
 
-import "github.com/bivas/rivi/bot"
+import (
+	"github.com/bivas/rivi/bot"
+	"github.com/bivas/rivi/util"
+)
 
 type eventData struct {
 	client       *ghClient
@@ -21,6 +24,21 @@ type eventData struct {
 	assignees    []string
 	comments     []bot.Comment
 	payload      []byte
+	reviewers    map[string]string
+}
+
+func (d *eventData) GetReviewers() map[string]string {
+	return d.reviewers
+}
+
+func (d *eventData) GetApprovals() []string {
+	result := util.StringSet{}
+	for reviewer, state := range d.reviewers {
+		if state == "approve" {
+			result.Add(reviewer)
+		}
+	}
+	return result.Values()
 }
 
 func (d *eventData) Lock() {
