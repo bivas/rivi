@@ -8,6 +8,7 @@ import (
 type MockEventData struct {
 	Number           int
 	Title            string
+	Description      string
 	State            string
 	Owner            string
 	Repo             string
@@ -37,6 +38,10 @@ func (m *MockEventData) GetNumber() int {
 }
 
 func (m *MockEventData) GetTitle() string {
+	return m.Title
+}
+
+func (m *MockEventData) GetDescription() string {
 	return m.Title
 }
 
