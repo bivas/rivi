@@ -87,6 +87,7 @@ func (builder *eventDataBuilder) readFromClient(context *builderContext) {
 	stringSet := util.StringSet{Transformer: filepath.Ext}
 	context.data.fileExt = stringSet.AddAll(fileNames).Values()
 	context.data.reviewers = context.client.GetReviewers(id)
+	context.data.locked = context.client.Locked(id)
 }
 
 func (builder *eventDataBuilder) checkProcessState(context *builderContext) bool {
