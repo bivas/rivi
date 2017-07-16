@@ -15,6 +15,7 @@ type Comment struct {
 type EventData interface {
 	GetNumber() int
 	GetTitle() string
+	GetDescription() string
 	GetState() string
 	GetOrigin() string
 	GetOwner() string

@@ -118,6 +118,63 @@ func (c *TitleCondition) Match(meta EventData) bool {
 	return false
 }
 
+type DescriptionCondition struct {
+	StartsWith string   `mapstructure:"starts-with,omitempty"`
+	EndsWith   string   `mapstructure:"ends-with,omitempty"`
+	Patterns   []string `mapstructure:"patterns,omitempty"`
+}
+
+func (c *DescriptionCondition) IsEmpty() bool {
+	return c.StartsWith == "" && c.EndsWith == "" && len(c.Patterns) == 0
+}
+
+func (c *DescriptionCondition) Match(meta EventData) bool {
+	if c.StartsWith == "" && c.EndsWith == "" && len(c.Patterns) == 0 {
+		return false
+	} else {
+		description := meta.GetDescription()
+		if c.StartsWith != "" && strings.HasPrefix(description, c.StartsWith) {
+			util.Logger.Debug("Matched DescriptionCondition with prefix '%s' on description '%s'",
+				c.StartsWith,
+				description)
+
+			return true
+		}
+		if c.EndsWith != "" && strings.HasSuffix(description, c.EndsWith) {
+			util.Logger.Debug("Matched DescriptionCondition with suffix '%s' on description '%s'",
+				c.EndsWith,
+				description)
+
+			return true
+		}
+		if len(c.Patterns) > 0 {
+			compiled := make([]*regexp.Regexp, 0)
+			for _, pattern := range c.Patterns {
+				re, err := regexp.Compile(pattern)
+				if err != nil {
+					util.Logger.Warning("Unable to compile regex '%s'. %s", pattern, err)
+					continue
+				}
+				compiled = append(compiled, re)
+			}
+			if len(compiled) == 0 {
+				util.Logger.Error("All configured patterns have failed to compile")
+				return false
+			}
+			for _, reg := range compiled {
+				if reg.MatchString(description) {
+					util.Logger.Debug("Matched DescriptionCondition with pattern '%s' on description '%s'",
+						reg.String(),
+						description)
+
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
 type RefCondition struct {
 	Equals   string   `mapstructure:"match,omitempty"`
 	Patterns []string `mapstructure:"patterns,omitempty"`
@@ -158,12 +215,13 @@ func (c *RefCondition) Match(meta EventData) bool {
 }
 
 type Condition struct {
-	Order         int            `mapstructure:"order,omitempty"`
-	IfLabeled     []string       `mapstructure:"if-labeled,omitempty"`
-	SkipIfLabeled []string       `mapstructure:"skip-if-labeled,omitempty"`
-	Files         FilesCondition `mapstructure:"files,omitempty"`
-	Title         TitleCondition `mapstructure:"title,omitempty"`
-	Ref           RefCondition   `mapstructure:"ref,omitempty"`
+	Order         int                  `mapstructure:"order,omitempty"`
+	IfLabeled     []string             `mapstructure:"if-labeled,omitempty"`
+	SkipIfLabeled []string             `mapstructure:"skip-if-labeled,omitempty"`
+	Files         FilesCondition       `mapstructure:"files,omitempty"`
+	Title         TitleCondition       `mapstructure:"title,omitempty"`
+	Description   DescriptionCondition `mapstructure:"description,omitempty"`
+	Ref           RefCondition         `mapstructure:"ref,omitempty"`
 }
 
 func (c *Condition) checkIfLabeled(meta EventData) bool {
@@ -186,6 +244,7 @@ func (c *Condition) checkAllEmpty(meta EventData) bool {
 	empty := len(c.IfLabeled) == 0 &&
 		c.Files.IsEmpty() &&
 		c.Title.IsEmpty() &&
+		c.Description.IsEmpty() &&
 		c.Ref.IsEmpty()
 	util.Logger.Debug("Condition is empty = %d", empty)
 	return empty
@@ -195,6 +254,7 @@ func (c *Condition) Match(meta EventData) bool {
 	match := c.checkAllEmpty(meta) ||
 		c.checkIfLabeled(meta) ||
 		c.Title.Match(meta) ||
+		c.Description.Match(meta) ||
 		c.Files.Match(meta) ||
 		c.Ref.Match(meta)
 

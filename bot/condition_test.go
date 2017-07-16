@@ -14,6 +14,7 @@ type mockConditionEventData struct {
 	FileNames      []string
 	FileExtensions []string
 	Title          string
+	Description    string
 	Ref            string
 	RawPayload     []byte
 }
@@ -32,6 +33,10 @@ func (m *mockConditionEventData) GetNumber() int {
 
 func (m *mockConditionEventData) GetTitle() string {
 	return m.Title
+}
+
+func (m *mockConditionEventData) GetDescription() string {
+	return m.Description
 }
 
 func (m *mockConditionEventData) GetState() string {
@@ -196,6 +201,35 @@ func TestTitlePattern(t *testing.T) {
 	meta.Title = "This PR for Bug1 with comment"
 	assert.False(t, rule.Accept(meta), "shouldn't match")
 	meta.Title = "This PR for Bug 45456 with comment"
+	assert.True(t, rule.Accept(meta), "should match")
+}
+
+func TestDescriptionStartsWith(t *testing.T) {
+	var rule rule
+	rule.condition.Description.StartsWith = "BUGFIX"
+	meta := &mockConditionEventData{Description: "NOT A BUGFIX"}
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	meta.Description = "BUGFIX it"
+	assert.True(t, rule.Accept(meta), "should match")
+}
+
+func TestDescriptionEndsWith(t *testing.T) {
+	var rule rule
+	rule.condition.Description.EndsWith = "WIP"
+	meta := &mockConditionEventData{Description: "NOT A BUGFIX"}
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	meta.Description = "BUGFIX WIP"
+	assert.True(t, rule.Accept(meta), "should match")
+}
+
+func TestDescriptionPattern(t *testing.T) {
+	var rule rule
+	rule.condition.Description.Patterns = []string{"(?s)~~~.*deps:"}
+	meta := &mockConditionEventData{Description: "NOT A BUGFIX"}
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	meta.Description = "~~~\n     test_priorities"
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	meta.Description = "~~~\n    deps:\nplenty of dependencies"
 	assert.True(t, rule.Accept(meta), "should match")
 }
 
