@@ -81,37 +81,33 @@ func (c *TitleCondition) IsEmpty() bool {
 }
 
 func (c *TitleCondition) Match(meta EventData) bool {
-	if c.StartsWith == "" && c.EndsWith == "" && len(c.Patterns) == 0 {
-		return false
-	} else {
-		title := meta.GetTitle()
-		if c.StartsWith != "" && strings.HasPrefix(title, c.StartsWith) {
-			util.Logger.Debug("Matched TitleCondition with prefix '%s' on title '%s'", c.StartsWith, title)
-			return true
-		}
-		if c.EndsWith != "" && strings.HasSuffix(title, c.EndsWith) {
-			util.Logger.Debug("Matched TitleCondition with suffix '%s' on title '%s'", c.EndsWith, title)
-			return true
-		}
-		if len(c.Patterns) > 0 {
-			compiled := make([]*regexp.Regexp, 0)
-			for _, pattern := range c.Patterns {
-				re, err := regexp.Compile(pattern)
-				if err != nil {
-					util.Logger.Warning("Unable to compile regex '%s'. %s", pattern, err)
-					continue
-				}
-				compiled = append(compiled, re)
+	title := meta.GetTitle()
+	if c.StartsWith != "" && strings.HasPrefix(title, c.StartsWith) {
+		util.Logger.Debug("Matched TitleCondition with prefix '%s' on title '%s'", c.StartsWith, title)
+		return true
+	}
+	if c.EndsWith != "" && strings.HasSuffix(title, c.EndsWith) {
+		util.Logger.Debug("Matched TitleCondition with suffix '%s' on title '%s'", c.EndsWith, title)
+		return true
+	}
+	if len(c.Patterns) > 0 {
+		compiled := make([]*regexp.Regexp, 0)
+		for _, pattern := range c.Patterns {
+			re, err := regexp.Compile(pattern)
+			if err != nil {
+				util.Logger.Warning("Unable to compile regex '%s'. %s", pattern, err)
+				continue
 			}
-			if len(compiled) == 0 {
-				util.Logger.Error("All configured patterns have failed to compile")
-				return false
-			}
-			for _, reg := range compiled {
-				if reg.MatchString(title) {
-					util.Logger.Debug("Matched TitleCondition with pattern '%s' on title '%s'", reg.String(), title)
-					return true
-				}
+			compiled = append(compiled, re)
+		}
+		if len(compiled) == 0 {
+			util.Logger.Error("All configured patterns have failed to compile")
+			return false
+		}
+		for _, reg := range compiled {
+			if reg.MatchString(title) {
+				util.Logger.Debug("Matched TitleCondition with pattern '%s' on title '%s'", reg.String(), title)
+				return true
 			}
 		}
 	}
@@ -129,46 +125,39 @@ func (c *DescriptionCondition) IsEmpty() bool {
 }
 
 func (c *DescriptionCondition) Match(meta EventData) bool {
-	if c.StartsWith == "" && c.EndsWith == "" && len(c.Patterns) == 0 {
-		return false
-	} else {
-		description := meta.GetDescription()
-		if c.StartsWith != "" && strings.HasPrefix(description, c.StartsWith) {
-			util.Logger.Debug("Matched DescriptionCondition with prefix '%s' on description '%s'",
-				c.StartsWith,
-				description)
-
-			return true
-		}
-		if c.EndsWith != "" && strings.HasSuffix(description, c.EndsWith) {
-			util.Logger.Debug("Matched DescriptionCondition with suffix '%s' on description '%s'",
-				c.EndsWith,
-				description)
-
-			return true
-		}
-		if len(c.Patterns) > 0 {
-			compiled := make([]*regexp.Regexp, 0)
-			for _, pattern := range c.Patterns {
-				re, err := regexp.Compile(pattern)
-				if err != nil {
-					util.Logger.Warning("Unable to compile regex '%s'. %s", pattern, err)
-					continue
-				}
-				compiled = append(compiled, re)
+	description := meta.GetDescription()
+	if c.StartsWith != "" && strings.HasPrefix(description, c.StartsWith) {
+		util.Logger.Debug("Matched DescriptionCondition with prefix '%s' on description '%s'",
+			c.StartsWith,
+			description)
+		return true
+	}
+	if c.EndsWith != "" && strings.HasSuffix(description, c.EndsWith) {
+		util.Logger.Debug("Matched DescriptionCondition with suffix '%s' on description '%s'",
+			c.EndsWith,
+			description)
+		return true
+	}
+	if len(c.Patterns) > 0 {
+		compiled := make([]*regexp.Regexp, 0)
+		for _, pattern := range c.Patterns {
+			re, err := regexp.Compile(pattern)
+			if err != nil {
+				util.Logger.Warning("Unable to compile regex '%s'. %s", pattern, err)
+				continue
 			}
-			if len(compiled) == 0 {
-				util.Logger.Error("All configured patterns have failed to compile")
-				return false
-			}
-			for _, reg := range compiled {
-				if reg.MatchString(description) {
-					util.Logger.Debug("Matched DescriptionCondition with pattern '%s' on description '%s'",
-						reg.String(),
-						description)
-
-					return true
-				}
+			compiled = append(compiled, re)
+		}
+		if len(compiled) == 0 {
+			util.Logger.Error("All configured patterns have failed to compile")
+			return false
+		}
+		for _, reg := range compiled {
+			if reg.MatchString(description) {
+				util.Logger.Debug("Matched DescriptionCondition with pattern '%s' on description '%s'",
+					reg.String(),
+					description)
+				return true
 			}
 		}
 	}

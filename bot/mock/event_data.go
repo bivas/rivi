@@ -42,7 +42,7 @@ func (m *MockEventData) GetTitle() string {
 }
 
 func (m *MockEventData) GetDescription() string {
-	return m.Title
+	return m.Description
 }
 
 func (m *MockEventData) GetState() string {
