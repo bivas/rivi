@@ -3,6 +3,8 @@ package bot
 import (
 	"testing"
 
+	"fmt"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,6 +19,14 @@ type mockConditionEventData struct {
 	Description    string
 	Ref            string
 	RawPayload     []byte
+}
+
+func (m *mockConditionEventData) GetShortName() string {
+	return fmt.Sprintf("%s/%s#%d", m.Owner, m.Repo, m.Number)
+}
+
+func (m *mockConditionEventData) GetLongName() string {
+	return fmt.Sprintf("%s/%s#%d [%s]", m.Owner, m.Repo, m.Number, m.Title)
 }
 
 func (m *mockConditionEventData) GetRawPayload() []byte {
