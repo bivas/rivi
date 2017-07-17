@@ -1,6 +1,8 @@
 package github
 
 import (
+	"fmt"
+
 	"github.com/bivas/rivi/bot"
 	"github.com/bivas/rivi/util"
 )
@@ -26,6 +28,14 @@ type eventData struct {
 	comments     []bot.Comment
 	payload      []byte
 	reviewers    map[string]string
+}
+
+func (d *eventData) GetShortName() string {
+	return fmt.Sprintf("%s/%s#%d", d.owner, d.repo, d.number)
+}
+
+func (d *eventData) GetLongName() string {
+	return fmt.Sprintf("%s/%s#%d [%s]", d.owner, d.repo, d.number, d.title)
 }
 
 func (d *eventData) GetReviewers() map[string]string {

@@ -13,6 +13,8 @@ type Comment struct {
 }
 
 type EventData interface {
+	GetShortName() string
+	GetLongName() string
 	GetNumber() int
 	GetTitle() string
 	GetDescription() string
