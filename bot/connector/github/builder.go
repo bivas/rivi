@@ -120,7 +120,7 @@ func (builder *eventDataBuilder) PartialBuildFromRequest(config bot.ClientConfig
 	if err != nil {
 		return nil, false, err
 	}
-	if pl.Number == 0 {
+	if context.data.GetNumber() == 0 {
 		util.Logger.Warning("Payload appear to have issue id 0")
 		util.Logger.Debug("Faulty payload %+v", pl)
 		return nil, false, fmt.Errorf("Payload appear to have issue id 0")
@@ -141,16 +141,16 @@ func (builder *eventDataBuilder) BuildFromPayload(config bot.ClientConfig, raw [
 	if e := json.Unmarshal(raw, &pl); e != nil {
 		return nil, false, e
 	}
-	if pl.Number == 0 {
-		util.Logger.Warning("Payload appear to have issue id 0")
-		util.Logger.Debug("Faulty payload %+v", pl)
-		return nil, false, fmt.Errorf("Payload appear to have issue id 0")
-	}
 	repo := pl.Repository.Name
 	owner := pl.Repository.Owner.Login
 	context := &builderContext{client: newClient(config, owner, repo)}
 	context.data = &eventData{owner: owner, repo: repo, payload: raw, client: context.client}
 	builder.readFromJson(context, &pl)
+	if context.data.GetNumber() == 0 {
+		util.Logger.Warning("Payload appear to have issue id 0")
+		util.Logger.Debug("Faulty payload %+v", pl)
+		return nil, false, fmt.Errorf("Payload appear to have issue id 0")
+	}
 	builder.readFromClient(context)
 	return context.data, builder.checkProcessState(context), nil
 }
