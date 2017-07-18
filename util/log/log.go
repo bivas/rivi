@@ -145,7 +145,7 @@ func Build() Logger {
 
 	config := zap.Config{
 		Level:             zap.NewAtomicLevelAt(level),
-		Development:       true,
+		Development:       false,
 		Encoding:          "console",
 		EncoderConfig:     encoderConfig,
 		OutputPaths:       []string{"stdout"},
