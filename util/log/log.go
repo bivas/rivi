@@ -3,7 +3,8 @@ package log
 import (
 	"os"
 
-	"github.com/apex/log"
+	"log"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -146,7 +147,7 @@ func Build() Logger {
 
 	zapLogger, err := config.Build()
 	if err != nil {
-		log.Errorf("Unable to create logger. Using NoOpLogger. %s", err)
+		log.Printf("Unable to create logger. Using NoOpLogger. %s", err)
 		return &NoOpLogger{}
 	}
 
