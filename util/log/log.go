@@ -14,6 +14,10 @@ type Meta struct {
 	Value interface{}
 }
 
+func F(key string, value interface{}) Meta {
+	return Meta{Key: key, Value: value}
+}
+
 type MetaFields []Meta
 
 func (m *MetaFields) flat() []interface{} {
