@@ -120,7 +120,7 @@ func (builder *eventDataBuilder) PartialBuildFromRequest(config bot.ClientConfig
 	if err != nil {
 		return nil, false, err
 	}
-	if context.data.GetNumber() == 0 {
+	if pl.Number == 0 && pl.PullRequest.Number == 0 {
 		builder.logger.Warning("Payload appear to have issue id 0")
 		builder.logger.Debug("Faulty payload %+v", pl)
 		return nil, false, fmt.Errorf("Payload appear to have issue id 0")
