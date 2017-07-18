@@ -6,12 +6,15 @@ import (
 
 	"github.com/bivas/rivi/bot"
 	"github.com/bivas/rivi/util"
+	"github.com/bivas/rivi/util/log"
 	"github.com/mitchellh/mapstructure"
 )
 
 type action struct {
 	rule *rule
 	err  error
+
+	logger log.Logger
 }
 
 type MergeableEventData interface {
@@ -27,7 +30,7 @@ func (a *action) merge(meta bot.EventData) {
 	if a.rule.Label == "" {
 		mergeable, ok := meta.(MergeableEventData)
 		if !ok {
-			util.Logger.Warning("Event data does not support merge. Check your configurations")
+			a.logger.Warning("Event data does not support merge. Check your configurations")
 			a.err = fmt.Errorf("Event data does not support merge")
 			return
 		}
@@ -44,7 +47,7 @@ func (a *action) getApprovalsFromAPI(meta bot.EventData) (int, bool) {
 	assignees.AddAll(assigneesList)
 	reviewApi, ok := meta.(HasReviewersAPIEventData)
 	if !ok {
-		util.Logger.Warning("Event data does not support reviewers API. Check your configuration")
+		a.logger.WarningWith(log.MetaFields{log.F("issue", meta.GetShortName())}, "Event data does not support reviewers API. Check your configuration")
 		a.err = fmt.Errorf("Event data does not support reviewers API")
 	} else {
 		for _, approver := range reviewApi.GetApprovals() {
@@ -78,7 +81,7 @@ func (a *action) getApprovalsFromComments(meta bot.EventData) (int, bool) {
 func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 	assigneesList := meta.GetAssignees()
 	if len(assigneesList) == 0 {
-		util.Logger.Debug("No assignees to issue - skipping")
+		a.logger.WarningWith(log.MetaFields{log.F("issue", meta.GetShortName())}, "No assignees to issue - skipping")
 		return
 	}
 	calls := []func(bot.EventData) (int, bool){
@@ -88,11 +91,11 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 	for _, call := range calls {
 		approvals, all := call(meta)
 		if a.rule.Require == 0 && all {
-			util.Logger.Debug("All assignees have approved the PR - merging")
+			a.logger.WarningWith(log.MetaFields{log.F("issue", meta.GetShortName())}, "All assignees have approved the PR - merging")
 			a.merge(meta)
 			return
 		} else if a.rule.Require > 0 && approvals >= a.rule.Require {
-			util.Logger.Debug("Got %d required approvals for PR - merging", a.rule.Require)
+			a.logger.WarningWith(log.MetaFields{log.F("issue", meta.GetShortName())}, "Got %d required approvals for PR - merging", a.rule.Require)
 			a.merge(meta)
 			return
 		}
@@ -108,7 +111,7 @@ func (*factory) BuildAction(config map[string]interface{}) bot.Action {
 		panic(e)
 	}
 	item.Defaults()
-	return &action{rule: &item}
+	return &action{rule: &item, logger: log.Get("automerge")}
 }
 
 func init() {

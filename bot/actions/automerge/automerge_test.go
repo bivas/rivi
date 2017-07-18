@@ -5,6 +5,7 @@ import (
 
 	"github.com/bivas/rivi/bot"
 	"github.com/bivas/rivi/bot/mock"
+	"github.com/bivas/rivi/util/log"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -30,7 +31,7 @@ func (m *mockMergableEventData) Merge(mergeMethod string) {
 }
 
 func TestNoReviewersAPI(t *testing.T) {
-	action := action{rule: &rule{}}
+	action := action{rule: &rule{}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mock.MockConfiguration{}
 	meta := &mock.MockEventData{Assignees: []string{"user1"}, Comments: []bot.Comment{
@@ -41,7 +42,7 @@ func TestNoReviewersAPI(t *testing.T) {
 }
 
 func TestMergeWithAPI(t *testing.T) {
-	action := action{rule: &rule{}}
+	action := action{rule: &rule{}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mock.MockConfiguration{}
 	mockEventData := mock.MockEventData{Assignees: []string{"user1"}}
@@ -52,7 +53,7 @@ func TestMergeWithAPI(t *testing.T) {
 }
 
 func TestMergeWithAPINoApprovals(t *testing.T) {
-	action := action{rule: &rule{}}
+	action := action{rule: &rule{}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mock.MockConfiguration{}
 	mockEventData := mock.MockEventData{Assignees: []string{"user1"}}
@@ -62,7 +63,7 @@ func TestMergeWithAPINoApprovals(t *testing.T) {
 }
 
 func TestNotCapableToMerge(t *testing.T) {
-	action := action{rule: &rule{}}
+	action := action{rule: &rule{}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mock.MockConfiguration{}
 	meta := &mock.MockEventData{Assignees: []string{"user1"}, Comments: []bot.Comment{
@@ -73,7 +74,7 @@ func TestNotCapableToMerge(t *testing.T) {
 }
 
 func TestShouldNotMergeMergeMissingApprovals(t *testing.T) {
-	action := action{rule: &rule{}}
+	action := action{rule: &rule{}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mock.MockConfiguration{}
 	mockEventData := mock.MockEventData{Assignees: []string{"user1", "user2"}, Comments: []bot.Comment{
@@ -85,7 +86,7 @@ func TestShouldNotMergeMergeMissingApprovals(t *testing.T) {
 }
 
 func TestCapableToMerge(t *testing.T) {
-	action := action{rule: &rule{}}
+	action := action{rule: &rule{}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mock.MockConfiguration{}
 	mockEventData := mock.MockEventData{Assignees: []string{"user1"}, Comments: []bot.Comment{
@@ -98,7 +99,7 @@ func TestCapableToMerge(t *testing.T) {
 }
 
 func TestOriginComment(t *testing.T) {
-	action := action{rule: &rule{}}
+	action := action{rule: &rule{}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mock.MockConfiguration{}
 	mockEventData := mock.MockEventData{Assignees: []string{"user1"}, Origin: "user2", Comments: []bot.Comment{
@@ -110,7 +111,7 @@ func TestOriginComment(t *testing.T) {
 }
 
 func TestNotApprovedComment(t *testing.T) {
-	action := action{rule: &rule{}}
+	action := action{rule: &rule{}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mock.MockConfiguration{}
 	mockEventData := mock.MockEventData{Assignees: []string{"user1"}, Origin: "user2", Comments: []bot.Comment{
@@ -122,7 +123,7 @@ func TestNotApprovedComment(t *testing.T) {
 }
 
 func TestSameApprovedComment(t *testing.T) {
-	action := action{rule: &rule{Require: 2}}
+	action := action{rule: &rule{Require: 2}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mock.MockConfiguration{}
 	mockEventData := mock.MockEventData{Assignees: []string{"user1"}, Origin: "user2", Comments: []bot.Comment{
@@ -135,7 +136,7 @@ func TestSameApprovedComment(t *testing.T) {
 }
 
 func TestLabel(t *testing.T) {
-	action := action{rule: &rule{Label: "approved"}}
+	action := action{rule: &rule{Label: "approved"}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mock.MockConfiguration{}
 	mockEventData := mock.MockEventData{Assignees: []string{"user1"}, Origin: "user2", Comments: []bot.Comment{

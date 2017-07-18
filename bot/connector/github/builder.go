@@ -15,6 +15,7 @@ import (
 
 	"github.com/bivas/rivi/bot"
 	"github.com/bivas/rivi/util"
+	"github.com/bivas/rivi/util/log"
 )
 
 var (
@@ -32,6 +33,7 @@ type builderContext struct {
 }
 
 type eventDataBuilder struct {
+	logger log.Logger
 }
 
 func (builder *eventDataBuilder) validate(context *builderContext, payload []byte, request *http.Request) bool {
@@ -92,17 +94,15 @@ func (builder *eventDataBuilder) readFromClient(context *builderContext) {
 }
 
 func (builder *eventDataBuilder) checkProcessState(context *builderContext) bool {
-	util.Logger.Debug("Current issue [(%d) %s] state is '%s'",
-		context.data.GetNumber(),
-		context.data.GetTitle(),
-		context.data.state)
+	builder.logger.DebugWith(log.MetaFields{log.F("issue", context.data.GetShortName())},
+		"Current state is '%s'", context.data.state)
 	return context.data.state != "closed"
 }
 
 func (builder *eventDataBuilder) PartialBuildFromRequest(config bot.ClientConfig, r *http.Request) (bot.EventData, bool, error) {
 	githubEvent := r.Header.Get("X-Github-Event")
 	if githubEvent == "ping" {
-		util.Logger.Message("Got GitHub 'ping' event")
+		builder.logger.Info("Got GitHub 'ping' event")
 		return nil, false, nil
 	}
 	supportedEvent := false
@@ -112,7 +112,7 @@ func (builder *eventDataBuilder) PartialBuildFromRequest(config bot.ClientConfig
 		}
 	}
 	if !supportedEvent {
-		util.Logger.Debug("Got GitHub '%s' event", githubEvent)
+		builder.logger.Debug("Got GitHub '%s' event", githubEvent)
 		return nil, false, nil
 	}
 	context := &builderContext{secret: []byte(config.GetSecret())}
@@ -121,8 +121,8 @@ func (builder *eventDataBuilder) PartialBuildFromRequest(config bot.ClientConfig
 		return nil, false, err
 	}
 	if context.data.GetNumber() == 0 {
-		util.Logger.Warning("Payload appear to have issue id 0")
-		util.Logger.Debug("Faulty payload %+v", pl)
+		builder.logger.Warning("Payload appear to have issue id 0")
+		builder.logger.Debug("Faulty payload %+v", pl)
 		return nil, false, fmt.Errorf("Payload appear to have issue id 0")
 	}
 	repo := pl.Repository.Name
@@ -147,8 +147,8 @@ func (builder *eventDataBuilder) BuildFromPayload(config bot.ClientConfig, raw [
 	context.data = &eventData{owner: owner, repo: repo, payload: raw, client: context.client}
 	builder.readFromJson(context, &pl)
 	if context.data.GetNumber() == 0 {
-		util.Logger.Warning("Payload appear to have issue id 0")
-		util.Logger.Debug("Faulty payload %+v", pl)
+		builder.logger.Warning("Payload appear to have issue id 0")
+		builder.logger.Debug("Faulty payload %+v", pl)
 		return nil, false, fmt.Errorf("Payload appear to have issue id 0")
 	}
 	builder.readFromClient(context)
@@ -156,5 +156,5 @@ func (builder *eventDataBuilder) BuildFromPayload(config bot.ClientConfig, raw [
 }
 
 func init() {
-	bot.RegisterNewBuilder("github", &eventDataBuilder{})
+	bot.RegisterNewBuilder("github", &eventDataBuilder{logger: log.Get("GitHub.EventBuilder")})
 }

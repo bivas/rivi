@@ -2,10 +2,12 @@ package trigger
 
 import (
 	"bytes"
-	"github.com/bivas/rivi/util"
 	"io"
 	"text/template"
 	"time"
+
+	"github.com/bivas/rivi/util"
+	"github.com/bivas/rivi/util/log"
 )
 
 type message struct {
@@ -29,12 +31,15 @@ var defaultTemplateBody = util.StripNonSpaceWhitespaces(`{
 	}
 }`)
 
-var defaultTemplate *template.Template
+var (
+	defaultTemplate *template.Template
+	logger          = log.Get("trigger.template")
+)
 
 func init() {
 	parsed, e := template.New("message").Parse(defaultTemplateBody)
 	if e != nil {
-		util.Logger.Error("Unable to process default template. %s", e)
+		logger.ErrorWith(log.MetaFields{log.E(e)}, "Unable to process default template")
 	} else {
 		defaultTemplate = parsed
 	}
@@ -45,14 +50,14 @@ func processMessage(body *string, message *message) io.Reader {
 	if *body != "" {
 		parsed, e := template.New("message").Parse(defaultTemplateBody)
 		if e != nil {
-			util.Logger.Error("Unable to process provided template. %s", e)
+			logger.ErrorWith(log.MetaFields{log.E(e)}, "Unable to process provided template")
 		} else {
 			use = parsed
 		}
 	}
 	var buffer bytes.Buffer
 	if e := use.Execute(&buffer, message); e != nil {
-		util.Logger.Error("Unable to write message to template. %s", e)
+		logger.ErrorWith(log.MetaFields{log.E(e)}, "Unable to write message to template")
 	}
 	return &buffer
 }

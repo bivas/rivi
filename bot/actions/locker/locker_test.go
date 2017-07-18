@@ -1,9 +1,11 @@
 package locker
 
 import (
-	"github.com/bivas/rivi/bot/mock"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/bivas/rivi/bot/mock"
+	"github.com/bivas/rivi/util/log"
+	"github.com/stretchr/testify/assert"
 )
 
 type mockLockableEventData struct {
@@ -27,7 +29,7 @@ func (m *mockLockableEventData) LockState() bool {
 }
 
 func TestNotLockable(t *testing.T) {
-	action := action{rule: &rule{}}
+	action := action{rule: &rule{}, logger: log.Get("locker.test")}
 	meta := &mock.MockEventData{Labels: []string{}}
 	config := &mock.MockConfiguration{}
 	action.Apply(config, meta)
@@ -35,7 +37,7 @@ func TestNotLockable(t *testing.T) {
 }
 
 func TestLock(t *testing.T) {
-	action := action{rule: &rule{State: "lock"}}
+	action := action{rule: &rule{State: "lock"}, logger: log.Get("locker.test")}
 	meta := &mockLockableEventData{MockEventData: mock.MockEventData{}}
 	config := &mock.MockConfiguration{}
 	action.Apply(config, meta)
@@ -45,7 +47,7 @@ func TestLock(t *testing.T) {
 }
 
 func TestLockWhenLocked(t *testing.T) {
-	action := action{rule: &rule{State: "lock"}}
+	action := action{rule: &rule{State: "lock"}, logger: log.Get("locker.test")}
 	meta := &mockLockableEventData{MockEventData: mock.MockEventData{}, locked: true}
 	config := &mock.MockConfiguration{}
 	action.Apply(config, meta)
@@ -55,7 +57,7 @@ func TestLockWhenLocked(t *testing.T) {
 }
 
 func TestUnlockWhenLocked(t *testing.T) {
-	action := action{rule: &rule{State: "unlock"}}
+	action := action{rule: &rule{State: "unlock"}, logger: log.Get("locker.test")}
 	meta := &mockLockableEventData{MockEventData: mock.MockEventData{}, locked: true}
 	config := &mock.MockConfiguration{}
 	action.Apply(config, meta)
@@ -65,7 +67,7 @@ func TestUnlockWhenLocked(t *testing.T) {
 }
 
 func TestUnlockWhenUnlocked(t *testing.T) {
-	action := action{rule: &rule{State: "unlock"}}
+	action := action{rule: &rule{State: "unlock"}, logger: log.Get("locker.test")}
 	meta := &mockLockableEventData{MockEventData: mock.MockEventData{}}
 	config := &mock.MockConfiguration{}
 	action.Apply(config, meta)
@@ -75,7 +77,7 @@ func TestUnlockWhenUnlocked(t *testing.T) {
 }
 
 func TestStateChangeFromUnlocked(t *testing.T) {
-	action := action{rule: &rule{State: "change"}}
+	action := action{rule: &rule{State: "change"}, logger: log.Get("locker.test")}
 	meta := &mockLockableEventData{MockEventData: mock.MockEventData{}}
 	config := &mock.MockConfiguration{}
 	action.Apply(config, meta)
@@ -85,7 +87,7 @@ func TestStateChangeFromUnlocked(t *testing.T) {
 }
 
 func TestStateChangeFromLocked(t *testing.T) {
-	action := action{rule: &rule{State: "change"}}
+	action := action{rule: &rule{State: "change"}, logger: log.Get("locker.test")}
 	meta := &mockLockableEventData{MockEventData: mock.MockEventData{}, locked: true}
 	config := &mock.MockConfiguration{}
 	action.Apply(config, meta)

@@ -2,11 +2,13 @@ package bot
 
 import (
 	"fmt"
-	"github.com/bivas/rivi/util"
-	"github.com/spf13/viper"
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/bivas/rivi/util"
+	"github.com/bivas/rivi/util/log"
+	"github.com/spf13/viper"
 )
 
 type ClientConfig interface {
@@ -55,9 +57,9 @@ func RegisterActionConfigBuilder(name string, builder ActionConfigBuilder) {
 	search := strings.ToLower(name)
 	_, exists := actionConfigBuilders[search]
 	if exists {
-		util.Logger.Error("action config build for %s exists!", name)
+		log.Error("action config build for %s exists", name)
 	} else {
-		util.Logger.Debug("registering action config builder %s", name)
+		log.Debug("registering action config builder %s", name)
 		actionConfigBuilders[search] = builder
 	}
 }
@@ -124,12 +126,12 @@ func (c *config) readConfigSection() error {
 
 func (c *config) readRolesSection() error {
 	c.roles = c.internal["root"].GetStringMapStringSlice("roles")
-	util.Logger.Debug("roles from config %s", c.roles)
+	log.Debug("roles from config %s", c.roles)
 	c.rolesKeys = make([]string, 0)
 	for role := range c.roles {
 		c.rolesKeys = append(c.rolesKeys, role)
 	}
-	util.Logger.Debug("Loaded %d roles", len(c.rolesKeys))
+	log.Debug("Loaded %d roles", len(c.rolesKeys))
 	return nil
 }
 
@@ -142,11 +144,11 @@ func (c *config) readRulesSection() error {
 			condition: buildConditionFromConfiguration(subname),
 			actions:   buildActionsFromConfiguration(subname),
 		}
-		util.Logger.Debug("appending rule %s", r)
+		log.Debug("appending rule %s", r)
 		c.rules = append(c.rules, r)
 	}
 	sort.Sort(rulesByConditionOrder(c.rules))
-	util.Logger.Debug("Loaded %d rules", len(c.rules))
+	log.Debug("Loaded %d rules", len(c.rules))
 	return nil
 }
 
@@ -163,15 +165,15 @@ func (c *config) readSections() error {
 	}
 	c.actionConfigs = make(map[string]ActionConfig)
 	for kind, builder := range actionConfigBuilders {
-		util.Logger.Debug("Building configuration for %s", kind)
+		log.Debug("Building configuration for %s", kind)
 		actionConfig := c.internal["root"].GetStringMap(kind)
 		if actionConfig == nil || len(actionConfig) == 0 {
-			util.Logger.Warning("No matching section for %s", kind)
+			log.Warning("No matching section for %s", kind)
 			continue
 		}
 		config, err := builder.Build(actionConfig)
 		if err != nil {
-			util.Logger.Error("Error while building %s config. %s", kind, err)
+			log.ErrorWith(log.MetaFields{log.E(err)}, "Error while building %s config", kind)
 			continue
 		}
 		c.actionConfigs[kind] = config
@@ -191,7 +193,7 @@ func (c *config) readConfiguration(configPath string) error {
 	for _, section := range configSections {
 		sectionInclude := c.internal["root"].GetString(fmt.Sprintf("%s.include", section))
 		if sectionInclude != "" {
-			util.Logger.Debug("Attempt loading %s config from file %s", section, sectionInclude)
+			log.Debug("Attempt loading %s config from file %s", section, sectionInclude)
 			c.internal[section] = viper.New()
 			c.internal[section].SetConfigFile(filepath.Join(rootConfigFir, sectionInclude))
 			if err := c.internal[section].ReadInConfig(); err != nil {

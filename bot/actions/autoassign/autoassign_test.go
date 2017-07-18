@@ -1,13 +1,15 @@
 package autoassign
 
 import (
-	"github.com/bivas/rivi/bot/mock"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/bivas/rivi/bot/mock"
+	"github.com/bivas/rivi/util/log"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestActionApplyRequire1NoAssignees(t *testing.T) {
-	action := action{rule: &rule{Require: 1}}
+	action := action{rule: &rule{Require: 1}, logger: log.Get("autoassign.test")}
 	roles := make(map[string][]string)
 	roles["default"] = []string{"user1", "user2", "user3"}
 	config := &mock.MockConfiguration{RoleMembers: roles}
@@ -17,7 +19,7 @@ func TestActionApplyRequire1NoAssignees(t *testing.T) {
 }
 
 func TestActionApplyRequire2With1Assignee(t *testing.T) {
-	action := action{rule: &rule{Require: 2}}
+	action := action{rule: &rule{Require: 2}, logger: log.Get("autoassign.test")}
 	roles := make(map[string][]string)
 	roles["default"] = []string{"user1", "user2", "user3"}
 	config := &mock.MockConfiguration{RoleMembers: roles}
@@ -29,7 +31,7 @@ func TestActionApplyRequire2With1Assignee(t *testing.T) {
 }
 
 func TestActionApplyRequireFromRole(t *testing.T) {
-	action := action{rule: &rule{Require: 1, FromRoles: []string{"group"}}}
+	action := action{rule: &rule{Require: 1, FromRoles: []string{"group"}}, logger: log.Get("autoassign.test")}
 	roles := make(map[string][]string)
 	roles["default"] = []string{"user1", "user2", "user3"}
 	roles["group"] = []string{"user4"}
@@ -44,7 +46,7 @@ func TestActionApplyRequireFromRole(t *testing.T) {
 }
 
 func TestActionApplyWithoutOrigin(t *testing.T) {
-	action := action{rule: &rule{Require: 1, FromRoles: []string{"default"}}}
+	action := action{rule: &rule{Require: 1, FromRoles: []string{"default"}}, logger: log.Get("autoassign.test")}
 	roles := make(map[string][]string)
 	roles["default"] = []string{"user1", "user2"}
 	for i := 0; i < 10; i++ {
@@ -58,7 +60,7 @@ func TestActionApplyWithoutOrigin(t *testing.T) {
 }
 
 func TestActionApplyWithoutOriginCaseInsensitive(t *testing.T) {
-	action := action{rule: &rule{Require: 1, FromRoles: []string{"default"}}}
+	action := action{rule: &rule{Require: 1, FromRoles: []string{"default"}}, logger: log.Get("autoassign.test")}
 	roles := make(map[string][]string)
 	roles["default"] = []string{"usEr1", "user2"}
 	for i := 0; i < 10; i++ {
@@ -72,7 +74,7 @@ func TestActionApplyWithoutOriginCaseInsensitive(t *testing.T) {
 }
 
 func TestActionApplyHasAssignee(t *testing.T) {
-	action := action{rule: &rule{Require: 1, FromRoles: []string{"group"}}}
+	action := action{rule: &rule{Require: 1, FromRoles: []string{"group"}}, logger: log.Get("autoassign.test")}
 	roles := make(map[string][]string)
 	roles["default"] = []string{"user1", "user2", "user3"}
 	roles["group"] = []string{"user4"}
