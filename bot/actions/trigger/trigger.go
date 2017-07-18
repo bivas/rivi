@@ -2,18 +2,20 @@ package trigger
 
 import (
 	"fmt"
-	"github.com/bivas/rivi/bot"
-	"github.com/bivas/rivi/util"
-	"github.com/mitchellh/mapstructure"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/bivas/rivi/bot"
+	"github.com/bivas/rivi/util/log"
+	"github.com/mitchellh/mapstructure"
 )
 
 type action struct {
 	rule   *rule
 	client *http.Client
 	err    error
+	logger log.Logger
 }
 
 func (a *action) String() string {
@@ -34,7 +36,9 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 	}
 
 	if a.err != nil {
-		util.Logger.Error("%s", a.err)
+		a.logger.ErrorWith(
+			log.MetaFields{log.F("issue", meta.GetShortName()), log.E(a.err)},
+			"Apply got error")
 	}
 
 }
@@ -51,7 +55,8 @@ func (a *action) prepareRequest(meta bot.EventData) *http.Request {
 	body := processMessage(&a.rule.Body, message)
 	request, e := http.NewRequest(a.rule.Method, a.rule.Endpoint, body)
 	if e != nil {
-		util.Logger.Error("Error trying to build trigger request. %s", e)
+		a.logger.ErrorWith(log.MetaFields{log.F("issue", meta.GetShortName()), log.E(e)},
+			"Error trying to build trigger request", e)
 	}
 	a.setRequestHeaders(request)
 	return request
@@ -63,7 +68,7 @@ func (a *action) setRequestHeaders(request *http.Request) {
 	for name, value := range a.rule.Headers {
 		lowerName := strings.ToLower(name)
 		if !strings.HasPrefix(lowerName, "x-") || strings.HasPrefix(lowerName, "x-rivibot") {
-			util.Logger.Warning("Skipping header '%s' (non x- headers are not allowed)", name)
+			a.logger.Warning("Skipping header '%s' (non x- headers are not allowed)", name)
 		} else {
 			request.Header.Set(name, value)
 		}
@@ -79,7 +84,7 @@ func (*factory) BuildAction(config map[string]interface{}) bot.Action {
 		panic(e)
 	}
 	item.Defaults()
-	return &action{rule: &item, client: http.DefaultClient}
+	return &action{rule: &item, client: http.DefaultClient, logger: log.Get("trigger")}
 }
 
 func init() {

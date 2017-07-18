@@ -1,9 +1,11 @@
 package sizing
 
 import (
-	"github.com/bivas/rivi/bot/mock"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/bivas/rivi/bot/mock"
+	"github.com/bivas/rivi/util/log"
+	"github.com/stretchr/testify/assert"
 )
 
 func buildRule(name, label string, changedFiles int) *sizingRule {
@@ -22,7 +24,7 @@ func buildRules(withDefault bool) *action {
 		"size/xs",
 		"size/s",
 		"size/m",
-	}}
+	}, logger: log.Get("sizing.test")}
 	if withDefault {
 		result.possibleLabels = append(result.possibleLabels, "default-label")
 		result.items = append(result.items, sizingRule{Name: "default", Label: "default-label"})

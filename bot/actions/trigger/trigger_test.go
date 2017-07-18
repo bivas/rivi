@@ -1,11 +1,13 @@
 package trigger
 
 import (
-	"github.com/bivas/rivi/bot/mock"
-	"github.com/stretchr/testify/assert"
-	"gopkg.in/jarcoal/httpmock.v1"
 	"net/http"
 	"testing"
+
+	"github.com/bivas/rivi/bot/mock"
+	"github.com/bivas/rivi/util/log"
+	"github.com/stretchr/testify/assert"
+	"gopkg.in/jarcoal/httpmock.v1"
 )
 
 func TestTriggerDefaults(t *testing.T) {
@@ -31,7 +33,7 @@ func TestTriggerDefaults(t *testing.T) {
 			assert.Equal(t, "RiviBot-Agent/1.0", req.UserAgent(), "user agent")
 			return httpmock.NewStringResponse(200, ""), nil
 		})
-	action := &action{rule: rule, client: http.DefaultClient}
+	action := &action{rule: rule, client: http.DefaultClient, logger: log.Get("trigger.test")}
 	action.Apply(&mock.MockConfiguration{}, meta)
 	assert.Nil(t, action.err, "error when sending trigger")
 }
@@ -60,7 +62,7 @@ func TestTriggerGet(t *testing.T) {
 			assert.Equal(t, "RiviBot-Agent/1.0", req.UserAgent(), "user agent")
 			return httpmock.NewStringResponse(200, ""), nil
 		})
-	action := &action{rule: rule, client: http.DefaultClient}
+	action := &action{rule: rule, client: http.DefaultClient, logger: log.Get("trigger.test")}
 	action.Apply(&mock.MockConfiguration{}, meta)
 	assert.Nil(t, action.err, "error when sending trigger")
 }
@@ -96,7 +98,7 @@ func TestTriggerHeaders(t *testing.T) {
 			assert.Empty(t, req.Header.Get("x-rivibot-fake"), "not allowed x-rivi header")
 			return httpmock.NewStringResponse(200, ""), nil
 		})
-	action := &action{rule: rule, client: http.DefaultClient}
+	action := &action{rule: rule, client: http.DefaultClient, logger: log.Get("trigger.test")}
 	action.Apply(&mock.MockConfiguration{}, meta)
 	assert.Nil(t, action.err, "error when sending trigger")
 }

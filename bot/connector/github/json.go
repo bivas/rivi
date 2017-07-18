@@ -4,6 +4,7 @@ type pullRequestSection struct {
 	Number       int    `json:"number"`
 	State        string `json:"state"`
 	Title        string `json:"title"`
+	Body         string `json:"body"`
 	Commits      int    `json:"commits"`
 	Additions    int    `json:"additions"`
 	Deletions    int    `json:"deletions"`

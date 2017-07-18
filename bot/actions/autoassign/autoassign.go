@@ -7,18 +7,21 @@ import (
 	"fmt"
 	"github.com/bivas/rivi/bot"
 	"github.com/bivas/rivi/util"
+	"github.com/bivas/rivi/util/log"
 	"github.com/mitchellh/mapstructure"
 )
 
 type action struct {
 	rule *rule
+
+	logger log.Logger
 }
 
 func (a *action) String() string {
 	return fmt.Sprintf("%T{rule: %+v}", *a, a.rule)
 }
 
-func findAssignedRoles(assignees []string, config bot.Configuration) []string {
+func (a *action) findAssignedRoles(assignees []string, config bot.Configuration) []string {
 	var assignedRoles []string
 	if len(assignees) > 0 {
 		assignedRolesSet := util.StringSet{}
@@ -32,7 +35,7 @@ func findAssignedRoles(assignees []string, config bot.Configuration) []string {
 			}
 		}
 		assignedRoles = assignedRolesSet.Values()
-		util.Logger.Debug("There are %d assignees from %d roles", len(assignees), len(assignedRoles))
+		a.logger.Debug("There are %d assignees from %d roles", len(assignees), len(assignedRoles))
 	}
 	return assignedRoles
 }
@@ -42,21 +45,25 @@ func (a *action) findLookupRoles(config bot.Configuration, assignedRoles []strin
 	if len(a.rule.FromRoles) > 0 {
 		lookupRoles = a.rule.FromRoles
 	}
-	util.Logger.Debug("lookup roles are %s", lookupRoles)
+	a.logger.Debug("lookup roles are %s", lookupRoles)
 	return lookupRoles
 }
 
 func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 	assignees := meta.GetAssignees()
 	if len(assignees) > 0 && a.rule.IfNoAssignees {
-		util.Logger.Debug("Skipping as there are assignees and no more are allowed")
+		a.logger.DebugWith(
+			log.MetaFields{log.F("issue", meta.GetShortName())},
+			"Skipping as there are assignees and no more are allowed")
 		return
 	}
 	if len(assignees) >= a.rule.Require {
-		util.Logger.Debug("Skipping as there are matched required assignees")
+		a.logger.DebugWith(
+			log.MetaFields{log.F("issue", meta.GetShortName())},
+			"Skipping as there are matched required assignees")
 		return
 	}
-	assignedRoles := findAssignedRoles(assignees, config)
+	assignedRoles := a.findAssignedRoles(assignees, config)
 	lookupRoles := a.findLookupRoles(config, assignedRoles)
 
 	winners := a.randomUsers(config, meta, lookupRoles)
@@ -71,7 +78,9 @@ func (a *action) randomUsers(config bot.Configuration, meta bot.EventData, looku
 	for _, assignee := range meta.GetAssignees() {
 		possibleSet.Remove(assignee)
 	}
-	util.Logger.Debug("There are %d possible assignees from %d roles", possibleSet.Len(), len(lookupRoles))
+	a.logger.DebugWith(
+		log.MetaFields{log.F("issue", meta.GetShortName())},
+		"There are %d possible assignees from %d roles", possibleSet.Len(), len(lookupRoles))
 	if possibleSet.Len() == 0 {
 		return []string{}
 	}
@@ -79,7 +88,9 @@ func (a *action) randomUsers(config bot.Configuration, meta bot.EventData, looku
 	if remainingRequired < 0 {
 		remainingRequired = 0
 	}
-	util.Logger.Debug("Require %d assignees", remainingRequired)
+	a.logger.DebugWith(
+		log.MetaFields{log.F("issue", meta.GetShortName())},
+		"Require %d assignees", remainingRequired)
 	possible := possibleSet.Values()
 	winners := make([]string, remainingRequired)
 	for i := 0; i < remainingRequired; i++ {
@@ -91,7 +102,9 @@ func (a *action) randomUsers(config bot.Configuration, meta bot.EventData, looku
 			possible[index] = ""
 		}
 	}
-	util.Logger.Debug("Selecting users %s as assignees", winners)
+	a.logger.DebugWith(
+		log.MetaFields{log.F("issue", meta.GetShortName())},
+		"Selecting users %s as assignees", winners)
 	return winners
 }
 
@@ -104,7 +117,7 @@ func (*factory) BuildAction(config map[string]interface{}) bot.Action {
 		panic(e)
 	}
 	item.Defaults()
-	return &action{rule: &item}
+	return &action{rule: &item, logger: log.Get("autoassign")}
 }
 
 func init() {

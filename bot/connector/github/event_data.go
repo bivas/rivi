@@ -1,16 +1,23 @@
 package github
 
-import "github.com/bivas/rivi/bot"
+import (
+	"fmt"
+
+	"github.com/bivas/rivi/bot"
+	"github.com/bivas/rivi/util"
+)
 
 type eventData struct {
 	client       *ghClient
 	number       int
 	state        string
+	locked       bool
 	origin       string
 	owner        string
 	repo         string
 	ref          string
 	title        string
+	description  string
 	changedFiles int
 	fileNames    []string
 	fileExt      []string
@@ -20,6 +27,43 @@ type eventData struct {
 	assignees    []string
 	comments     []bot.Comment
 	payload      []byte
+	reviewers    map[string]string
+}
+
+func (d *eventData) GetShortName() string {
+	return fmt.Sprintf("%s/%s#%d", d.owner, d.repo, d.number)
+}
+
+func (d *eventData) GetLongName() string {
+	return fmt.Sprintf("%s/%s#%d [%s]", d.owner, d.repo, d.number, d.title)
+}
+
+func (d *eventData) GetReviewers() map[string]string {
+	return d.reviewers
+}
+
+func (d *eventData) GetApprovals() []string {
+	result := util.StringSet{}
+	for reviewer, state := range d.reviewers {
+		if state == "approved" {
+			result.Add(reviewer)
+		}
+	}
+	return result.Values()
+}
+
+func (d *eventData) Lock() {
+	d.client.Lock(d.number)
+	d.locked = true
+}
+
+func (d *eventData) Unlock() {
+	d.client.Unlock(d.number)
+	d.locked = false
+}
+
+func (d *eventData) LockState() bool {
+	return d.locked
 }
 
 func (d *eventData) GetRawPayload() []byte {
@@ -90,6 +134,10 @@ func (d *eventData) GetNumber() int {
 
 func (d *eventData) GetTitle() string {
 	return d.title
+}
+
+func (d *eventData) GetDescription() string {
+	return d.description
 }
 
 func (d *eventData) GetOrigin() string {

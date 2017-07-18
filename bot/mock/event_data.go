@@ -1,6 +1,8 @@
 package mock
 
 import (
+	"fmt"
+
 	"github.com/bivas/rivi/bot"
 	"github.com/bivas/rivi/util"
 )
@@ -8,6 +10,7 @@ import (
 type MockEventData struct {
 	Number           int
 	Title            string
+	Description      string
 	State            string
 	Owner            string
 	Repo             string
@@ -28,6 +31,14 @@ type MockEventData struct {
 	RawPayload       []byte
 }
 
+func (m *MockEventData) GetShortName() string {
+	return fmt.Sprintf("%s/%s#%d", m.Owner, m.Repo, m.Number)
+}
+
+func (m *MockEventData) GetLongName() string {
+	return fmt.Sprintf("%s/%s#%d [%s]", m.Owner, m.Repo, m.Number, m.Title)
+}
+
 func (m *MockEventData) GetRawPayload() []byte {
 	return m.RawPayload
 }
@@ -38,6 +49,10 @@ func (m *MockEventData) GetNumber() int {
 
 func (m *MockEventData) GetTitle() string {
 	return m.Title
+}
+
+func (m *MockEventData) GetDescription() string {
+	return m.Description
 }
 
 func (m *MockEventData) GetState() string {

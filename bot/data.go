@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/bivas/rivi/util"
+	"github.com/bivas/rivi/util/log"
 )
 
 type Comment struct {
@@ -13,8 +13,11 @@ type Comment struct {
 }
 
 type EventData interface {
+	GetShortName() string
+	GetLongName() string
 	GetNumber() int
 	GetTitle() string
+	GetDescription() string
 	GetState() string
 	GetOrigin() string
 	GetOwner() string
@@ -49,14 +52,14 @@ func RegisterNewBuilder(provider string, builder EventDataBuilder) {
 	search := strings.ToLower(provider)
 	_, exists := builders[search]
 	if exists {
-		util.Logger.Error("connector for %s exists!", provider)
+		log.Error("build for %s exists", provider)
 	} else {
-		util.Logger.Debug("registering connector %s", provider)
+		log.Debug("registering builder %s", provider)
 		builders[search] = builder
 	}
 }
 
-func buildFromRequest(config ClientConfig, r *http.Request) (EventData, bool) {
+func getBuilderFromRequest(r *http.Request) EventDataBuilder {
 	var builder EventDataBuilder
 	for name := range r.Header {
 		for provider := range builders {
@@ -69,63 +72,32 @@ func buildFromRequest(config ClientConfig, r *http.Request) (EventData, bool) {
 			break
 		}
 	}
+	return builder
+}
+
+func buildFromRequest(config ClientConfig, r *http.Request) (EventData, bool) {
+	builder := getBuilderFromRequest(r)
 	if builder == nil {
-		util.Logger.Error("No Builder to work with!")
+		log.Error("No Builder to work with!")
 		return nil, false
 	}
 	result, process, err := builder.PartialBuildFromRequest(config, r)
 	if err != nil {
-		util.Logger.Error("Unable to build from request. %s", err)
-		return nil, false
-	}
-	return result, process
-}
-
-func completeBuildFromRequest(config ClientConfig, r *http.Request) (EventData, bool) {
-	var builder EventDataBuilder
-	for name := range r.Header {
-		for provider := range builders {
-			if strings.Contains(strings.ToLower(name), provider) {
-				builder = builders[provider]
-				break
-			}
-		}
-		if builder != nil {
-			break
-		}
-	}
-	if builder == nil {
-		util.Logger.Error("No Builder to work with!")
-		return nil, false
-	}
-	result, process, err := builder.BuildFromRequest(config, r)
-	if err != nil {
-		util.Logger.Error("Unable to build from request. %s", err)
+		log.ErrorWith(log.MetaFields{log.E(err)}, "Unable to build from request")
 		return nil, false
 	}
 	return result, process
 }
 
 func completeBuild(config ClientConfig, r *http.Request, data EventData) (EventData, bool) {
-	var builder EventDataBuilder
-	for name := range r.Header {
-		for provider := range builders {
-			if strings.Contains(strings.ToLower(name), provider) {
-				builder = builders[provider]
-				break
-			}
-		}
-		if builder != nil {
-			break
-		}
-	}
+	builder := getBuilderFromRequest(r)
 	if builder == nil {
-		util.Logger.Error("No Builder to work with!")
+		log.Error("No Builder to work with!")
 		return nil, false
 	}
 	result, process, err := builder.BuildFromPayload(config, data.GetRawPayload())
 	if err != nil {
-		util.Logger.Error("Unable to build from payload. %s", err)
+		log.ErrorWith(log.MetaFields{log.E(err)}, "Unable to build from payload.")
 		return nil, false
 	}
 	return result, process

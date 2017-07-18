@@ -8,6 +8,7 @@ go:
 go_import_path: github.com/bivas/rivi
 install: true
 script:
+- export RIVI_DEBUG=1
 - go list ./... | grep -v vendor | xargs go test -v
 - go list ./... | grep -v vendor | xargs go vet
 - GOOS=linux GOARCH=amd64 go build -o rivi
@@ -19,7 +20,7 @@ env:
 after_success:
   - export DOCKER_TAG="unstable"
   - if [ "$TRAVIS_BRANCH" == "master" ]; then
-    export DOCKER_TAG="latest"
+    export DOCKER_TAG="latest";
     fi
   - if [ "$TRAVIS_BRANCH" == "development" ]; then
     export DOCKER_TAG="development";

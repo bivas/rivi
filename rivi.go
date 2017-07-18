@@ -3,11 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
+
 	"github.com/bivas/rivi/bot"
 	"github.com/bivas/rivi/server"
-	"github.com/bivas/rivi/util"
-	"log"
-	"os"
+	rivilog "github.com/bivas/rivi/util/log"
 )
 
 type configs []string
@@ -35,16 +35,18 @@ func main() {
 	flag.Var(&setup.config, "config", "Bot configuration file(s)")
 	flag.Parse()
 	if len(setup.config) == 0 {
-		util.Logger.Error("missing configuration file")
+		rivilog.Error("missing configuration file")
 		flag.Usage()
 		os.Exit(1)
 	}
 	run, err := bot.New(setup.config...)
 	if err != nil {
-		log.Fatalln("Unable to start bot handler", err)
+		rivilog.ErrorWith(rivilog.MetaFields{rivilog.E(err)}, "Unable to start bot handler")
+		os.Exit(-1)
 	}
 	s := server.BotServer{Port: setup.port, Uri: setup.uri, Bot: run}
 	if err := s.Run(); err != nil {
-		log.Fatalln("Bot exited with error. %s", err)
+		rivilog.ErrorWith(rivilog.MetaFields{rivilog.E(err)}, "Bot exited with error")
+		os.Exit(-1)
 	}
 }
