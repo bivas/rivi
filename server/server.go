@@ -2,9 +2,10 @@ package server
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/bivas/rivi/bot"
 	"gopkg.in/gin-gonic/gin.v1"
-	"strings"
 )
 
 type BotServer struct {

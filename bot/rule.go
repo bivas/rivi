@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/bivas/rivi/util"
+	"github.com/bivas/rivi/util/log"
 	"github.com/spf13/viper"
 )
 
@@ -55,7 +55,7 @@ func (r *rule) String() string {
 func (r *rule) Accept(meta EventData) bool {
 	accept := r.condition.Match(meta)
 	if !accept {
-		util.Logger.Debug("Skipping rule '%s'", r.name)
+		log.DebugWith(log.MetaFields{{"issue", meta.GetShortName()}}, "Skipping rule '%s'", r.name)
 	}
 	return accept
 }
@@ -94,7 +94,7 @@ func groupByRuleOrder(rules []Rule) []rulesGroup {
 		group.rules = append(group.rules, rule)
 		groupIndexes[key] = group
 	}
-	util.Logger.Debug("%d Rules are grouped to %d rule groups", len(rules), len(groupIndexes))
+	log.Debug("%d Rules are grouped to %d rule groups", len(rules), len(groupIndexes))
 	groupsResult := make([]rulesGroup, 0)
 	for _, group := range groupIndexes {
 		groupsResult = append(groupsResult, group)
@@ -114,9 +114,9 @@ func RegisterAction(kind string, action ActionFactory) {
 	search := strings.ToLower(kind)
 	_, exists := actions[search]
 	if exists {
-		util.Logger.Error("action %s exists!", kind)
+		log.Error("action %s exists!", kind)
 	} else {
-		util.Logger.Debug("registering action %s", kind)
+		log.Debug("registering action %s", kind)
 		actions[search] = action
 		supportedActions = append(supportedActions, kind)
 	}

@@ -41,35 +41,71 @@ type logger struct {
 }
 
 func (l *logger) Debug(format string, args ...interface{}) {
-	l.SugaredLogger.Debugf(format, args...)
+	if len(args) == 0 {
+		l.SugaredLogger.Debug(format)
+	} else {
+		l.SugaredLogger.Debugf(format, args...)
+	}
 }
 
 func (l *logger) DebugWith(meta MetaFields, format string, args ...interface{}) {
-	l.SugaredLogger.With(meta.flat()...).Debugf(format, args)
+	s := l.SugaredLogger.With(meta.flat()...)
+	if len(args) == 0 {
+		s.Debug(format)
+	} else {
+		s.Debugf(format, args)
+	}
 }
 
 func (l *logger) Info(format string, args ...interface{}) {
-	l.SugaredLogger.Infof(format, args...)
+	if len(args) == 0 {
+		l.SugaredLogger.Info(format)
+	} else {
+		l.SugaredLogger.Infof(format, args...)
+	}
 }
 
 func (l *logger) InfoWith(meta MetaFields, format string, args ...interface{}) {
-	l.SugaredLogger.With(meta.flat()...).Infof(format, args)
+	s := l.SugaredLogger.With(meta.flat()...)
+	if len(args) == 0 {
+		s.Info(format)
+	} else {
+		s.Infof(format, args)
+	}
 }
 
 func (l *logger) Warning(format string, args ...interface{}) {
-	l.SugaredLogger.Warnf(format, args)
+	if len(args) == 0 {
+		l.SugaredLogger.Warn(format)
+	} else {
+		l.SugaredLogger.Warnf(format, args...)
+	}
 }
 
 func (l *logger) WarningWith(meta MetaFields, format string, args ...interface{}) {
-	l.SugaredLogger.With(meta.flat()...).Warnf(format, args)
+	s := l.SugaredLogger.With(meta.flat()...)
+	if len(args) == 0 {
+		s.Warn(format)
+	} else {
+		s.Warnf(format, args)
+	}
 }
 
 func (l *logger) Error(format string, args ...interface{}) {
-	l.SugaredLogger.Errorf(format, args)
+	if len(args) == 0 {
+		l.SugaredLogger.Error(format)
+	} else {
+		l.SugaredLogger.Errorf(format, args...)
+	}
 }
 
 func (l *logger) ErrorWith(meta MetaFields, format string, args ...interface{}) {
-	l.SugaredLogger.With(meta.flat()...).Errorf(format, args)
+	s := l.SugaredLogger.With(meta.flat()...)
+	if len(args) == 0 {
+		s.Error(format)
+	} else {
+		s.Errorf(format, args)
+	}
 }
 
 func (l *logger) Get(name string) Logger {

@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/bivas/rivi/util"
+	"github.com/bivas/rivi/util/log"
 )
 
 type Comment struct {
@@ -52,9 +52,9 @@ func RegisterNewBuilder(provider string, builder EventDataBuilder) {
 	search := strings.ToLower(provider)
 	_, exists := builders[search]
 	if exists {
-		util.Logger.Error("build for %s exists!", provider)
+		log.Error("build for %s exists", provider)
 	} else {
-		util.Logger.Debug("registering builder %s", provider)
+		log.Debug("registering builder %s", provider)
 		builders[search] = builder
 	}
 }
@@ -78,12 +78,12 @@ func getBuilderFromRequest(r *http.Request) EventDataBuilder {
 func buildFromRequest(config ClientConfig, r *http.Request) (EventData, bool) {
 	builder := getBuilderFromRequest(r)
 	if builder == nil {
-		util.Logger.Error("No Builder to work with!")
+		log.Error("No Builder to work with!")
 		return nil, false
 	}
 	result, process, err := builder.PartialBuildFromRequest(config, r)
 	if err != nil {
-		util.Logger.Error("Unable to build from request. %s", err)
+		log.ErrorWith(log.MetaFields{{"error", err}}, "Unable to build from request")
 		return nil, false
 	}
 	return result, process
@@ -92,12 +92,12 @@ func buildFromRequest(config ClientConfig, r *http.Request) (EventData, bool) {
 func completeBuild(config ClientConfig, r *http.Request, data EventData) (EventData, bool) {
 	builder := getBuilderFromRequest(r)
 	if builder == nil {
-		util.Logger.Error("No Builder to work with!")
+		log.Error("No Builder to work with!")
 		return nil, false
 	}
 	result, process, err := builder.BuildFromPayload(config, data.GetRawPayload())
 	if err != nil {
-		util.Logger.Error("Unable to build from payload. %s", err)
+		log.ErrorWith(log.MetaFields{{"error", err}}, "Unable to build from payload.")
 		return nil, false
 	}
 	return result, process

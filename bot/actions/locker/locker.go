@@ -2,8 +2,9 @@ package locker
 
 import (
 	"fmt"
+
 	"github.com/bivas/rivi/bot"
-	"github.com/bivas/rivi/util"
+	"github.com/bivas/rivi/util/log"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -14,32 +15,35 @@ type LockableEventData interface {
 }
 
 type action struct {
-	rule *rule
-	err  error
+	rule   *rule
+	err    error
+	logger log.Logger
 }
 
 func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 	lockable, ok := meta.(LockableEventData)
 	if !ok {
-		util.Logger.Warning("Event data does not support locking. Check your configurations")
+		a.logger.WarningWith(
+			log.MetaFields{{"issue", meta.GetShortName()}},
+			"Event data does not support locking. Check your configurations")
 		a.err = fmt.Errorf("Event data does not support locking")
 		return
 	}
 	if lockable.LockState() {
-		util.Logger.Debug("Issue is locked")
+		a.logger.Debug("Issue is locked")
 		if a.rule.State == "unlock" || a.rule.State == "change" {
-			util.Logger.Debug("unlocking issue %d", meta.GetNumber())
+			a.logger.DebugWith(log.MetaFields{{"issue", meta.GetShortName()}}, "unlocking issue")
 			lockable.Unlock()
 		} else if a.rule.State == "lock" {
-			util.Logger.Debug("Issue %d is already locked - nothing changed", meta.GetNumber())
+			a.logger.DebugWith(log.MetaFields{{"issue", meta.GetShortName()}}, "Issue is already locked - nothing changed")
 		}
 	} else {
-		util.Logger.Debug("Issue is unlocked")
+		a.logger.Debug("Issue is unlocked")
 		if a.rule.State == "lock" || a.rule.State == "change" {
-			util.Logger.Debug("Locking issue %d", meta.GetNumber())
+			a.logger.DebugWith(log.MetaFields{{"issue", meta.GetShortName()}}, "Locking issue")
 			lockable.Lock()
 		} else if a.rule.State == "lock" {
-			util.Logger.Debug("Issue %d is already unlocked - nothing changed", meta.GetNumber())
+			a.logger.DebugWith(log.MetaFields{{"issue", meta.GetShortName()}}, "Issue is already unlocked - nothing changed")
 		}
 	}
 }
@@ -52,7 +56,7 @@ func (*factory) BuildAction(config map[string]interface{}) bot.Action {
 	if e := mapstructure.Decode(config, &item); e != nil {
 		panic(e)
 	}
-	return &action{rule: &item}
+	return &action{rule: &item, logger: log.Get("locker")}
 }
 
 func init() {

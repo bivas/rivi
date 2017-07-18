@@ -2,19 +2,23 @@ package labeler
 
 import (
 	"github.com/bivas/rivi/bot"
-	"github.com/bivas/rivi/util"
+	"github.com/bivas/rivi/util/log"
 	"github.com/mitchellh/mapstructure"
 )
 
 type action struct {
 	rule *rule
+
+	logger log.Logger
 }
 
 func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 	apply := a.rule.Label
 	if apply != "" {
 		if meta.HasLabel(apply) {
-			util.Logger.Debug("Skipping label '%s' as it already exists", apply)
+			a.logger.DebugWith(
+				log.MetaFields{{"issue", meta.GetShortName()}},
+				"Skipping label '%s' as it already exists", apply)
 		} else {
 			meta.AddLabel(apply)
 		}
@@ -22,7 +26,9 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 	remove := a.rule.Remove
 	if remove != "" {
 		if !meta.HasLabel(remove) {
-			util.Logger.Debug("Skipping label '%s' removal as it does not exists", remove)
+			a.logger.DebugWith(
+				log.MetaFields{{"issue", meta.GetShortName()}},
+				"Skipping label '%s' removal as it does not exists", remove)
 		} else {
 			meta.RemoveLabel(remove)
 		}
@@ -37,7 +43,7 @@ func (*factory) BuildAction(config map[string]interface{}) bot.Action {
 	if e := mapstructure.Decode(config, &item); e != nil {
 		panic(e)
 	}
-	return &action{rule: &item}
+	return &action{rule: &item, logger: log.Get("labeler")}
 }
 
 func init() {

@@ -4,11 +4,12 @@ import (
 	"testing"
 
 	"github.com/bivas/rivi/bot/mock"
+	"github.com/bivas/rivi/util/log"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestLabelerNoLabels(t *testing.T) {
-	action := action{rule: &rule{Label: "label1"}}
+	action := action{rule: &rule{Label: "label1"}, logger: log.Get("labeler.test")}
 	meta := &mock.MockEventData{Labels: []string{}}
 	config := &mock.MockConfiguration{}
 	action.Apply(config, meta)
@@ -17,7 +18,7 @@ func TestLabelerNoLabels(t *testing.T) {
 }
 
 func TestLabelExists(t *testing.T) {
-	action := action{rule: &rule{Label: "label1"}}
+	action := action{rule: &rule{Label: "label1"}, logger: log.Get("labeler.test")}
 	meta := &mock.MockEventData{Labels: []string{"label1"}}
 	config := &mock.MockConfiguration{}
 	action.Apply(config, meta)
@@ -25,7 +26,7 @@ func TestLabelExists(t *testing.T) {
 }
 
 func TestNewLabelWithExisting(t *testing.T) {
-	action := action{rule: &rule{Label: "label1"}}
+	action := action{rule: &rule{Label: "label1"}, logger: log.Get("labeler.test")}
 	meta := &mock.MockEventData{Labels: []string{"label2"}}
 	config := &mock.MockConfiguration{}
 	action.Apply(config, meta)
@@ -34,7 +35,7 @@ func TestNewLabelWithExisting(t *testing.T) {
 }
 
 func TestRemoveNotExisting(t *testing.T) {
-	action := action{rule: &rule{Label: "label2", Remove: "label1"}}
+	action := action{rule: &rule{Label: "label2", Remove: "label1"}, logger: log.Get("labeler.test")}
 	meta := &mock.MockEventData{Labels: []string{"label2"}}
 	config := &mock.MockConfiguration{}
 	action.Apply(config, meta)
@@ -43,7 +44,7 @@ func TestRemoveNotExisting(t *testing.T) {
 }
 
 func TestRemoveExisting(t *testing.T) {
-	action := action{rule: &rule{Remove: "label1"}}
+	action := action{rule: &rule{Remove: "label1"}, logger: log.Get("labeler.test")}
 	meta := &mock.MockEventData{Labels: []string{"label1"}}
 	config := &mock.MockConfiguration{}
 	action.Apply(config, meta)
@@ -52,7 +53,7 @@ func TestRemoveExisting(t *testing.T) {
 }
 
 func TestReplaceLabeles(t *testing.T) {
-	action := action{rule: &rule{Remove: "label1", Label: "label2"}}
+	action := action{rule: &rule{Remove: "label1", Label: "label2"}, logger: log.Get("labeler.test")}
 	meta := &mock.MockEventData{Labels: []string{"label1"}}
 	config := &mock.MockConfiguration{}
 	action.Apply(config, meta)

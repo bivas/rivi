@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/bivas/rivi/bot"
-	"github.com/bivas/rivi/util"
+	"github.com/bivas/rivi/util/log"
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
 )
@@ -15,12 +15,15 @@ type ghClient struct {
 	secret []byte
 	owner  string
 	repo   string
+
+	logger log.Logger
 }
 
 func (c *ghClient) GetState(issue int) string {
+	c.logger.DebugWith(log.MetaFields{{"issue.id", issue}}, "Getting issue state")
 	response, _, err := c.client.Issues.Get(context.Background(), c.owner, c.repo, issue)
 	if err != nil {
-		util.Logger.Error("Unable to get issue %d state. %s", issue, err)
+		c.logger.Error("Unable to get issue %d state. %s", issue, err)
 		return ""
 	}
 	return *response.State
@@ -39,63 +42,66 @@ func handleLabelsResult(labels []*github.Label, err error, logError func(error))
 }
 
 func (c *ghClient) Lock(issue int) {
+	c.logger.DebugWith(log.MetaFields{{"issue.id", issue}}, "Locking issue")
 	_, err := c.client.Issues.Lock(context.Background(), c.owner, c.repo, issue)
 	if err != nil {
-		util.Logger.Error("Unable to set issue %d lock state. %s", issue, err)
+		c.logger.ErrorWith(log.MetaFields{{"error", err}, {"issue.id", issue}}, "Unable to set issue lock state")
 	}
 }
 
 func (c *ghClient) Unlock(issue int) {
+	c.logger.DebugWith(log.MetaFields{{"issue.id", issue}}, "Unlocking issue")
 	_, err := c.client.Issues.Unlock(context.Background(), c.owner, c.repo, issue)
 	if err != nil {
-		util.Logger.Error("Unable to set issue %d unlock state. %s", issue, err)
+		c.logger.ErrorWith(log.MetaFields{{"error", err}, {"issue.id", issue}}, "Unable to set issue unlock state")
 	}
 }
 
 func (c *ghClient) Locked(issue int) bool {
+	c.logger.DebugWith(log.MetaFields{{"issue.id", issue}}, "Checking lock state")
 	response, _, err := c.client.Issues.Get(context.Background(), c.owner, c.repo, issue)
 	if err != nil {
-		util.Logger.Error("Unable to get issue %d lock state. %s", issue, err)
+		c.logger.ErrorWith(log.MetaFields{{"error", err}, {"issue.id", issue}}, "Unable to get issue lock state")
 	}
 	return *response.Locked
 }
 
 func (c *ghClient) GetAvailableLabels() []string {
-	util.Logger.Debug("Getting available labels")
+	c.logger.Debug("Getting available labels")
 	labels, _, e := c.client.Issues.ListLabels(context.Background(), c.owner, c.repo, nil)
 	return handleLabelsResult(labels, e, func(err error) {
-		util.Logger.Error("Unable to get available labels. %s", err)
+		c.logger.ErrorWith(log.MetaFields{{"error", err}}, "Unable to get available labels")
 	})
 }
 
 func (c *ghClient) GetLabels(issue int) []string {
-	util.Logger.Debug("Getting labels for issue %d", issue)
+	c.logger.DebugWith(log.MetaFields{{"issue.id", issue}}, "Getting labels")
 	labels, _, err := c.client.Issues.ListLabelsByIssue(context.Background(), c.owner, c.repo, issue, nil)
 	return handleLabelsResult(labels, err, func(err error) {
-		util.Logger.Error("Unable to get labels for issue %d. %s", issue, err)
+		c.logger.ErrorWith(log.MetaFields{{"error", err}, {"issue.id", issue}}, "Unable to get labels for issue.")
 	})
 }
 
 func (c *ghClient) AddLabel(issue int, label string) []string {
-	util.Logger.Debug("Adding label '%s' to issue %d", label, issue)
+	c.logger.DebugWith(log.MetaFields{{"issue.id", issue}}, "Adding label '%s'", label)
 	labels, _, err := c.client.Issues.AddLabelsToIssue(context.Background(), c.owner, c.repo, issue, []string{label})
 	return handleLabelsResult(labels, err, func(err error) {
-		util.Logger.Error("Unable to add label %s for issue %d. %s", label, issue, err)
+		c.logger.ErrorWith(log.MetaFields{{"error", err}, {"issue.id", issue}}, "Unable to add label '%s' for issue", label)
 	})
 }
 
 func (c *ghClient) RemoveLabel(issue int, label string) []string {
-	util.Logger.Debug("Removing label '%s' from issue %d", label, issue)
+	c.logger.DebugWith(log.MetaFields{{"issue.id", issue}}, "Removing label '%s'", label)
 	c.client.Issues.RemoveLabelForIssue(context.Background(), c.owner, c.repo, issue, label)
 	return c.GetLabels(issue)
 }
 
 func (c *ghClient) GetAssignees(issue int) []string {
-	util.Logger.Debug("Getting assignees for issue %d", issue)
+	c.logger.DebugWith(log.MetaFields{{"issue.id", issue}}, "Getting assignees")
 	result := make([]string, 0)
 	issueObject, _, err := c.client.Issues.Get(context.Background(), c.owner, c.repo, issue)
 	if err != nil {
-		util.Logger.Error("Unable to get assignees for issue %d. %s", issue, err)
+		c.logger.ErrorWith(log.MetaFields{{"error", err}, {"issue.id", issue}}, "Unable to get assignees for issue")
 	} else {
 		for _, p := range issueObject.Assignees {
 			result = append(result, strings.ToLower(*p.Login))
@@ -105,11 +111,11 @@ func (c *ghClient) GetAssignees(issue int) []string {
 }
 
 func (c *ghClient) AddAssignees(issue int, assignees ...string) []string {
-	util.Logger.Debug("Adding assignees '%s' for issue %d", assignees, issue)
+	c.logger.DebugWith(log.MetaFields{{"issue.id", issue}}, "Adding assignees %s", assignees)
 	response, _, err := c.client.Issues.AddAssignees(context.Background(), c.owner, c.repo, issue, assignees)
 	result := make([]string, 0)
 	if err != nil {
-		util.Logger.Error("Unable to add assignees %s for issue %d. %s", assignees, issue, err)
+		c.logger.ErrorWith(log.MetaFields{{"error", err}, {"issue.id", issue}}, "Unable to add assignees %s for issue", assignees)
 	} else {
 		for _, p := range response.Assignees {
 			result = append(result, *p.Login)
@@ -120,11 +126,11 @@ func (c *ghClient) AddAssignees(issue int, assignees ...string) []string {
 }
 
 func (c *ghClient) RemoveAssignees(issue int, assignees ...string) []string {
-	util.Logger.Debug("Removing assignees '%s' from issue %d", assignees, issue)
+	c.logger.DebugWith(log.MetaFields{{"issue.id", issue}}, "Removing assignees %s", assignees)
 	response, _, err := c.client.Issues.RemoveAssignees(context.Background(), c.owner, c.repo, issue, assignees)
 	result := make([]string, 0)
 	if err != nil {
-		util.Logger.Error("Unable to remove assignees %s for issue %d. %s", assignees, issue, err)
+		c.logger.ErrorWith(log.MetaFields{{"error", err}, {"issue.id", issue}}, "Unable to remove assignees %s for issue", assignees)
 	} else {
 		for _, p := range response.Assignees {
 			result = append(result, *p.Login)
@@ -134,10 +140,11 @@ func (c *ghClient) RemoveAssignees(issue int, assignees ...string) []string {
 }
 
 func (c *ghClient) GetFileNames(issue int) []string {
+	c.logger.DebugWith(log.MetaFields{{"issue.id", issue}}, "Getting file names")
 	files, _, err := c.client.PullRequests.ListFiles(context.Background(), c.owner, c.repo, issue, nil)
 	result := make([]string, 0)
 	if err != nil {
-		util.Logger.Error("Unable to get file names for issue %d. %s", issue, err)
+		c.logger.ErrorWith(log.MetaFields{{"error", err}, {"issue.id", issue}}, "Unable to get file names for issue")
 	} else {
 		for _, p := range files {
 			result = append(result, *p.Filename)
@@ -147,10 +154,11 @@ func (c *ghClient) GetFileNames(issue int) []string {
 }
 
 func (c *ghClient) GetComments(issue int) []bot.Comment {
+	c.logger.DebugWith(log.MetaFields{{"issue.id", issue}}, "Getting comments")
 	comments, _, err := c.client.Issues.ListComments(context.Background(), c.owner, c.repo, issue, nil)
 	result := make([]bot.Comment, 0)
 	if err != nil {
-		util.Logger.Error("Unable to get comments for issue %d. %s", issue, err)
+		c.logger.ErrorWith(log.MetaFields{{"error", err}, {"issue.id", issue}}, "Unable to get comments for issue")
 	} else {
 		for _, p := range comments {
 			comment := bot.Comment{
@@ -164,10 +172,11 @@ func (c *ghClient) GetComments(issue int) []bot.Comment {
 }
 
 func (c *ghClient) AddComment(issue int, comment string) bot.Comment {
+	c.logger.DebugWith(log.MetaFields{{"issue.id", issue}}, "Adding comment '%s'", comment)
 	commentObject := &github.IssueComment{Body: github.String(comment)}
 	posted, _, err := c.client.Issues.CreateComment(context.Background(), c.owner, c.repo, issue, commentObject)
 	if err != nil {
-		util.Logger.Error("Unable to add comment for issue %d. %s", issue, err)
+		c.logger.ErrorWith(log.MetaFields{{"error", err}, {"issue.id", issue}}, "Unable to add comment for issue")
 		return bot.Comment{}
 	} else {
 		return bot.Comment{
@@ -178,10 +187,11 @@ func (c *ghClient) AddComment(issue int, comment string) bot.Comment {
 }
 
 func (c *ghClient) GetReviewers(issue int) map[string]string {
+	c.logger.DebugWith(log.MetaFields{{"issue.id", issue}}, "Getting reviewers")
 	result := make(map[string]string)
 	reviews, _, err := c.client.PullRequests.ListReviews(context.Background(), c.owner, c.repo, issue, nil)
 	if err != nil {
-		util.Logger.Error("Unable to get reviewers for issue %d. %s", issue, err)
+		c.logger.ErrorWith(log.MetaFields{{"error", err}, {"issue.id", issue}}, "Unable to get reviewers for issue")
 		return result
 	}
 	for _, review := range reviews {
@@ -193,10 +203,11 @@ func (c *ghClient) GetReviewers(issue int) map[string]string {
 }
 
 func (c *ghClient) Merge(issue int, mergeMethod string) {
+	c.logger.DebugWith(log.MetaFields{{"issue.id", issue}}, "Merging with %s strategy", mergeMethod)
 	options := &github.PullRequestOptions{MergeMethod: mergeMethod}
 	_, _, err := c.client.PullRequests.Merge(context.Background(), c.owner, c.repo, issue, "", options)
 	if err != nil {
-		util.Logger.Error("Error trying to merge issue %d. %s", issue, err)
+		c.logger.ErrorWith(log.MetaFields{{"error", err}, {"issue.id", issue}}, "Error trying to merge issue")
 	}
 }
 
@@ -211,5 +222,6 @@ func newClient(config bot.ClientConfig, owner, repo string) *ghClient {
 		secret: []byte(config.GetSecret()),
 		owner:  owner,
 		repo:   repo,
+		logger: log.Get("GitHub.Client"),
 	}
 }
