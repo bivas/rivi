@@ -55,7 +55,7 @@ func (r *rule) String() string {
 func (r *rule) Accept(meta EventData) bool {
 	accept := r.condition.Match(meta)
 	if !accept {
-		log.DebugWith(log.MetaFields{{"issue", meta.GetShortName()}}, "Skipping rule '%s'", r.name)
+		log.DebugWith(log.MetaFields{log.F("issue", meta.GetShortName())}, "Skipping rule '%s'", r.name)
 	}
 	return accept
 }

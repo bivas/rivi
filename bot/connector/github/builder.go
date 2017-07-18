@@ -94,7 +94,7 @@ func (builder *eventDataBuilder) readFromClient(context *builderContext) {
 }
 
 func (builder *eventDataBuilder) checkProcessState(context *builderContext) bool {
-	builder.logger.DebugWith(log.MetaFields{{"issue", context.data.GetShortName()}},
+	builder.logger.DebugWith(log.MetaFields{log.F("issue", context.data.GetShortName())},
 		"Current state is '%s'", context.data.state)
 	return context.data.state != "closed"
 }

@@ -38,7 +38,7 @@ func (a *action) findMatchedLabel(meta bot.EventData) (*sizingRule, string, bool
 			defaultRule = rule
 		} else if changedFiles <= rule.ChangedFilesThreshold && changes <= rule.ChangesThreshold {
 			a.logger.DebugWith(
-				log.MetaFields{{"issue", meta.GetShortName()}},
+				log.MetaFields{log.F("issue", meta.GetShortName())},
 				"sizing rule %s matched with %d files and %d changes",
 				rule.Name,
 				changedFiles,
@@ -71,11 +71,11 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 	matchedRule, matchedLabel, matched := a.findMatchedLabel(meta)
 	if exists && matched {
 		if currentMatchedLabel == matchedLabel {
-			a.logger.DebugWith(log.MetaFields{{"issue", meta.GetShortName()}}, "No need to update label")
+			a.logger.DebugWith(log.MetaFields{log.F("issue", meta.GetShortName())}, "No need to update label")
 			return
 		}
 		a.logger.DebugWith(
-			log.MetaFields{{"issue", meta.GetShortName()}},
+			log.MetaFields{log.F("issue", meta.GetShortName())},
 			"Updating label from %s to %s", currentMatchedLabel, matchedLabel)
 		meta.RemoveLabel(currentMatchedLabel)
 		meta.AddLabel(matchedLabel)
@@ -83,7 +83,7 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 			meta.AddComment(matchedRule.Comment)
 		}
 	} else if matched {
-		a.logger.DebugWith(log.MetaFields{{"issue", meta.GetShortName()}}, "Updating label to %s",
+		a.logger.DebugWith(log.MetaFields{log.F("issue", meta.GetShortName())}, "Updating label to %s",
 			matchedLabel)
 		meta.AddLabel(matchedLabel)
 		if matchedRule.Comment != "" {

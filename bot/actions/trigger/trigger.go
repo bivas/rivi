@@ -33,7 +33,7 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 
 	if a.err != nil {
 		a.logger.ErrorWith(
-			log.MetaFields{{"issue", meta.GetShortName()}, {"error", a.err}},
+			log.MetaFields{log.F("issue", meta.GetShortName()), log.E(a.err)},
 			"Apply got error")
 	}
 
@@ -51,7 +51,7 @@ func (a *action) prepareRequest(meta bot.EventData) *http.Request {
 	body := processMessage(&a.rule.Body, message)
 	request, e := http.NewRequest(a.rule.Method, a.rule.Endpoint, body)
 	if e != nil {
-		a.logger.ErrorWith(log.MetaFields{{"issue", meta.GetShortName()}, {"error", e}},
+		a.logger.ErrorWith(log.MetaFields{log.F("issue", meta.GetShortName()), log.E(e)},
 			"Error trying to build trigger request", e)
 	}
 	a.setRequestHeaders(request)

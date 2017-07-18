@@ -14,11 +14,15 @@ type Meta struct {
 	Value interface{}
 }
 
-func F(key string, value interface{}) Meta {
-	return Meta{Key: key, Value: value}
+func F(key string, value interface{}) *Meta {
+	return &Meta{Key: key, Value: value}
 }
 
-type MetaFields []Meta
+func E(err error) *Meta {
+	return F("error", err)
+}
+
+type MetaFields []*Meta
 
 func (m *MetaFields) flat() []interface{} {
 	result := make([]interface{}, 0)

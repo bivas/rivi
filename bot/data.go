@@ -83,7 +83,7 @@ func buildFromRequest(config ClientConfig, r *http.Request) (EventData, bool) {
 	}
 	result, process, err := builder.PartialBuildFromRequest(config, r)
 	if err != nil {
-		log.ErrorWith(log.MetaFields{{"error", err}}, "Unable to build from request")
+		log.ErrorWith(log.MetaFields{log.E(err)}, "Unable to build from request")
 		return nil, false
 	}
 	return result, process
@@ -97,7 +97,7 @@ func completeBuild(config ClientConfig, r *http.Request, data EventData) (EventD
 	}
 	result, process, err := builder.BuildFromPayload(config, data.GetRawPayload())
 	if err != nil {
-		log.ErrorWith(log.MetaFields{{"error", err}}, "Unable to build from payload.")
+		log.ErrorWith(log.MetaFields{log.E(err)}, "Unable to build from payload.")
 		return nil, false
 	}
 	return result, process

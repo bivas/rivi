@@ -71,16 +71,16 @@ func (b *bot) processRules(namespaceLock *sync.Mutex, config Configuration, part
 		return result
 	}
 	for _, group := range rules {
-		log.DebugWith(log.MetaFields{{"issue", data.GetShortName()}}, "Processing rule group of %d order with %d rules", group.key, len(group.rules))
+		log.DebugWith(log.MetaFields{log.F("issue", data.GetShortName())}, "Processing rule group of %d order with %d rules", group.key, len(group.rules))
 		for _, rule := range group.rules {
 			if rule.Accept(data) {
-				log.DebugWith(log.MetaFields{{"issue", data.GetShortName()}}, "Accepting rule %s", rule.Name())
+				log.DebugWith(log.MetaFields{log.F("issue", data.GetShortName())}, "Accepting rule %s", rule.Name())
 				applied = append(applied, rule)
 				result.AppliedRules = append(result.AppliedRules, rule.Name())
 			}
 		}
 		for _, rule := range applied {
-			log.DebugWith(log.MetaFields{{"issue", data.GetShortName()}}, "Applying rule %s", rule.Name())
+			log.DebugWith(log.MetaFields{log.F("issue", data.GetShortName())}, "Applying rule %s", rule.Name())
 			for _, action := range rule.Actions() {
 				action.Apply(config, data)
 			}

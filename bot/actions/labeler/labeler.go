@@ -17,7 +17,7 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 	if apply != "" {
 		if meta.HasLabel(apply) {
 			a.logger.DebugWith(
-				log.MetaFields{{"issue", meta.GetShortName()}},
+				log.MetaFields{log.F("issue", meta.GetShortName())},
 				"Skipping label '%s' as it already exists", apply)
 		} else {
 			meta.AddLabel(apply)
@@ -27,7 +27,7 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 	if remove != "" {
 		if !meta.HasLabel(remove) {
 			a.logger.DebugWith(
-				log.MetaFields{{"issue", meta.GetShortName()}},
+				log.MetaFields{log.F("issue", meta.GetShortName())},
 				"Skipping label '%s' removal as it does not exists", remove)
 		} else {
 			meta.RemoveLabel(remove)

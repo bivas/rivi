@@ -41,12 +41,12 @@ func main() {
 	}
 	run, err := bot.New(setup.config...)
 	if err != nil {
-		rivilog.ErrorWith(rivilog.MetaFields{rivilog.F("error", err)}, "Unable to start bot handler")
+		rivilog.ErrorWith(rivilog.MetaFields{rivilog.E(err)}, "Unable to start bot handler")
 		os.Exit(-1)
 	}
 	s := server.BotServer{Port: setup.port, Uri: setup.uri, Bot: run}
 	if err := s.Run(); err != nil {
-		rivilog.ErrorWith(rivilog.MetaFields{rivilog.F("error", err)}, "Bot exited with error")
+		rivilog.ErrorWith(rivilog.MetaFields{rivilog.E(err)}, "Bot exited with error")
 		os.Exit(-1)
 	}
 }

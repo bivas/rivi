@@ -173,7 +173,7 @@ func (c *config) readSections() error {
 		}
 		config, err := builder.Build(actionConfig)
 		if err != nil {
-			log.ErrorWith(log.MetaFields{{"error", err}}, "Error while building %s config", kind)
+			log.ErrorWith(log.MetaFields{log.E(err)}, "Error while building %s config", kind)
 			continue
 		}
 		c.actionConfigs[kind] = config

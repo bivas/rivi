@@ -48,13 +48,13 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 	assignees := meta.GetAssignees()
 	if len(assignees) > 0 && a.rule.IfNoAssignees {
 		a.logger.DebugWith(
-			log.MetaFields{{"issue", meta.GetShortName()}},
+			log.MetaFields{log.F("issue", meta.GetShortName())},
 			"Skipping as there are assignees and no more are allowed")
 		return
 	}
 	if len(assignees) >= a.rule.Require {
 		a.logger.DebugWith(
-			log.MetaFields{{"issue", meta.GetShortName()}},
+			log.MetaFields{log.F("issue", meta.GetShortName())},
 			"Skipping as there are matched required assignees")
 		return
 	}
@@ -74,7 +74,7 @@ func (a *action) randomUsers(config bot.Configuration, meta bot.EventData, looku
 		possibleSet.Remove(assignee)
 	}
 	a.logger.DebugWith(
-		log.MetaFields{{"issue", meta.GetShortName()}},
+		log.MetaFields{log.F("issue", meta.GetShortName())},
 		"There are %d possible assignees from %d roles", possibleSet.Len(), len(lookupRoles))
 	if possibleSet.Len() == 0 {
 		return []string{}
@@ -84,7 +84,7 @@ func (a *action) randomUsers(config bot.Configuration, meta bot.EventData, looku
 		remainingRequired = 0
 	}
 	a.logger.DebugWith(
-		log.MetaFields{{"issue", meta.GetShortName()}},
+		log.MetaFields{log.F("issue", meta.GetShortName())},
 		"Require %d assignees", remainingRequired)
 	possible := possibleSet.Values()
 	winners := make([]string, remainingRequired)
@@ -98,7 +98,7 @@ func (a *action) randomUsers(config bot.Configuration, meta bot.EventData, looku
 		}
 	}
 	a.logger.DebugWith(
-		log.MetaFields{{"issue", meta.GetShortName()}},
+		log.MetaFields{log.F("issue", meta.GetShortName())},
 		"Selecting users %s as assignees", winners)
 	return winners
 }
