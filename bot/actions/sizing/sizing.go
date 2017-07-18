@@ -30,6 +30,9 @@ func (a *action) findMatchedLabel(meta bot.EventData) (*sizingRule, string, bool
 	defaultLabel := ""
 	defaultExists := false
 	var defaultRule sizingRule
+	if changedFiles == 0 && changes == 0 {
+		return &defaultRule, defaultLabel, false
+	}
 	sort.Sort(a.items)
 	for _, rule := range a.items {
 		if rule.Name == "default" {
@@ -38,11 +41,13 @@ func (a *action) findMatchedLabel(meta bot.EventData) (*sizingRule, string, bool
 			defaultRule = rule
 		} else if changedFiles <= rule.ChangedFilesThreshold && changes <= rule.ChangesThreshold {
 			a.logger.DebugWith(
-				log.MetaFields{log.F("issue", meta.GetShortName())},
-				"sizing rule %s matched with %d files and %d changes",
-				rule.Name,
-				changedFiles,
-				changes)
+				log.MetaFields{
+					log.F("issue", meta.GetShortName()),
+					log.F("rule", rule.Name),
+					log.F("file", changedFiles),
+					log.F("changed", changes),
+				},
+				"sizing rule matched")
 			return &rule, rule.Label, true
 		}
 	}
