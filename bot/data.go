@@ -59,7 +59,7 @@ func RegisterNewBuilder(provider string, builder EventDataBuilder) {
 	}
 }
 
-func buildFromRequest(config ClientConfig, r *http.Request) (EventData, bool) {
+func getBuilderFromRequest(r *http.Request) EventDataBuilder {
 	var builder EventDataBuilder
 	for name := range r.Header {
 		for provider := range builders {
@@ -72,6 +72,11 @@ func buildFromRequest(config ClientConfig, r *http.Request) (EventData, bool) {
 			break
 		}
 	}
+	return builder
+}
+
+func buildFromRequest(config ClientConfig, r *http.Request) (EventData, bool) {
+	builder := getBuilderFromRequest(r)
 	if builder == nil {
 		util.Logger.Error("No Builder to work with!")
 		return nil, false
@@ -84,44 +89,8 @@ func buildFromRequest(config ClientConfig, r *http.Request) (EventData, bool) {
 	return result, process
 }
 
-func completeBuildFromRequest(config ClientConfig, r *http.Request) (EventData, bool) {
-	var builder EventDataBuilder
-	for name := range r.Header {
-		for provider := range builders {
-			if strings.Contains(strings.ToLower(name), provider) {
-				builder = builders[provider]
-				break
-			}
-		}
-		if builder != nil {
-			break
-		}
-	}
-	if builder == nil {
-		util.Logger.Error("No Builder to work with!")
-		return nil, false
-	}
-	result, process, err := builder.BuildFromRequest(config, r)
-	if err != nil {
-		util.Logger.Error("Unable to build from request. %s", err)
-		return nil, false
-	}
-	return result, process
-}
-
 func completeBuild(config ClientConfig, r *http.Request, data EventData) (EventData, bool) {
-	var builder EventDataBuilder
-	for name := range r.Header {
-		for provider := range builders {
-			if strings.Contains(strings.ToLower(name), provider) {
-				builder = builders[provider]
-				break
-			}
-		}
-		if builder != nil {
-			break
-		}
-	}
+	builder := getBuilderFromRequest(r)
 	if builder == nil {
 		util.Logger.Error("No Builder to work with!")
 		return nil, false
