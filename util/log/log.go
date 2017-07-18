@@ -62,7 +62,7 @@ func (l *logger) DebugWith(meta MetaFields, format string, args ...interface{}) 
 	if len(args) == 0 {
 		s.Debug(format)
 	} else {
-		s.Debugf(format, args)
+		s.Debugf(format, args...)
 	}
 }
 
@@ -79,7 +79,7 @@ func (l *logger) InfoWith(meta MetaFields, format string, args ...interface{}) {
 	if len(args) == 0 {
 		s.Info(format)
 	} else {
-		s.Infof(format, args)
+		s.Infof(format, args...)
 	}
 }
 
@@ -113,7 +113,7 @@ func (l *logger) ErrorWith(meta MetaFields, format string, args ...interface{}) 
 	if len(args) == 0 {
 		s.Error(format)
 	} else {
-		s.Errorf(format, args)
+		s.Errorf(format, args...)
 	}
 }
 
