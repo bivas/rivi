@@ -2,7 +2,7 @@ package slack
 
 import (
 	"github.com/bivas/rivi/bot"
-	"github.com/bivas/rivi/util"
+	"github.com/bivas/rivi/util/log"
 	"github.com/mitchellh/mapstructure"
 	"os"
 )
@@ -27,7 +27,7 @@ func (c *configBuilder) Build(config map[string]interface{}) (bot.ActionConfig, 
 		return nil, err
 	}
 	if env := os.Getenv("RIVI_SLACK_API_KEY"); env != "" {
-		util.Logger.Debug("Setting Slack API-KEY from environment")
+		log.Get("slack.config").Debug("Setting Slack API-KEY from environment")
 		actionConfig.ApiKey = env
 	}
 	return &actionConfig, nil

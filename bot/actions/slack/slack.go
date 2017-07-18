@@ -3,7 +3,7 @@ package slack
 import (
 	"fmt"
 	"github.com/bivas/rivi/bot"
-	"github.com/bivas/rivi/util"
+	"github.com/bivas/rivi/util/log"
 	"github.com/mitchellh/mapstructure"
 	api "github.com/nlopes/slack"
 	"text/template"
@@ -14,6 +14,7 @@ type action struct {
 	client     *api.Client
 	translator map[string]string
 	template   *template.Template
+	logger     log.Logger
 }
 
 func (a *action) String() string {
@@ -22,15 +23,21 @@ func (a *action) String() string {
 
 func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 	if a.rule.Channel == "" && a.rule.Notify == "" {
-		util.Logger.Debug("Skipping action as both Channel and Notify settings are blank")
+		a.logger.DebugWith(
+			log.MetaFields{log.F("issue", meta.GetShortName())},
+			"Skipping action as both Channel and Notify settings are blank")
 		return
 	}
 	if err := a.initClient(config); err != nil {
-		util.Logger.Warning("Unable to init Slack client. %s", err)
+		a.logger.WarningWith(
+			log.MetaFields{log.F("issue", meta.GetShortName()), log.E(err)},
+			"Unable to init Slack client")
 		return
 	}
 	if err := a.compileMessage(); err != nil {
-		util.Logger.Warning("Unable to init Slack message. %s", err)
+		a.logger.WarningWith(
+			log.MetaFields{log.F("issue", meta.GetShortName()), log.E(err)},
+			"Unable to init Slack message")
 		return
 	}
 	if a.rule.Channel == "" {
@@ -44,12 +51,18 @@ func (a *action) postMessage(id, slacker string, config bot.Configuration, meta 
 	message := buildFromEventData(meta, slacker)
 	text, err := buildMessage(a.template, message)
 	if err != nil {
-		util.Logger.Warning("Unable to build text message for user '%s'. %s", slacker, err)
+		a.logger.WarningWith(
+			log.MetaFields{log.F("issue", meta.GetShortName()), log.E(err), log.F("user", slacker)},
+			"Unable to build text message for user")
 		return err
 	}
 	if _, resp, err := a.client.PostMessage(id, text, api.NewPostMessageParameters()); err != nil {
-		util.Logger.Warning("Unable to post message to '%s'. %s", slacker, err)
-		util.Logger.Debug("Unable to post to '%s'. %s", slacker, resp)
+		a.logger.WarningWith(
+			log.MetaFields{log.F("issue", meta.GetShortName()), log.E(err), log.F("user", slacker)},
+			"Unable to post message")
+		a.logger.DebugWith(
+			log.MetaFields{log.F("issue", meta.GetShortName()), log.F("user", slacker), log.F("response", resp)},
+			"Unable to post")
 		return err
 	}
 	return nil
@@ -58,7 +71,12 @@ func (a *action) postMessage(id, slacker string, config bot.Configuration, meta 
 func (a *action) sendChannelMessage(config bot.Configuration, meta bot.EventData) {
 	channel, err := a.client.GetChannelInfo(a.rule.Channel)
 	if err != nil {
-		util.Logger.Warning("Unable to get channel '%s' info. %s", a.rule.Channel, err)
+		a.logger.WarningWith(
+			log.MetaFields{
+				log.F("issue", meta.GetShortName()),
+				log.E(err),
+				log.F("channel", a.rule.Channel)},
+			"Unable to get channel info")
 		return
 	}
 	a.postMessage(channel.ID, "", config, meta)
@@ -69,7 +87,10 @@ func (a *action) sendPrivateMessage(config bot.Configuration, meta bot.EventData
 	for _, slacker := range targets {
 		_, _, id, err := a.client.OpenIMChannel(slacker)
 		if err != nil {
-			util.Logger.Warning("Unable to open IM channel to '%s'. %s", slacker, err)
+			a.logger.WarningWith(log.MetaFields{
+				log.F("issue", meta.GetShortName()),
+				log.E(err),
+				log.F("user", slacker)}, "Unable to open IM channel")
 			continue
 		}
 		if err := a.postMessage(id, slacker, config, meta); err != nil {
@@ -127,7 +148,7 @@ func (*factory) BuildAction(config map[string]interface{}) bot.Action {
 		panic(e)
 	}
 	item.Defaults()
-	return &action{rule: &item}
+	return &action{rule: &item, logger: log.Get("slack")}
 }
 
 func init() {
