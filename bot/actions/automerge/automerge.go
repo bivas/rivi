@@ -57,6 +57,9 @@ func (a *action) getApprovalsFromAPI(meta bot.EventData) (int, bool) {
 			}
 		}
 	}
+	a.logger.DebugWith(
+		log.MetaFields{log.F("issue", meta.GetShortName())},
+		"Got %d / %d approvals from API", approvals, len(assigneesList))
 	return approvals, assignees.Len() == 0
 }
 
@@ -75,6 +78,9 @@ func (a *action) getApprovalsFromComments(meta bot.EventData) (int, bool) {
 			approvals++
 		}
 	}
+	a.logger.DebugWith(
+		log.MetaFields{log.F("issue", meta.GetShortName())},
+		"Got %d / %d approvals from comments", approvals, len(assigneesList))
 	return approvals, assignees.Len() == 0
 }
 
