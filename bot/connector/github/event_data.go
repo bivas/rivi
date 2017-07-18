@@ -45,7 +45,7 @@ func (d *eventData) GetReviewers() map[string]string {
 func (d *eventData) GetApprovals() []string {
 	result := util.StringSet{}
 	for reviewer, state := range d.reviewers {
-		if state == "approve" {
+		if state == "approved" {
 			result.Add(reviewer)
 		}
 	}

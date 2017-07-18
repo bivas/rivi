@@ -23,7 +23,7 @@ func (c *ghClient) GetState(issue int) string {
 	c.logger.DebugWith(log.MetaFields{log.F("issue.id", issue)}, "Getting issue state")
 	response, _, err := c.client.Issues.Get(context.Background(), c.owner, c.repo, issue)
 	if err != nil {
-		c.logger.ErrorWith(log.MetaFields{log.E(err)}, "Unable to get issue %d state.", issue)
+		c.logger.ErrorWith(log.MetaFields{log.E(err), log.F("issue.id", issue)}, "Unable to get issue state.")
 		return ""
 	}
 	return *response.State
@@ -199,11 +199,14 @@ func (c *ghClient) GetReviewers(issue int) map[string]string {
 		state := strings.ToLower(*review.State)
 		result[user] = state
 	}
+	c.logger.DebugWith(
+		log.MetaFields{log.F("issue.id", issue), log.F("reviewers", result)},
+		"Created reviewers map")
 	return result
 }
 
 func (c *ghClient) Merge(issue int, mergeMethod string) {
-	c.logger.DebugWith(log.MetaFields{log.F("issue.id", issue)}, "Merging with %s strategy", mergeMethod)
+	c.logger.DebugWith(log.MetaFields{log.F("issue.id", issue), log.F("strategy", mergeMethod)}, "Merging")
 	options := &github.PullRequestOptions{MergeMethod: mergeMethod}
 	_, _, err := c.client.PullRequests.Merge(context.Background(), c.owner, c.repo, issue, "", options)
 	if err != nil {
