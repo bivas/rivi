@@ -144,6 +144,8 @@ rules:
           match: "master"
           patterns:
             - "integration_v[0-9]{2}$"
+        comments:
+          count: ">10"
         order: 5
       commenter:
         comment: "We have a match!"
@@ -169,6 +171,8 @@ The entire `condition` section is optional - you can run all rules all the time 
   - `starts-with` - issue description has a prefix
   - `ends-with` - issue description has a suffix
   - `patterns` - [pattern](https://golang.org/s/re2syntax) matching issue description (any of the patterns)
+- `comments`
+  - `count` - number of comments for issue (supported operators: `==`, `>`, `<`, `>=`, `<=`)
 - `order` - apply order hint to a rule. All rules are given order index **0**. 
 **Important**: This will not place a rule in the exact position, but can assist in re-order rules. 
 

@@ -4,6 +4,8 @@ import (
 	"regexp"
 	"strings"
 
+	"strconv"
+
 	"github.com/bivas/rivi/util/log"
 	"github.com/spf13/viper"
 )
@@ -239,6 +241,101 @@ func (c *RefCondition) Match(meta EventData) bool {
 	return false
 }
 
+var commentsRegex = silentCompile("^([><]{1}[=]?|[=]{2}|)[ ]*([0-9]+)[ ]*$")
+
+func silentCompile(pattern string) *regexp.Regexp {
+	compiled, err := regexp.Compile(pattern)
+	if err != nil {
+		log.ErrorWith(
+			log.MetaFields{log.F("pattern", pattern), log.E(err)},
+			"Unable to compile comments regex",
+		)
+		return nil
+	}
+	return compiled
+}
+
+type CommentsCondition struct {
+	Count string `mapstructure:"count,omitempty"`
+}
+
+func (c *CommentsCondition) IsEmpty() bool {
+	return c.Count == ""
+}
+
+func (c *CommentsCondition) Match(meta EventData) bool {
+	if commentsRegex == nil {
+		log.DebugWith(
+			log.MetaFields{log.F("condition", "CommentsCondition"),
+				log.F("issue", meta.GetShortName())},
+			"comments regex is nil'")
+		return false
+	}
+	count := int64(len(meta.GetComments()))
+	countGroups := commentsRegex.FindStringSubmatch(c.Count)
+	if len(countGroups) != 3 {
+		log.WarningWith(
+			log.MetaFields{log.F("condition", "CommentsCondition"),
+				log.F("issue", meta.GetShortName()), log.F("groups", countGroups)},
+			"No groups matched'")
+		return false
+	}
+	query, err := strconv.ParseInt(countGroups[2], 10, 64)
+	if err != nil {
+		log.WarningWith(
+			log.MetaFields{log.F("condition", "CommentsCondition"), log.E(err),
+				log.F("issue", meta.GetShortName()), log.F("groups", countGroups)},
+			"No groups matched'")
+		return false
+	}
+	matched := false
+	op := countGroups[1]
+	switch {
+	case op == "" || op == "==":
+		//exact number or equals
+		matched = count == query
+		log.DebugWith(
+			log.MetaFields{log.F("condition", "CommentsCondition"), log.F("matcher", op),
+				log.F("issue", meta.GetShortName()), log.F("groups", countGroups),
+				log.F("matched", matched), log.F("comments.count", count)},
+			"matching with '=='")
+		break
+	case op == ">":
+		// gt
+		matched = count > query
+		log.DebugWith(
+			log.MetaFields{log.F("condition", "CommentsCondition"), log.F("matcher", op),
+				log.F("issue", meta.GetShortName()), log.F("groups", countGroups),
+				log.F("matched", matched), log.F("comments.count", count)},
+			"matching with '>'")
+	case op == ">=":
+		// gte
+		matched = count >= query
+		log.DebugWith(
+			log.MetaFields{log.F("condition", "CommentsCondition"), log.F("matcher", op),
+				log.F("issue", meta.GetShortName()), log.F("groups", countGroups),
+				log.F("matched", matched), log.F("comments.count", count)},
+			"matching with '>='")
+	case op == "<":
+		// lt
+		matched = count < query
+		log.DebugWith(
+			log.MetaFields{log.F("condition", "CommentsCondition"), log.F("matcher", op),
+				log.F("issue", meta.GetShortName()), log.F("groups", countGroups),
+				log.F("matched", matched), log.F("comments.count", count)},
+			"matching with '<'")
+	case op == "<=":
+		// lte
+		matched = count <= query
+		log.DebugWith(
+			log.MetaFields{log.F("condition", "CommentsCondition"), log.F("matcher", op),
+				log.F("issue", meta.GetShortName()), log.F("groups", countGroups),
+				log.F("matched", matched), log.F("comments.count", count)},
+			"matching with '<='")
+	}
+	return matched
+}
+
 type Condition struct {
 	Order         int                  `mapstructure:"order,omitempty"`
 	IfLabeled     []string             `mapstructure:"if-labeled,omitempty"`
@@ -247,6 +344,7 @@ type Condition struct {
 	Title         TitleCondition       `mapstructure:"title,omitempty"`
 	Description   DescriptionCondition `mapstructure:"description,omitempty"`
 	Ref           RefCondition         `mapstructure:"ref,omitempty"`
+	Comments      CommentsCondition    `mapstructure:"comments,omitempty"`
 }
 
 func (c *Condition) checkIfLabeled(meta EventData) bool {
@@ -272,10 +370,13 @@ func (c *Condition) checkAllEmpty(meta EventData) bool {
 		c.Files.IsEmpty() &&
 		c.Title.IsEmpty() &&
 		c.Description.IsEmpty() &&
-		c.Ref.IsEmpty()
-	log.DebugWith(
-		log.MetaFields{log.F("issue", meta.GetShortName())},
-		"Condition is empty = %d", empty)
+		c.Ref.IsEmpty() &&
+		c.Comments.IsEmpty()
+	if empty {
+		log.DebugWith(
+			log.MetaFields{log.F("issue", meta.GetShortName())},
+			"Condition is empty", empty)
+	}
 	return empty
 }
 
@@ -285,7 +386,8 @@ func (c *Condition) Match(meta EventData) bool {
 		c.Title.Match(meta) ||
 		c.Description.Match(meta) ||
 		c.Files.Match(meta) ||
-		c.Ref.Match(meta)
+		c.Ref.Match(meta) ||
+		c.Comments.Match(meta)
 
 	if match {
 		for _, check := range c.SkipIfLabeled {
