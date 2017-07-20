@@ -18,6 +18,7 @@ type mockConditionEventData struct {
 	Title          string
 	Description    string
 	Ref            string
+	Comments       []Comment
 	RawPayload     []byte
 }
 
@@ -97,8 +98,8 @@ func (*mockConditionEventData) RemoveAssignees(assignees ...string) {
 	panic("implement me")
 }
 
-func (*mockConditionEventData) GetComments() []Comment {
-	panic("implement me")
+func (m *mockConditionEventData) GetComments() []Comment {
+	return m.Comments
 }
 
 func (*mockConditionEventData) AddComment(comment string) {
@@ -265,4 +266,60 @@ func TestRefPatters(t *testing.T) {
 	assert.False(t, rule.Accept(meta), "shouldn't match")
 	meta.Ref = "integration-v11"
 	assert.True(t, rule.Accept(meta), "should match")
+}
+
+func TestCommentsCountNoOp(t *testing.T) {
+	var rule rule
+	rule.condition.Comments.Count = "5"
+	meta := &mockConditionEventData{Comments: []Comment{{"user1", "comment1"}}}
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	rule.condition.Comments.Count = "1"
+	assert.True(t, rule.Accept(meta), "shouldn't match")
+}
+
+func TestCommentsCountEquals(t *testing.T) {
+	var rule rule
+	rule.condition.Comments.Count = "==5"
+	meta := &mockConditionEventData{Comments: []Comment{{"user1", "comment1"}}}
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	rule.condition.Comments.Count = "==1"
+	assert.True(t, rule.Accept(meta), "shouldn't match")
+}
+
+func TestCommentsCountLessThan(t *testing.T) {
+	var rule rule
+	rule.condition.Comments.Count = "<1"
+	meta := &mockConditionEventData{Comments: []Comment{{"user1", "comment1"}}}
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	rule.condition.Comments.Count = "<5"
+	assert.True(t, rule.Accept(meta), "shouldn't match")
+}
+
+func TestCommentsCountLessThanEquals(t *testing.T) {
+	var rule rule
+	rule.condition.Comments.Count = "<=1"
+	meta := &mockConditionEventData{Comments: []Comment{
+		{"user1", "comment1"}, {"user2", "comment2"}}}
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	rule.condition.Comments.Count = "<=5"
+	assert.True(t, rule.Accept(meta), "shouldn't match")
+}
+
+func TestCommentsCountGreaterThan(t *testing.T) {
+	var rule rule
+	rule.condition.Comments.Count = ">5"
+	meta := &mockConditionEventData{Comments: []Comment{
+		{"user1", "comment1"}, {"user2", "comment2"}}}
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	rule.condition.Comments.Count = ">1"
+	assert.True(t, rule.Accept(meta), "shouldn't match")
+}
+
+func TestCommentsCountGreaterThanEquals(t *testing.T) {
+	var rule rule
+	rule.condition.Comments.Count = ">=5"
+	meta := &mockConditionEventData{Comments: []Comment{{"user1", "comment1"}}}
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	rule.condition.Comments.Count = ">=1"
+	assert.True(t, rule.Accept(meta), "shouldn't match")
 }
