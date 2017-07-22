@@ -1,10 +1,9 @@
 package autoassign
 
 type rule struct {
-	FromRoles     []string `mapstructure:"roles"`
-	Require       int      `mapstructure:"require"`
-	IfNoAssignees bool     `mapstructure:"if-no-assignees"`
-	Experimental  struct {
+	FromRoles    []string `mapstructure:"roles"`
+	Require      int      `mapstructure:"require"`
+	Experimental struct {
 		FromSuggestions bool `mapstructure:"suggest"`
 	} `mapstructure:"experimental"`
 }

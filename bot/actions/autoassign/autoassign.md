@@ -14,7 +14,6 @@ The action will assign users from matched roles provided that are available "spo
 
 - `roles` (optional) - select assignees from these roles (default: roles section)
 - `require` (optional) - how many assignees are required to assign (default: **1**)
-- `if-no-assignees` (optional) - assign only if there are no assignees (default: **false**) 
 
 ## Example
 ```yaml
