@@ -37,7 +37,7 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 	if err := a.compileMessage(); err != nil {
 		a.logger.WarningWith(
 			log.MetaFields{log.F("issue", meta.GetShortName()), log.E(err)},
-			"Unable to init Slack message")
+			"Unable to compile Slack message")
 		return
 	}
 	if a.rule.Channel == "" {
@@ -47,21 +47,20 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 	}
 }
 
-func (a *action) postMessage(id, slacker string, config bot.Configuration, meta bot.EventData) error {
-	message := buildFromEventData(meta, slacker)
-	text, err := buildMessage(a.template, message)
+func (a *action) postMessage(id string, targets []string, config bot.Configuration, meta bot.EventData) error {
+	text, err := serializeMessage(a.template, buildMessage(meta, targets))
 	if err != nil {
 		a.logger.WarningWith(
-			log.MetaFields{log.F("issue", meta.GetShortName()), log.E(err), log.F("user", slacker)},
-			"Unable to build text message for user")
+			log.MetaFields{log.F("issue", meta.GetShortName()), log.E(err)},
+			"Unable to build text message")
 		return err
 	}
 	if _, resp, err := a.client.PostMessage(id, text, api.NewPostMessageParameters()); err != nil {
 		a.logger.WarningWith(
-			log.MetaFields{log.F("issue", meta.GetShortName()), log.E(err), log.F("user", slacker)},
+			log.MetaFields{log.F("issue", meta.GetShortName()), log.E(err)},
 			"Unable to post message")
 		a.logger.DebugWith(
-			log.MetaFields{log.F("issue", meta.GetShortName()), log.F("user", slacker), log.F("response", resp)},
+			log.MetaFields{log.F("issue", meta.GetShortName()), log.F("response", resp)},
 			"Unable to post")
 		return err
 	}
@@ -79,7 +78,7 @@ func (a *action) sendChannelMessage(config bot.Configuration, meta bot.EventData
 			"Unable to get channel info")
 		return
 	}
-	a.postMessage(channel.ID, "", config, meta)
+	a.postMessage(channel.ID, meta.GetAssignees(), config, meta)
 }
 
 func (a *action) sendPrivateMessage(config bot.Configuration, meta bot.EventData) {
@@ -93,7 +92,7 @@ func (a *action) sendPrivateMessage(config bot.Configuration, meta bot.EventData
 				log.F("user", slacker)}, "Unable to open IM channel")
 			continue
 		}
-		if err := a.postMessage(id, slacker, config, meta); err != nil {
+		if err := a.postMessage(id, targets, config, meta); err != nil {
 			continue
 		}
 	}
@@ -115,6 +114,7 @@ func (a *action) getMessageRecipients(config bot.Configuration, meta bot.EventDa
 	}
 	return result
 }
+
 
 func (a *action) compileMessage() error {
 	t, err := template.New("slack-action").Parse(a.rule.Message)

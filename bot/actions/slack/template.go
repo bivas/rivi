@@ -8,30 +8,30 @@ import (
 )
 
 type message struct {
-	Time      time.Time
-	Number    int
-	Title     string
-	State     string
-	Owner     string
-	Repo      string
-	Origin    string
-	SlackUser string
+	Time    time.Time
+	Number  int
+	Title   string
+	State   string
+	Owner   string
+	Repo    string
+	Origin  string
+	Targets []string
 }
 
-func buildFromEventData(meta bot.EventData, slackUser string) *message {
+func buildMessage(meta bot.EventData, targets []string) *message {
 	return &message{
-		Time:      time.Now(),
-		Number:    meta.GetNumber(),
-		Title:     meta.GetTitle(),
-		State:     meta.GetState(),
-		Owner:     meta.GetOwner(),
-		Repo:      meta.GetRepo(),
-		Origin:    meta.GetOrigin(),
-		SlackUser: slackUser,
+		Time:    time.Now(),
+		Number:  meta.GetNumber(),
+		Title:   meta.GetTitle(),
+		State:   meta.GetState(),
+		Owner:   meta.GetOwner(),
+		Repo:    meta.GetRepo(),
+		Origin:  meta.GetOrigin(),
+		Targets: targets,
 	}
 }
 
-func buildMessage(t *template.Template, message *message) (string, error) {
+func serializeMessage(t *template.Template, message *message) (string, error) {
 	var buffer bytes.Buffer
 	if err := t.Execute(&buffer, message); err != nil {
 		return "", err
