@@ -9,7 +9,7 @@ import (
 )
 
 func buildRule(name, label string, changedFiles int) *sizingRule {
-	result := &sizingRule{Name: name, Label: label, ChangedFilesThreshold: changedFiles}
+	result := &sizingRule{Name: name, Label: label, ChangedFilesThreshold: changedFiles, Comment: name}
 	result.Defaults()
 	return result
 }
@@ -32,6 +32,45 @@ func buildRules(withDefault bool) *action {
 	return result
 }
 
+func TestSerialization(t *testing.T) {
+	input := map[string]interface{}{
+		"size1": map[string]interface{}{
+			"label":                   "label1",
+			"comment":                 "comment1",
+			"changed-files-threshold": 10,
+		},
+		"size2": map[string]interface{}{
+			"label":             "label2",
+			"comment":           "comment2",
+			"changes-threshold": 20,
+		},
+	}
+
+	var f factory
+	result := f.BuildAction(input)
+	assert.NotNil(t, result, "should create action")
+	s, ok := result.(*action)
+	assert.True(t, ok, "should be of this package")
+	assert.Equal(t, 2, len(s.items), "rules")
+	if s.items[0].Name == "size1" {
+		assert.Equal(t, "label1", s.items[0].Label, "label")
+		assert.Equal(t, "comment1", s.items[0].Comment, "comment")
+		assert.Equal(t, 10, s.items[0].ChangedFilesThreshold, "file")
+		assert.Equal(t, "label2", s.items[1].Label, "label")
+		assert.Equal(t, "comment2", s.items[1].Comment, "comment")
+		assert.Equal(t, 20, s.items[1].ChangesThreshold, "changes")
+	}
+	if s.items[0].Name == "size2" {
+		assert.Equal(t, "label2", s.items[0].Label, "label")
+		assert.Equal(t, "comment2", s.items[0].Comment, "comment")
+		assert.Equal(t, 20, s.items[0].ChangesThreshold, "changes")
+		assert.Equal(t, "label1", s.items[1].Label, "label")
+		assert.Equal(t, "comment1", s.items[1].Comment, "comment")
+		assert.Equal(t, 10, s.items[1].ChangedFilesThreshold, "file")
+	}
+
+}
+
 func TestSizingXS(t *testing.T) {
 	action := buildRules(false)
 	config := &mock.MockConfiguration{}
@@ -39,6 +78,8 @@ func TestSizingXS(t *testing.T) {
 	action.Apply(config, meta)
 	assert.Len(t, meta.AddedLabels, 1, "labels")
 	assert.Equal(t, "size/xs", meta.AddedLabels[0], "size label")
+	assert.Len(t, meta.AddedComments, 1, "comments")
+	assert.Equal(t, "xs", meta.AddedComments[0], "comment")
 }
 
 func TestSizing(t *testing.T) {
@@ -77,4 +118,22 @@ func TestSizingUpdateNeeded(t *testing.T) {
 	assert.Equal(t, "size/s", meta.AddedLabels[0], "size label")
 	assert.Len(t, meta.RemovedLabels, 1, "removed labels")
 	assert.Equal(t, "size/xs", meta.RemovedLabels[0], "size label")
+}
+
+func TestSizingNoUpdateNeeded(t *testing.T) {
+	action := buildRules(false)
+	config := &mock.MockConfiguration{}
+	meta := &mock.MockEventData{Labels: []string{"size/xs"}, ChangedFiles: 2}
+	action.Apply(config, meta)
+	assert.Len(t, meta.AddedLabels, 0, "added labels")
+	assert.Len(t, meta.RemovedLabels, 0, "removed labels")
+}
+
+func TestSizingNoChanges(t *testing.T) {
+	action := buildRules(false)
+	config := &mock.MockConfiguration{}
+	meta := &mock.MockEventData{ChangedFiles: 0, ChangesAdd: 0, ChangesRemove: 0}
+	action.Apply(config, meta)
+	assert.Len(t, meta.AddedLabels, 0, "added labels")
+	assert.Len(t, meta.RemovedLabels, 0, "removed labels")
 }
