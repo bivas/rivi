@@ -30,6 +30,39 @@ func (m *mockMergableEventData) Merge(mergeMethod string) {
 	m.method = mergeMethod
 }
 
+func TestSerialization(t *testing.T) {
+	input := map[string]interface{}{
+		"strategy": "squash",
+		"require":  2,
+		"label":    "label1",
+	}
+
+	var f factory
+	result := f.BuildAction(input)
+	assert.NotNil(t, result, "should create action")
+	s, ok := result.(*action)
+	assert.True(t, ok, "should be of this package")
+	assert.Equal(t, 2, s.rule.Require, "require")
+	assert.Equal(t, "squash", s.rule.Strategy, "strategy")
+	assert.Equal(t, "label1", s.rule.Label, "label")
+}
+
+func TestSerializationDefaults(t *testing.T) {
+	input := map[string]interface{}{
+		"require": 2,
+		"label":   "label1",
+	}
+
+	var f factory
+	result := f.BuildAction(input)
+	assert.NotNil(t, result, "should create action")
+	s, ok := result.(*action)
+	assert.True(t, ok, "should be of this package")
+	assert.Equal(t, 2, s.rule.Require, "require")
+	assert.Equal(t, "merge", s.rule.Strategy, "strategy")
+	assert.Equal(t, "label1", s.rule.Label, "label")
+}
+
 func TestNoReviewersAPI(t *testing.T) {
 	action := action{rule: &rule{}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
@@ -147,4 +180,14 @@ func TestLabel(t *testing.T) {
 	assert.False(t, meta.merged, "should not be merged")
 	assert.Len(t, meta.AddedLabels, 1, "should label and not merge")
 	assert.Equal(t, "approved", meta.AddedLabels[0], "approved")
+}
+
+func TestNoAssignees(t *testing.T) {
+	action := action{rule: &rule{}, logger: log.Get("automerge.test")}
+	action.rule.Defaults()
+	config := &mock.MockConfiguration{}
+	mockEventData := mock.MockEventData{Assignees: []string{}}
+	meta := &mockMergableEventData{MockEventData: mockEventData}
+	action.Apply(config, meta)
+	assert.False(t, meta.merged, "should not be merged")
 }

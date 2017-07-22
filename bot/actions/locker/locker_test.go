@@ -28,6 +28,19 @@ func (m *mockLockableEventData) LockState() bool {
 	return m.locked
 }
 
+func TestSerialization(t *testing.T) {
+	input := map[string]interface{}{
+		"state": "lock",
+	}
+
+	var f factory
+	result := f.BuildAction(input)
+	assert.NotNil(t, result, "should create action")
+	s, ok := result.(*action)
+	assert.True(t, ok, "should be of this package")
+	assert.Equal(t, "lock", s.rule.State, "state")
+}
+
 func TestNotLockable(t *testing.T) {
 	action := action{rule: &rule{}, logger: log.Get("locker.test")}
 	meta := &mock.MockEventData{Labels: []string{}}

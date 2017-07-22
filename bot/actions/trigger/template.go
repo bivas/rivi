@@ -48,7 +48,7 @@ func init() {
 func processMessage(body *string, message *message) io.Reader {
 	use := defaultTemplate
 	if *body != "" {
-		parsed, e := template.New("message").Parse(defaultTemplateBody)
+		parsed, e := template.New("message").Parse(*body)
 		if e != nil {
 			logger.ErrorWith(log.MetaFields{log.E(e)}, "Unable to process provided template")
 		} else {
