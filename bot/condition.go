@@ -271,6 +271,9 @@ func (c *CommentsCondition) Match(meta EventData) bool {
 			"comments regex is nil'")
 		return false
 	}
+	if c.Count == "" {
+		return false
+	}
 	count := int64(len(meta.GetComments()))
 	countGroups := commentsRegex.FindStringSubmatch(c.Count)
 	if len(countGroups) != 3 {
@@ -285,7 +288,7 @@ func (c *CommentsCondition) Match(meta EventData) bool {
 		log.WarningWith(
 			log.MetaFields{log.F("condition", "CommentsCondition"), log.E(err),
 				log.F("issue", meta.GetShortName()), log.F("groups", countGroups)},
-			"No groups matched'")
+			"No groups matched")
 		return false
 	}
 	matched := false
@@ -375,7 +378,7 @@ func (c *Condition) checkAllEmpty(meta EventData) bool {
 	if empty {
 		log.DebugWith(
 			log.MetaFields{log.F("issue", meta.GetShortName())},
-			"Condition is empty", empty)
+			"Condition is empty")
 	}
 	return empty
 }
