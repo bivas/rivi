@@ -2,8 +2,6 @@ package commands
 
 import (
 	"flag"
-	"fmt"
-
 	"github.com/bivas/rivi/bot"
 	"github.com/bivas/rivi/server"
 	"github.com/bivas/rivi/util/log"
@@ -11,33 +9,20 @@ import (
 	"github.com/mitchellh/cli"
 )
 
-type configs []string
-
-func (c *configs) String() string {
-	return fmt.Sprintf("%s", *c)
-}
-
-func (c *configs) Set(value string) error {
-	*c = append(*c, value)
-	return nil
-}
-
 type serverCommand struct {
-	port   int
-	uri    string
-	config configs
+	port int
+	uri  string
 }
 
 func (s *serverCommand) Help() string {
 	return `
-Usage: rivi	server [options]
+Usage: rivi	server [options] CONFIGURATION_FILE(S)...
 
 	Starts rivi in server mode to listen to incoming webhooks
 
 Options:
 	-port=8080				Listen on port (default: 8080)
 	-uri=/					URI path to bind POST web requests
-	-config					Configuration file(s)
 `
 }
 
@@ -45,19 +30,19 @@ func (s *serverCommand) Run(args []string) int {
 	flagSet := flag.NewFlagSet("server", flag.ContinueOnError)
 	flagSet.IntVar(&s.port, "port", 8080, "Bot listening port")
 	flagSet.StringVar(&s.uri, "uri", "/", "Bot URI path")
-	flagSet.Var(&s.config, "config", "Bot configuration file(s)")
 	if err := flagSet.Parse(args); err != nil {
 		return 1
 	}
-	if len(s.config) == 0 {
+	if len(flagSet.Args()) == 0 {
 		log.Error("missing configuration file")
 		return cli.RunResultHelp
 	}
-	run, err := bot.New(s.config...)
+	run, err := bot.New(flagSet.Args()...)
 	if err != nil {
 		log.ErrorWith(log.MetaFields{log.E(err)}, "Unable to start bot handler")
 		return 1
 	}
+	log.Info("Rivi is ready")
 	srv := server.BotServer{Port: s.port, Uri: s.uri, Bot: run}
 	if err := srv.Run(); err != nil {
 		log.ErrorWith(log.MetaFields{log.E(err)}, "Bot exited with error")
