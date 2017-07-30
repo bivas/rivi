@@ -14,17 +14,17 @@ With Rivi, developers can focus on the actual code base and less on administrati
 ## Usage
 Rivi can be run as a service which listens to incoming repository webhooks. This service must be internet facing to accept incoming requests (e.g. GitHub).
 ```
-Usage of rivi:
-  -config string
-    	Bot configuration file(s)
-  -port int
-    	Bot listening port (default 8080)
-  -uri string
-    	Bot URI path (default "/")
+Usage: rivi	server [options] CONFIGURATION_FILE(S)...
+
+	Starts rivi in server mode and listen to incoming webhooks
+
+Options:
+	-port=8080				Listen on port (default: 8080)
+	-uri=/					URI path (default: "/")
 ```
 ### Example
 ```
-$ rivi -port 9000 -config repo-x.yaml -config repo-y.yaml
+$ rivi server -port 9000 repo-x.yaml repo-y.yaml
 ```
 
 ### Docker

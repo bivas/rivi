@@ -18,11 +18,11 @@ func (s *serverCommand) Help() string {
 	return `
 Usage: rivi	server [options] CONFIGURATION_FILE(S)...
 
-	Starts rivi in server mode to listen to incoming webhooks
+	Starts rivi in server mode and listen to incoming webhooks
 
 Options:
 	-port=8080				Listen on port (default: 8080)
-	-uri=/					URI path to bind POST web requests
+	-uri=/					URI path (default: "/")
 `
 }
 
