@@ -139,6 +139,6 @@ func New(configPaths ...string) (Bot, error) {
 	if len(b.configurations) == 0 {
 		return nil, fmt.Errorf("Bot has no readable configuration!")
 	}
-	log.Info("Bot is ready %+v", *b)
+	log.Debug("Bot is ready %+v", *b)
 	return b, nil
 }
