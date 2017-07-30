@@ -31,7 +31,7 @@ func (s *serverCommand) Run(args []string) int {
 	flagSet.IntVar(&s.port, "port", 8080, "Bot listening port")
 	flagSet.StringVar(&s.uri, "uri", "/", "Bot URI path")
 	if err := flagSet.Parse(args); err != nil {
-		return 1
+		return cli.RunResultHelp
 	}
 	if len(flagSet.Args()) == 0 {
 		log.Error("missing configuration file")
