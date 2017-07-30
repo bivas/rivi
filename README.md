@@ -14,7 +14,7 @@ With Rivi, developers can focus on the actual code base and less on administrati
 ## Usage
 Rivi can be run as a service which listens to incoming repository webhooks. This service must be internet facing to accept incoming requests (e.g. GitHub).
 ```
-Usage: rivi	server [options] CONFIGURATION_FILE(S)...
+Usage: rivi server [options] CONFIGURATION_FILE(S)...
 
 	Starts rivi in server mode and listen to incoming webhooks
 
@@ -39,7 +39,7 @@ $ docker run --detach \
              --publish 8080:8080 \
              --env RIVI_CONFIG_TOKEN=<rivi oath token> \
              --volume /path/to/config/files:/config \
-             bivas/rivi rivi -config /config/repo-x.yaml
+             bivas/rivi rivi server /config/repo-x.yaml
 ```
 
 ## Requirements
