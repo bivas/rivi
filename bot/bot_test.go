@@ -8,18 +8,20 @@ import (
 	"github.com/bivas/rivi/mocks"
 	"github.com/bivas/rivi/types"
 	"github.com/stretchr/testify/assert"
+	"strings"
 )
 
 type mockDataBuilder struct {
-	Labels []string
+	Labels   []string
+	Provider string
 }
 
 func (m *mockDataBuilder) BuildFromPayload(config client.ClientConfig, payload []byte) (types.Data, bool, error) {
-	return &mocks.MockData{Labels: m.Labels}, true, nil
+	return &mocks.MockData{Labels: m.Labels, Provider: strings.ToLower(m.Provider)}, true, nil
 }
 
 func (m *mockDataBuilder) BuildFromHook(config client.ClientConfig, r *http.Request) (types.Data, bool, error) {
-	return &mocks.MockData{Labels: m.Labels}, true, nil
+	return &mocks.MockData{Labels: m.Labels, Provider: strings.ToLower(m.Provider)}, true, nil
 }
 
 func buildRequest(t *testing.T, url string) *http.Request {
@@ -32,7 +34,7 @@ func buildRequest(t *testing.T, url string) *http.Request {
 
 func TestNewBotDefaultNamespace(t *testing.T) {
 	types.RegisterNewDataBuilder("TestNewBotDefaultNamespace",
-		&mockDataBuilder{Labels: []string{}})
+		&mockDataBuilder{Provider: "TestNewBotDefaultNamespace", Labels: []string{}})
 	b, err := New("../config/config_test.yml", "../config/empty_config_test.yml")
 	if err != nil {
 		t.Fatalf("Error while building a bot. %s", err)
@@ -48,6 +50,7 @@ func TestNewBotDefaultNamespace(t *testing.T) {
 func TestNewBotExistingNamespace(t *testing.T) {
 	types.RegisterNewDataBuilder("TestNewBotExistingNamespace",
 		&mockDataBuilder{
+			Provider: "TestNewBotExistingNamespace",
 			Labels: []string{
 				"label2",
 				"pending-approval"},

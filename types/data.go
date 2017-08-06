@@ -88,7 +88,7 @@ func BuildFromHook(config client.ClientConfig, r *http.Request) (Data, bool) {
 func BuildComplete(config client.ClientConfig, data Data) (Data, bool) {
 	builder, exists := builders[data.GetProvider()]
 	if !exists {
-		log.Error("No Builder to work with!")
+		log.Error("No existing builder to work with!")
 		return nil, false
 	}
 	result, process, err := builder.BuildFromPayload(config, data.GetRawPayload())

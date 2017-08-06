@@ -29,11 +29,12 @@ type MockData struct {
 	ChangedFiles     int
 	ChangesAdd       int
 	ChangesRemove    int
+	Provider         string
 	RawPayload       []byte
 }
 
 func (m *MockData) GetProvider() string {
-	return "mock"
+	return m.Provider
 }
 
 func (m *MockData) GetShortName() string {
