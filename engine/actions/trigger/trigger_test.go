@@ -29,7 +29,7 @@ func TestSerialization(t *testing.T) {
 func TestTriggerDefaults(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
-	meta := &mocks.MockEventData{
+	meta := &mocks.MockData{
 		Number: 1,
 		Title:  "title1",
 		State:  "tested",
@@ -57,7 +57,7 @@ func TestTriggerDefaults(t *testing.T) {
 func TestTriggerGet(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
-	meta := &mocks.MockEventData{
+	meta := &mocks.MockData{
 		Number: 1,
 		Title:  "title1",
 		State:  "tested",
@@ -86,7 +86,7 @@ func TestTriggerGet(t *testing.T) {
 func TestTriggerHeaders(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
-	meta := &mocks.MockEventData{
+	meta := &mocks.MockData{
 		Number: 1,
 		Title:  "title1",
 		State:  "tested",

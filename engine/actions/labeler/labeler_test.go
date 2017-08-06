@@ -26,7 +26,7 @@ func TestSerialization(t *testing.T) {
 
 func TestLabelerNoLabels(t *testing.T) {
 	action := action{rule: &rule{Label: "label1"}, logger: log.Get("labeler.test")}
-	meta := &mocks.MockEventData{Labels: []string{}}
+	meta := &mocks.MockData{Labels: []string{}}
 	config := &mocks.MockConfiguration{}
 	action.Apply(state.New(config, meta))
 	assert.Len(t, meta.AddedLabels, 1, "added labels")
@@ -35,7 +35,7 @@ func TestLabelerNoLabels(t *testing.T) {
 
 func TestLabelExists(t *testing.T) {
 	action := action{rule: &rule{Label: "label1"}, logger: log.Get("labeler.test")}
-	meta := &mocks.MockEventData{Labels: []string{"label1"}}
+	meta := &mocks.MockData{Labels: []string{"label1"}}
 	config := &mocks.MockConfiguration{}
 	action.Apply(state.New(config, meta))
 	assert.Len(t, meta.AddedLabels, 0, "added labels")
@@ -43,7 +43,7 @@ func TestLabelExists(t *testing.T) {
 
 func TestNewLabelWithExisting(t *testing.T) {
 	action := action{rule: &rule{Label: "label1"}, logger: log.Get("labeler.test")}
-	meta := &mocks.MockEventData{Labels: []string{"label2"}}
+	meta := &mocks.MockData{Labels: []string{"label2"}}
 	config := &mocks.MockConfiguration{}
 	action.Apply(state.New(config, meta))
 	assert.Len(t, meta.AddedLabels, 1, "added labels")
@@ -52,7 +52,7 @@ func TestNewLabelWithExisting(t *testing.T) {
 
 func TestRemoveNotExisting(t *testing.T) {
 	action := action{rule: &rule{Label: "label2", Remove: "label1"}, logger: log.Get("labeler.test")}
-	meta := &mocks.MockEventData{Labels: []string{"label2"}}
+	meta := &mocks.MockData{Labels: []string{"label2"}}
 	config := &mocks.MockConfiguration{}
 	action.Apply(state.New(config, meta))
 	assert.Len(t, meta.RemovedLabels, 0, "removed labels")
@@ -61,7 +61,7 @@ func TestRemoveNotExisting(t *testing.T) {
 
 func TestRemoveExisting(t *testing.T) {
 	action := action{rule: &rule{Remove: "label1"}, logger: log.Get("labeler.test")}
-	meta := &mocks.MockEventData{Labels: []string{"label1"}}
+	meta := &mocks.MockData{Labels: []string{"label1"}}
 	config := &mocks.MockConfiguration{}
 	action.Apply(state.New(config, meta))
 	assert.Len(t, meta.RemovedLabels, 1, "removed labels")
@@ -70,7 +70,7 @@ func TestRemoveExisting(t *testing.T) {
 
 func TestReplaceLabeles(t *testing.T) {
 	action := action{rule: &rule{Remove: "label1", Label: "label2"}, logger: log.Get("labeler.test")}
-	meta := &mocks.MockEventData{Labels: []string{"label1"}}
+	meta := &mocks.MockData{Labels: []string{"label1"}}
 	config := &mocks.MockConfiguration{}
 	action.Apply(state.New(config, meta))
 	assert.Len(t, meta.RemovedLabels, 1, "removed labels")

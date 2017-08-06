@@ -12,7 +12,7 @@ import (
 type Rule interface {
 	Name() string
 	Order() int
-	Accept(meta types.EventData) bool
+	Accept(meta types.Data) bool
 	Actions() []actions.Action
 }
 
@@ -48,7 +48,7 @@ func (r *rule) String() string {
 	return fmt.Sprintf("%#v", r)
 }
 
-func (r *rule) Accept(meta types.EventData) bool {
+func (r *rule) Accept(meta types.Data) bool {
 	accept := r.condition.Match(meta)
 	if !accept {
 		log.DebugWith(log.MetaFields{log.F("issue", meta.GetShortName())}, "Skipping rule '%s'", r.name)

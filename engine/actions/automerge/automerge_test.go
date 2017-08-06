@@ -10,23 +10,23 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type mockMergableEventData struct {
-	mocks.MockEventData
+type mockMergableData struct {
+	mocks.MockData
 	merged    bool
 	method    string
 	reviewers map[string]string
 	approvals []string
 }
 
-func (m *mockMergableEventData) GetReviewers() map[string]string {
+func (m *mockMergableData) GetReviewers() map[string]string {
 	return m.reviewers
 }
 
-func (m *mockMergableEventData) GetApprovals() []string {
+func (m *mockMergableData) GetApprovals() []string {
 	return m.approvals
 }
 
-func (m *mockMergableEventData) Merge(mergeMethod string) {
+func (m *mockMergableData) Merge(mergeMethod string) {
 	m.merged = true
 	m.method = mergeMethod
 }
@@ -68,7 +68,7 @@ func TestNoReviewersAPI(t *testing.T) {
 	action := action{rule: &rule{}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mocks.MockConfiguration{}
-	meta := &mocks.MockEventData{Assignees: []string{"user1"}, Comments: []types.Comment{
+	meta := &mocks.MockData{Assignees: []string{"user1"}, Comments: []types.Comment{
 		{Commenter: "user1", Comment: "approved"},
 	}}
 	action.Apply(state.New(config, meta))
@@ -79,8 +79,8 @@ func TestMergeWithAPI(t *testing.T) {
 	action := action{rule: &rule{}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mocks.MockConfiguration{}
-	mockEventData := mocks.MockEventData{Assignees: []string{"user1"}}
-	meta := &mockMergableEventData{MockEventData: mockEventData, approvals: []string{"user1"}}
+	mockData := mocks.MockData{Assignees: []string{"user1"}}
+	meta := &mockMergableData{MockData: mockData, approvals: []string{"user1"}}
 	action.Apply(state.New(config, meta))
 	assert.True(t, meta.merged, "should be merged")
 	assert.Equal(t, "merge", meta.method, "default should be merge")
@@ -90,8 +90,8 @@ func TestMergeWithAPINoApprovals(t *testing.T) {
 	action := action{rule: &rule{}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mocks.MockConfiguration{}
-	mockEventData := mocks.MockEventData{Assignees: []string{"user1"}}
-	meta := &mockMergableEventData{MockEventData: mockEventData, approvals: []string{"user2"}}
+	mockData := mocks.MockData{Assignees: []string{"user1"}}
+	meta := &mockMergableData{MockData: mockData, approvals: []string{"user2"}}
 	action.Apply(state.New(config, meta))
 	assert.False(t, meta.merged, "should be merged")
 }
@@ -100,7 +100,7 @@ func TestNotCapableToMerge(t *testing.T) {
 	action := action{rule: &rule{}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mocks.MockConfiguration{}
-	meta := &mocks.MockEventData{Assignees: []string{"user1"}, Comments: []types.Comment{
+	meta := &mocks.MockData{Assignees: []string{"user1"}, Comments: []types.Comment{
 		{Commenter: "user1", Comment: "approved"},
 	}}
 	action.Apply(state.New(config, meta))
@@ -111,10 +111,10 @@ func TestShouldNotMergeMergeMissingApprovals(t *testing.T) {
 	action := action{rule: &rule{}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mocks.MockConfiguration{}
-	mockEventData := mocks.MockEventData{Assignees: []string{"user1", "user2"}, Comments: []types.Comment{
+	mockData := mocks.MockData{Assignees: []string{"user1", "user2"}, Comments: []types.Comment{
 		{Commenter: "user1", Comment: "approved"},
 	}}
-	meta := &mockMergableEventData{MockEventData: mockEventData}
+	meta := &mockMergableData{MockData: mockData}
 	action.Apply(state.New(config, meta))
 	assert.False(t, meta.merged, "should not be merged")
 }
@@ -123,10 +123,10 @@ func TestCapableToMerge(t *testing.T) {
 	action := action{rule: &rule{}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mocks.MockConfiguration{}
-	mockEventData := mocks.MockEventData{Assignees: []string{"user1"}, Comments: []types.Comment{
+	mockData := mocks.MockData{Assignees: []string{"user1"}, Comments: []types.Comment{
 		{Commenter: "user1", Comment: "approved"},
 	}}
-	meta := &mockMergableEventData{MockEventData: mockEventData}
+	meta := &mockMergableData{MockData: mockData}
 	action.Apply(state.New(config, meta))
 	assert.True(t, meta.merged, "should be merged")
 	assert.Equal(t, "merge", meta.method, "default should be merge")
@@ -136,10 +136,10 @@ func TestOriginComment(t *testing.T) {
 	action := action{rule: &rule{}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mocks.MockConfiguration{}
-	mockEventData := mocks.MockEventData{Assignees: []string{"user1"}, Origin: "user2", Comments: []types.Comment{
+	mockData := mocks.MockData{Assignees: []string{"user1"}, Origin: "user2", Comments: []types.Comment{
 		{Commenter: "user2", Comment: "approved"},
 	}}
-	meta := &mockMergableEventData{MockEventData: mockEventData}
+	meta := &mockMergableData{MockData: mockData}
 	action.Apply(state.New(config, meta))
 	assert.False(t, meta.merged, "should not be merged")
 }
@@ -148,10 +148,10 @@ func TestNotApprovedComment(t *testing.T) {
 	action := action{rule: &rule{}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mocks.MockConfiguration{}
-	mockEventData := mocks.MockEventData{Assignees: []string{"user1"}, Origin: "user2", Comments: []types.Comment{
+	mockData := mocks.MockData{Assignees: []string{"user1"}, Origin: "user2", Comments: []types.Comment{
 		{Commenter: "user1", Comment: "not approved"},
 	}}
-	meta := &mockMergableEventData{MockEventData: mockEventData}
+	meta := &mockMergableData{MockData: mockData}
 	action.Apply(state.New(config, meta))
 	assert.False(t, meta.merged, "should not be merged")
 }
@@ -160,11 +160,11 @@ func TestSameApprovedComment(t *testing.T) {
 	action := action{rule: &rule{Require: 2}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mocks.MockConfiguration{}
-	mockEventData := mocks.MockEventData{Assignees: []string{"user1"}, Origin: "user2", Comments: []types.Comment{
+	mockData := mocks.MockData{Assignees: []string{"user1"}, Origin: "user2", Comments: []types.Comment{
 		{Commenter: "user1", Comment: "approved"},
 		{Commenter: "user1", Comment: "approved"},
 	}}
-	meta := &mockMergableEventData{MockEventData: mockEventData}
+	meta := &mockMergableData{MockData: mockData}
 	action.Apply(state.New(config, meta))
 	assert.False(t, meta.merged, "should not be merged")
 }
@@ -173,10 +173,10 @@ func TestLabel(t *testing.T) {
 	action := action{rule: &rule{Label: "approved"}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mocks.MockConfiguration{}
-	mockEventData := mocks.MockEventData{Assignees: []string{"user1"}, Origin: "user2", Comments: []types.Comment{
+	mockData := mocks.MockData{Assignees: []string{"user1"}, Origin: "user2", Comments: []types.Comment{
 		{Commenter: "user1", Comment: "approved"},
 	}}
-	meta := &mockMergableEventData{MockEventData: mockEventData}
+	meta := &mockMergableData{MockData: mockData}
 	action.Apply(state.New(config, meta))
 	assert.False(t, meta.merged, "should not be merged")
 	assert.Len(t, meta.AddedLabels, 1, "should label and not merge")
@@ -187,8 +187,8 @@ func TestNoAssignees(t *testing.T) {
 	action := action{rule: &rule{}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mocks.MockConfiguration{}
-	mockEventData := mocks.MockEventData{Assignees: []string{}}
-	meta := &mockMergableEventData{MockEventData: mockEventData}
+	mockData := mocks.MockData{Assignees: []string{}}
+	meta := &mockMergableData{MockData: mockData}
 	action.Apply(state.New(config, meta))
 	assert.False(t, meta.merged, "should not be merged")
 }

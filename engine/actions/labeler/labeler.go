@@ -15,7 +15,7 @@ type action struct {
 }
 
 func (a *action) Apply(state multistep.StateBag) {
-	meta := state.Get("data").(types.EventData)
+	meta := state.Get("data").(types.Data)
 	apply := a.rule.Label
 	if apply != "" {
 		if meta.HasLabel(apply) {

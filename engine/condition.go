@@ -13,7 +13,7 @@ import (
 
 type sectionCondition interface {
 	IsEmpty() bool
-	Match(meta types.EventData) bool
+	Match(meta types.Data) bool
 }
 
 type FilesCondition struct {
@@ -25,7 +25,7 @@ func (c *FilesCondition) IsEmpty() bool {
 	return len(c.Patterns) == 0 && len(c.Extensions) == 0
 }
 
-func (c *FilesCondition) checkPattern(meta types.EventData) bool {
+func (c *FilesCondition) checkPattern(meta types.Data) bool {
 	if len(c.Patterns) == 0 {
 		return false
 	} else {
@@ -60,7 +60,7 @@ func (c *FilesCondition) checkPattern(meta types.EventData) bool {
 	return false
 }
 
-func (c *FilesCondition) checkExt(meta types.EventData) bool {
+func (c *FilesCondition) checkExt(meta types.Data) bool {
 	if len(c.Extensions) == 0 {
 		return false
 	} else {
@@ -78,7 +78,7 @@ func (c *FilesCondition) checkExt(meta types.EventData) bool {
 	return false
 }
 
-func (c *FilesCondition) Match(meta types.EventData) bool {
+func (c *FilesCondition) Match(meta types.Data) bool {
 	return c.checkPattern(meta) || c.checkExt(meta)
 }
 
@@ -92,7 +92,7 @@ func (c *TitleCondition) IsEmpty() bool {
 	return c.StartsWith == "" && c.EndsWith == "" && len(c.Patterns) == 0
 }
 
-func (c *TitleCondition) Match(meta types.EventData) bool {
+func (c *TitleCondition) Match(meta types.Data) bool {
 	title := meta.GetTitle()
 	if c.StartsWith != "" && strings.HasPrefix(title, c.StartsWith) {
 		log.DebugWith(
@@ -146,7 +146,7 @@ func (c *DescriptionCondition) IsEmpty() bool {
 	return c.StartsWith == "" && c.EndsWith == "" && len(c.Patterns) == 0
 }
 
-func (c *DescriptionCondition) Match(meta types.EventData) bool {
+func (c *DescriptionCondition) Match(meta types.Data) bool {
 	description := meta.GetDescription()
 	if c.StartsWith != "" && strings.HasPrefix(description, c.StartsWith) {
 		log.DebugWith(
@@ -204,7 +204,7 @@ func (c *RefCondition) IsEmpty() bool {
 	return c.Equals == "" && len(c.Patterns) == 0
 }
 
-func (c *RefCondition) Match(meta types.EventData) bool {
+func (c *RefCondition) Match(meta types.Data) bool {
 	ref := meta.GetRef()
 	if c.Equals != "" && ref == c.Equals {
 		log.DebugWith(
@@ -264,7 +264,7 @@ func (c *CommentsCondition) IsEmpty() bool {
 	return c.Count == ""
 }
 
-func (c *CommentsCondition) Match(meta types.EventData) bool {
+func (c *CommentsCondition) Match(meta types.Data) bool {
 	if commentsRegex == nil {
 		log.DebugWith(
 			log.MetaFields{log.F("condition", "CommentsCondition"),
@@ -351,7 +351,7 @@ type Condition struct {
 	Comments      CommentsCondition    `mapstructure:"comments,omitempty"`
 }
 
-func (c *Condition) checkIfLabeled(meta types.EventData) bool {
+func (c *Condition) checkIfLabeled(meta types.Data) bool {
 	if len(c.IfLabeled) == 0 {
 		return false
 	} else {
@@ -369,7 +369,7 @@ func (c *Condition) checkIfLabeled(meta types.EventData) bool {
 	return false
 }
 
-func (c *Condition) checkAllEmpty(meta types.EventData) bool {
+func (c *Condition) checkAllEmpty(meta types.Data) bool {
 	empty := len(c.IfLabeled) == 0 &&
 		c.Files.IsEmpty() &&
 		c.Title.IsEmpty() &&
@@ -384,7 +384,7 @@ func (c *Condition) checkAllEmpty(meta types.EventData) bool {
 	return empty
 }
 
-func (c *Condition) Match(meta types.EventData) bool {
+func (c *Condition) Match(meta types.Data) bool {
 	match := c.checkAllEmpty(meta) ||
 		c.checkIfLabeled(meta) ||
 		c.Title.Match(meta) ||

@@ -29,7 +29,7 @@ func TestActionApplyRequire1NoAssignees(t *testing.T) {
 	roles := make(map[string][]string)
 	roles["default"] = []string{"user1", "user2", "user3"}
 	config := &mocks.MockConfiguration{RoleMembers: roles}
-	meta := &mocks.MockEventData{Assignees: []string{}}
+	meta := &mocks.MockData{Assignees: []string{}}
 	state := new(multistep.BasicStateBag)
 	state.Put("data", meta)
 	state.Put("config", config)
@@ -42,7 +42,7 @@ func TestActionApplyRequire2With1Assignee(t *testing.T) {
 	roles := make(map[string][]string)
 	roles["default"] = []string{"user1", "user2", "user3"}
 	config := &mocks.MockConfiguration{RoleMembers: roles}
-	meta := &mocks.MockEventData{Assignees: []string{"user1"}}
+	meta := &mocks.MockData{Assignees: []string{"user1"}}
 	state := new(multistep.BasicStateBag)
 	state.Put("data", meta)
 	state.Put("config", config)
@@ -58,7 +58,7 @@ func TestActionApplyRequireFromRole(t *testing.T) {
 	roles["default"] = []string{"user1", "user2", "user3"}
 	roles["group"] = []string{"user4"}
 	config := &mocks.MockConfiguration{RoleMembers: roles}
-	meta := &mocks.MockEventData{Assignees: []string{}}
+	meta := &mocks.MockData{Assignees: []string{}}
 	state := new(multistep.BasicStateBag)
 	state.Put("data", meta)
 	state.Put("config", config)
@@ -76,7 +76,7 @@ func TestActionApplyWithoutOrigin(t *testing.T) {
 	roles["default"] = []string{"user1", "user2"}
 	for i := 0; i < 10; i++ {
 		config := &mocks.MockConfiguration{RoleMembers: roles}
-		meta := &mocks.MockEventData{Assignees: []string{}, Origin: "user1"}
+		meta := &mocks.MockData{Assignees: []string{}, Origin: "user1"}
 		state := new(multistep.BasicStateBag)
 		state.Put("data", meta)
 		state.Put("config", config)
@@ -93,7 +93,7 @@ func TestActionApplyWithoutOriginCaseInsensitive(t *testing.T) {
 	roles["default"] = []string{"usEr1", "user2"}
 	for i := 0; i < 10; i++ {
 		config := &mocks.MockConfiguration{RoleMembers: roles}
-		meta := &mocks.MockEventData{Assignees: []string{}, Origin: "USER1"}
+		meta := &mocks.MockData{Assignees: []string{}, Origin: "USER1"}
 		state := new(multistep.BasicStateBag)
 		state.Put("data", meta)
 		state.Put("config", config)
@@ -110,7 +110,7 @@ func TestActionApplyHasAssignee(t *testing.T) {
 	roles["default"] = []string{"user1", "user2", "user3"}
 	roles["group"] = []string{"user4"}
 	config := &mocks.MockConfiguration{RoleMembers: roles}
-	meta := &mocks.MockEventData{Assignees: []string{"user1"}}
+	meta := &mocks.MockData{Assignees: []string{"user1"}}
 	state := new(multistep.BasicStateBag)
 	state.Put("data", meta)
 	state.Put("config", config)
@@ -123,7 +123,7 @@ func TestActionApplyAllAssignees(t *testing.T) {
 	roles := make(map[string][]string)
 	roles["default"] = []string{"user1", "user2"}
 	config := &mocks.MockConfiguration{RoleMembers: roles}
-	meta := &mocks.MockEventData{Assignees: []string{"user1", "user2"}}
+	meta := &mocks.MockData{Assignees: []string{"user1", "user2"}}
 	state := new(multistep.BasicStateBag)
 	state.Put("data", meta)
 	state.Put("config", config)

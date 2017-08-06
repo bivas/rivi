@@ -19,18 +19,18 @@ type action struct {
 	logger log.Logger
 }
 
-type MergeableEventData interface {
+type MergeableData interface {
 	Merge(mergeMethod string)
 }
 
-type HasReviewersAPIEventData interface {
+type HasReviewersAPIData interface {
 	GetReviewers() map[string]string
 	GetApprovals() []string
 }
 
-func (a *action) merge(meta types.EventData) {
+func (a *action) merge(meta types.Data) {
 	if a.rule.Label == "" {
-		mergeable, ok := meta.(MergeableEventData)
+		mergeable, ok := meta.(MergeableData)
 		if !ok {
 			a.logger.Warning("Event data does not support merge. Check your configurations")
 			a.err = fmt.Errorf("Event data does not support merge")
@@ -42,12 +42,12 @@ func (a *action) merge(meta types.EventData) {
 	}
 }
 
-func (a *action) getApprovalsFromAPI(meta types.EventData) (int, bool) {
+func (a *action) getApprovalsFromAPI(meta types.Data) (int, bool) {
 	assigneesList := meta.GetAssignees()
 	approvals := 0
 	assignees := util.StringSet{}
 	assignees.AddAll(assigneesList)
-	reviewApi, ok := meta.(HasReviewersAPIEventData)
+	reviewApi, ok := meta.(HasReviewersAPIData)
 	if !ok {
 		a.logger.WarningWith(log.MetaFields{log.F("issue", meta.GetShortName())}, "Event data does not support reviewers API. Check your configuration")
 		a.err = fmt.Errorf("Event data does not support reviewers API")
@@ -65,7 +65,7 @@ func (a *action) getApprovalsFromAPI(meta types.EventData) (int, bool) {
 	return approvals, assignees.Len() == 0
 }
 
-func (a *action) getApprovalsFromComments(meta types.EventData) (int, bool) {
+func (a *action) getApprovalsFromComments(meta types.Data) (int, bool) {
 	assigneesList := meta.GetAssignees()
 	approvals := 0
 	assignees := util.StringSet{}
@@ -87,13 +87,13 @@ func (a *action) getApprovalsFromComments(meta types.EventData) (int, bool) {
 }
 
 func (a *action) Apply(state multistep.StateBag) {
-	meta := state.Get("data").(types.EventData)
+	meta := state.Get("data").(types.Data)
 	assigneesList := meta.GetAssignees()
 	if len(assigneesList) == 0 {
 		a.logger.WarningWith(log.MetaFields{log.F("issue", meta.GetShortName())}, "No assignees to issue - skipping")
 		return
 	}
-	calls := []func(types.EventData) (int, bool){
+	calls := []func(types.Data) (int, bool){
 		a.getApprovalsFromAPI,
 		a.getApprovalsFromComments,
 	}

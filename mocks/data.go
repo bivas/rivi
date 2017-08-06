@@ -7,7 +7,7 @@ import (
 	"github.com/bivas/rivi/util"
 )
 
-type MockEventData struct {
+type MockData struct {
 	Number           int
 	Title            string
 	Description      string
@@ -32,55 +32,55 @@ type MockEventData struct {
 	RawPayload       []byte
 }
 
-func (m *MockEventData) GetShortName() string {
+func (m *MockData) GetShortName() string {
 	return fmt.Sprintf("%s/%s#%d", m.Owner, m.Repo, m.Number)
 }
 
-func (m *MockEventData) GetLongName() string {
+func (m *MockData) GetLongName() string {
 	return fmt.Sprintf("%s/%s#%d [%s]", m.Owner, m.Repo, m.Number, m.Title)
 }
 
-func (m *MockEventData) GetRawPayload() []byte {
+func (m *MockData) GetRawPayload() []byte {
 	return m.RawPayload
 }
 
-func (m *MockEventData) GetNumber() int {
+func (m *MockData) GetNumber() int {
 	return m.Number
 }
 
-func (m *MockEventData) GetTitle() string {
+func (m *MockData) GetTitle() string {
 	return m.Title
 }
 
-func (m *MockEventData) GetDescription() string {
+func (m *MockData) GetDescription() string {
 	return m.Description
 }
 
-func (m *MockEventData) GetState() string {
+func (m *MockData) GetState() string {
 	return m.State
 }
 
-func (m *MockEventData) GetOrigin() string {
+func (m *MockData) GetOrigin() string {
 	return m.Origin
 }
 
-func (m *MockEventData) GetOwner() string {
+func (m *MockData) GetOwner() string {
 	return m.Owner
 }
 
-func (m *MockEventData) GetRepo() string {
+func (m *MockData) GetRepo() string {
 	return m.Repo
 }
 
-func (m *MockEventData) GetRef() string {
+func (m *MockData) GetRef() string {
 	return m.Ref
 }
 
-func (m *MockEventData) GetLabels() []string {
+func (m *MockData) GetLabels() []string {
 	return m.Labels
 }
 
-func (m *MockEventData) HasLabel(label string) bool {
+func (m *MockData) HasLabel(label string) bool {
 	for _, search := range m.Labels {
 		if search == label {
 			return true
@@ -89,23 +89,23 @@ func (m *MockEventData) HasLabel(label string) bool {
 	return false
 }
 
-func (m *MockEventData) AddLabel(label string) {
+func (m *MockData) AddLabel(label string) {
 	m.AddedLabels = append(m.AddedLabels, label)
 	m.Labels = append(m.Labels, label)
 }
 
-func (m *MockEventData) RemoveLabel(label string) {
+func (m *MockData) RemoveLabel(label string) {
 	m.RemovedLabels = append(m.RemovedLabels, label)
 	set := util.StringSet{}
 	set.AddAll(m.Labels).Remove(label)
 	m.Labels = set.Values()
 }
 
-func (m *MockEventData) GetAssignees() []string {
+func (m *MockData) GetAssignees() []string {
 	return m.Assignees
 }
 
-func (m *MockEventData) HasAssignee(assignee string) bool {
+func (m *MockData) HasAssignee(assignee string) bool {
 	for _, search := range m.Assignees {
 		if search == assignee {
 			return true
@@ -114,36 +114,36 @@ func (m *MockEventData) HasAssignee(assignee string) bool {
 	return false
 }
 
-func (m *MockEventData) AddAssignees(assignees ...string) {
+func (m *MockData) AddAssignees(assignees ...string) {
 	m.AddedAssignees = append(m.AddedAssignees, assignees...)
 	m.Assignees = append(m.Assignees, assignees...)
 }
 
-func (m *MockEventData) RemoveAssignees(assignees ...string) {
+func (m *MockData) RemoveAssignees(assignees ...string) {
 	m.RemovedLabels = append(m.RemovedLabels, assignees...)
 }
 
-func (m *MockEventData) GetComments() []types.Comment {
+func (m *MockData) GetComments() []types.Comment {
 	return m.Comments
 }
 
-func (m *MockEventData) AddComment(comment string) {
+func (m *MockData) AddComment(comment string) {
 	m.AddedComments = append(m.AddedComments, comment)
 	m.Comments = append(m.Comments, types.Comment{Commenter: "mock", Comment: comment})
 }
 
-func (m *MockEventData) GetFileNames() []string {
+func (m *MockData) GetFileNames() []string {
 	return m.FileNames
 }
 
-func (m *MockEventData) GetChangedFiles() int {
+func (m *MockData) GetChangedFiles() int {
 	return m.ChangedFiles
 }
 
-func (m *MockEventData) GetFileExtensions() []string {
+func (m *MockData) GetFileExtensions() []string {
 	return m.FileExtensions
 }
 
-func (m *MockEventData) GetChanges() (int, int) {
+func (m *MockData) GetChanges() (int, int) {
 	return m.ChangesAdd, m.ChangesRemove
 }

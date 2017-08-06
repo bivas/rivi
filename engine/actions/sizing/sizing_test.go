@@ -75,7 +75,7 @@ func TestSerialization(t *testing.T) {
 func TestSizingXS(t *testing.T) {
 	action := buildRules(false)
 	config := &mocks.MockConfiguration{}
-	meta := &mocks.MockEventData{Labels: []string{}, ChangedFiles: 1, ChangesAdd: 24, ChangesRemove: 31}
+	meta := &mocks.MockData{Labels: []string{}, ChangedFiles: 1, ChangesAdd: 24, ChangesRemove: 31}
 	action.Apply(state.New(config, meta))
 	assert.Len(t, meta.AddedLabels, 1, "labels")
 	assert.Equal(t, "size/xs", meta.AddedLabels[0], "size label")
@@ -86,7 +86,7 @@ func TestSizingXS(t *testing.T) {
 func TestSizing(t *testing.T) {
 	action := buildRules(false)
 	config := &mocks.MockConfiguration{}
-	meta := &mocks.MockEventData{Labels: []string{}, ChangedFiles: 8}
+	meta := &mocks.MockData{Labels: []string{}, ChangedFiles: 8}
 	action.Apply(state.New(config, meta))
 	assert.Len(t, meta.AddedLabels, 1, "labels")
 	assert.Equal(t, "size/s", meta.AddedLabels[0], "size label")
@@ -95,7 +95,7 @@ func TestSizing(t *testing.T) {
 func TestWithDefaultShouldNotApply(t *testing.T) {
 	action := buildRules(true)
 	config := &mocks.MockConfiguration{}
-	meta := &mocks.MockEventData{Labels: []string{}, ChangedFiles: 8}
+	meta := &mocks.MockData{Labels: []string{}, ChangedFiles: 8}
 	action.Apply(state.New(config, meta))
 	assert.Len(t, meta.AddedLabels, 1, "labels")
 	assert.Equal(t, "size/s", meta.AddedLabels[0], "size label")
@@ -104,7 +104,7 @@ func TestWithDefaultShouldNotApply(t *testing.T) {
 func TestWithDefaultShouldApply(t *testing.T) {
 	action := buildRules(true)
 	config := &mocks.MockConfiguration{}
-	meta := &mocks.MockEventData{Labels: []string{}, ChangedFiles: 800}
+	meta := &mocks.MockData{Labels: []string{}, ChangedFiles: 800}
 	action.Apply(state.New(config, meta))
 	assert.Len(t, meta.AddedLabels, 1, "labels")
 	assert.Equal(t, "default-label", meta.AddedLabels[0], "size label")
@@ -113,7 +113,7 @@ func TestWithDefaultShouldApply(t *testing.T) {
 func TestSizingUpdateNeeded(t *testing.T) {
 	action := buildRules(false)
 	config := &mocks.MockConfiguration{}
-	meta := &mocks.MockEventData{Labels: []string{"size/xs"}, ChangedFiles: 8}
+	meta := &mocks.MockData{Labels: []string{"size/xs"}, ChangedFiles: 8}
 	action.Apply(state.New(config, meta))
 	assert.Len(t, meta.AddedLabels, 1, "added labels")
 	assert.Equal(t, "size/s", meta.AddedLabels[0], "size label")
@@ -124,7 +124,7 @@ func TestSizingUpdateNeeded(t *testing.T) {
 func TestSizingNoUpdateNeeded(t *testing.T) {
 	action := buildRules(false)
 	config := &mocks.MockConfiguration{}
-	meta := &mocks.MockEventData{Labels: []string{"size/xs"}, ChangedFiles: 2}
+	meta := &mocks.MockData{Labels: []string{"size/xs"}, ChangedFiles: 2}
 	action.Apply(state.New(config, meta))
 	assert.Len(t, meta.AddedLabels, 0, "added labels")
 	assert.Len(t, meta.RemovedLabels, 0, "removed labels")
@@ -133,7 +133,7 @@ func TestSizingNoUpdateNeeded(t *testing.T) {
 func TestSizingNoChanges(t *testing.T) {
 	action := buildRules(false)
 	config := &mocks.MockConfiguration{}
-	meta := &mocks.MockEventData{ChangedFiles: 0, ChangesAdd: 0, ChangesRemove: 0}
+	meta := &mocks.MockData{ChangedFiles: 0, ChangesAdd: 0, ChangesRemove: 0}
 	action.Apply(state.New(config, meta))
 	assert.Len(t, meta.AddedLabels, 0, "added labels")
 	assert.Len(t, meta.RemovedLabels, 0, "removed labels")

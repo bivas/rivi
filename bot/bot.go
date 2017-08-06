@@ -46,7 +46,7 @@ func (b *bot) getCurrentConfiguration(namespace string) (config.Configuration, e
 	return configuration, nil
 }
 
-func (b *bot) getIssueLock(namespaceLock *sync.Mutex, data types.EventData) *sync.Mutex {
+func (b *bot) getIssueLock(namespaceLock *sync.Mutex, data types.Data) *sync.Mutex {
 	defer namespaceLock.Unlock()
 	id := data.GetShortName()
 	log.Debug("acquire namespace lock during rules process")
@@ -60,7 +60,7 @@ func (b *bot) getIssueLock(namespaceLock *sync.Mutex, data types.EventData) *syn
 	return issueLocker.(*sync.Mutex)
 }
 
-func (b *bot) processRules(namespaceLock *sync.Mutex, config config.Configuration, partial types.EventData, r *http.Request) *HandledEventResult {
+func (b *bot) processRules(namespaceLock *sync.Mutex, config config.Configuration, partial types.Data, r *http.Request) *HandledEventResult {
 	rules := engine.GroupByRuleOrder(config.GetRules())
 	issueLocker := b.getIssueLock(namespaceLock, partial)
 	defer issueLocker.Unlock()

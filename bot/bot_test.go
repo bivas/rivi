@@ -10,16 +10,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type mockEventDataBuilder struct {
+type mockDataBuilder struct {
 	Labels []string
 }
 
-func (m *mockEventDataBuilder) BuildFromPayload(config client.ClientConfig, payload []byte) (types.EventData, bool, error) {
-	return &mocks.MockEventData{Labels: m.Labels}, true, nil
+func (m *mockDataBuilder) BuildFromPayload(config client.ClientConfig, payload []byte) (types.Data, bool, error) {
+	return &mocks.MockData{Labels: m.Labels}, true, nil
 }
 
-func (m *mockEventDataBuilder) BuildFromHook(config client.ClientConfig, r *http.Request) (types.EventData, bool, error) {
-	return &mocks.MockEventData{Labels: m.Labels}, true, nil
+func (m *mockDataBuilder) BuildFromHook(config client.ClientConfig, r *http.Request) (types.Data, bool, error) {
+	return &mocks.MockData{Labels: m.Labels}, true, nil
 }
 
 func buildRequest(t *testing.T, url string) *http.Request {
@@ -32,7 +32,7 @@ func buildRequest(t *testing.T, url string) *http.Request {
 
 func TestNewBotDefaultNamespace(t *testing.T) {
 	types.RegisterNewDataBuilder("TestNewBotDefaultNamespace",
-		&mockEventDataBuilder{Labels: []string{}})
+		&mockDataBuilder{Labels: []string{}})
 	b, err := New("../config/config_test.yml", "../config/empty_config_test.yml")
 	if err != nil {
 		t.Fatalf("Error while building a bot. %s", err)
@@ -47,7 +47,7 @@ func TestNewBotDefaultNamespace(t *testing.T) {
 
 func TestNewBotExistingNamespace(t *testing.T) {
 	types.RegisterNewDataBuilder("TestNewBotExistingNamespace",
-		&mockEventDataBuilder{
+		&mockDataBuilder{
 			Labels: []string{
 				"label2",
 				"pending-approval"},
@@ -69,7 +69,7 @@ func TestNewBotExistingNamespace(t *testing.T) {
 
 func TestNewBotNonExistingNamespace(t *testing.T) {
 	types.RegisterNewDataBuilder("TestNewBotNonExistingNamespace",
-		&mockEventDataBuilder{
+		&mockDataBuilder{
 			Labels: []string{},
 		})
 	b, err := New("../config/config_test.yml", "../config/empty_config_test.yml")

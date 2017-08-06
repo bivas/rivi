@@ -26,7 +26,7 @@ func Run(rule Rule, state multistep.StateBag) {
 	for i, action := range rule.Actions() {
 		steps[i] = &ActionStep{action}
 	}
-	meta := state.Get("data").(types.EventData)
+	meta := state.Get("data").(types.Data)
 	lrs.DebugWith(
 		log.MetaFields{log.F("issue", meta.GetShortName()), log.F("steps", len(steps))},
 		"Applying rule %s", rule.Name())
@@ -35,7 +35,7 @@ func Run(rule Rule, state multistep.StateBag) {
 }
 
 func RunGroup(group RulesGroup, state multistep.StateBag) []string {
-	meta := state.Get("data").(types.EventData)
+	meta := state.Get("data").(types.Data)
 	lrs.DebugWith(
 		log.MetaFields{
 			log.F("issue", meta.GetShortName()),

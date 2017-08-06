@@ -10,7 +10,7 @@ import (
 	"github.com/mitchellh/multistep"
 )
 
-type LockableEventData interface {
+type LockableData interface {
 	Lock()
 	Unlock()
 	LockState() bool
@@ -23,8 +23,8 @@ type action struct {
 }
 
 func (a *action) Apply(state multistep.StateBag) {
-	meta := state.Get("data").(types.EventData)
-	lockable, ok := meta.(LockableEventData)
+	meta := state.Get("data").(types.Data)
+	lockable, ok := meta.(LockableData)
 	if !ok {
 		a.logger.WarningWith(
 			log.MetaFields{log.F("issue", meta.GetShortName())},

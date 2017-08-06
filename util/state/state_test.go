@@ -7,7 +7,7 @@ import (
 )
 
 func TestState(t *testing.T) {
-	meta := &mocks.MockEventData{}
+	meta := &mocks.MockData{}
 	config := &mocks.MockConfiguration{}
 
 	result := New(config, meta)

@@ -12,7 +12,7 @@ type action struct {
 }
 
 func (a *action) Apply(state multistep.StateBag) {
-	state.Get("data").(types.EventData).AddComment(a.rule.Comment)
+	state.Get("data").(types.Data).AddComment(a.rule.Comment)
 }
 
 type factory struct {

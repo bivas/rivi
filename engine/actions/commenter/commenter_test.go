@@ -23,7 +23,7 @@ func TestSerialization(t *testing.T) {
 
 func TestCommentNoComments(t *testing.T) {
 	action := action{rule: &rule{Comment: "comment1"}}
-	meta := &mocks.MockEventData{Comments: []types.Comment{}}
+	meta := &mocks.MockData{Comments: []types.Comment{}}
 	config := &mocks.MockConfiguration{}
 	action.Apply(state.New(config, meta))
 	assert.Len(t, meta.AddedComments, 1, "added comments")
@@ -32,7 +32,7 @@ func TestCommentNoComments(t *testing.T) {
 
 func TestNewCommentWithExisting(t *testing.T) {
 	action := action{rule: &rule{Comment: "comment1"}}
-	meta := &mocks.MockEventData{Comments: []types.Comment{types.Comment{Comment: "comment2"}}}
+	meta := &mocks.MockData{Comments: []types.Comment{types.Comment{Comment: "comment2"}}}
 	config := &mocks.MockConfiguration{}
 	action.Apply(state.New(config, meta))
 	assert.Len(t, meta.AddedComments, 1, "added Comments")

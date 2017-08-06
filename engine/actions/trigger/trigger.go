@@ -21,7 +21,7 @@ type action struct {
 }
 
 func (a *action) Apply(state multistep.StateBag) {
-	meta := state.Get("data").(types.EventData)
+	meta := state.Get("data").(types.Data)
 	request := a.prepareRequest(meta)
 	response, e := a.client.Do(request)
 	if e != nil {
@@ -41,7 +41,7 @@ func (a *action) Apply(state multistep.StateBag) {
 	}
 
 }
-func (a *action) prepareRequest(meta types.EventData) *http.Request {
+func (a *action) prepareRequest(meta types.Data) *http.Request {
 	message := &message{
 		Time:   time.Now(),
 		Number: meta.GetNumber(),

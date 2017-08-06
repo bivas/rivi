@@ -48,7 +48,7 @@ func (a *action) findLookupRoles(config config.Configuration, assignedRoles []st
 }
 
 func (a *action) Apply(state multistep.StateBag) {
-	meta := state.Get("data").(types.EventData)
+	meta := state.Get("data").(types.Data)
 	conf := state.Get("config").(config.Configuration)
 	assignees := meta.GetAssignees()
 	if len(assignees) >= a.rule.Require {
@@ -66,7 +66,7 @@ func (a *action) Apply(state multistep.StateBag) {
 	}
 }
 
-func (a *action) randomUsers(config config.Configuration, meta types.EventData, lookupRoles []string) []string {
+func (a *action) randomUsers(config config.Configuration, meta types.Data, lookupRoles []string) []string {
 	possibleSet := util.StringSet{Transformer: strings.ToLower}
 	possibleSet.AddAll(config.GetRoleMembers(lookupRoles...)).Remove(meta.GetOrigin())
 	for _, assignee := range meta.GetAssignees() {

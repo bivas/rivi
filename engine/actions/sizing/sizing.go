@@ -25,7 +25,7 @@ func (a *action) updatePossibleLabels() {
 	a.possibleLabels = set.Values()
 }
 
-func (a *action) findMatchedLabel(meta types.EventData) (*sizingRule, string, bool) {
+func (a *action) findMatchedLabel(meta types.Data) (*sizingRule, string, bool) {
 	changedFiles := meta.GetChangedFiles()
 	add, del := meta.GetChanges()
 	changes := add + del
@@ -56,7 +56,7 @@ func (a *action) findMatchedLabel(meta types.EventData) (*sizingRule, string, bo
 	return &defaultRule, defaultLabel, defaultExists
 }
 
-func (s *action) findCurrentMatchedLabel(meta types.EventData) (string, bool) {
+func (s *action) findCurrentMatchedLabel(meta types.Data) (string, bool) {
 	for _, label := range meta.GetLabels() {
 		if util.StringSliceContains(s.possibleLabels, label) {
 			return label, true
@@ -74,7 +74,7 @@ func (a *action) Apply(state multistep.StateBag) {
 		4. Update the label
 	*/
 	a.updatePossibleLabels()
-	meta := state.Get("data").(types.EventData)
+	meta := state.Get("data").(types.Data)
 	currentMatchedLabel, exists := a.findCurrentMatchedLabel(meta)
 	matchedRule, matchedLabel, matched := a.findMatchedLabel(meta)
 	if exists && matched {

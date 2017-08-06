@@ -8,7 +8,7 @@ import (
 	"github.com/bivas/rivi/util/log"
 )
 
-type EventData interface {
+type Data interface {
 	GetShortName() string
 	GetLongName() string
 	GetNumber() int
@@ -36,14 +36,14 @@ type EventData interface {
 	GetRawPayload() []byte
 }
 
-type EventDataBuilder interface {
-	BuildFromHook(config client.ClientConfig, r *http.Request) (EventData, bool, error)
-	BuildFromPayload(config client.ClientConfig, payload []byte) (EventData, bool, error)
+type DataBuilder interface {
+	BuildFromHook(config client.ClientConfig, r *http.Request) (Data, bool, error)
+	BuildFromPayload(config client.ClientConfig, payload []byte) (Data, bool, error)
 }
 
-var builders map[string]EventDataBuilder = make(map[string]EventDataBuilder)
+var builders map[string]DataBuilder = make(map[string]DataBuilder)
 
-func RegisterNewDataBuilder(provider string, builder EventDataBuilder) {
+func RegisterNewDataBuilder(provider string, builder DataBuilder) {
 	search := strings.ToLower(provider)
 	_, exists := builders[search]
 	if exists {
@@ -54,8 +54,8 @@ func RegisterNewDataBuilder(provider string, builder EventDataBuilder) {
 	}
 }
 
-func getBuilderFromRequest(r *http.Request) EventDataBuilder {
-	var builder EventDataBuilder
+func getBuilderFromRequest(r *http.Request) DataBuilder {
+	var builder DataBuilder
 	for name := range r.Header {
 		for provider := range builders {
 			if strings.Contains(strings.ToLower(name), provider) {
@@ -70,7 +70,7 @@ func getBuilderFromRequest(r *http.Request) EventDataBuilder {
 	return builder
 }
 
-func BuildFromHook(config client.ClientConfig, r *http.Request) (EventData, bool) {
+func BuildFromHook(config client.ClientConfig, r *http.Request) (Data, bool) {
 	builder := getBuilderFromRequest(r)
 	if builder == nil {
 		log.Error("No Builder to work with!")
@@ -84,7 +84,7 @@ func BuildFromHook(config client.ClientConfig, r *http.Request) (EventData, bool
 	return result, process
 }
 
-func BuildComplete(config client.ClientConfig, r *http.Request, data EventData) (EventData, bool) {
+func BuildComplete(config client.ClientConfig, r *http.Request, data Data) (Data, bool) {
 	builder := getBuilderFromRequest(r)
 	if builder == nil {
 		log.Error("No Builder to work with!")
