@@ -5,7 +5,6 @@ import (
 	"github.com/bivas/rivi/config/action"
 	"github.com/bivas/rivi/config/client"
 	"github.com/stretchr/testify/assert"
-	"os"
 	. "testing"
 )
 
@@ -62,28 +61,6 @@ func TestReadConfig(t *T) {
 	assertClientConfig(t, c.GetClientConfig())
 	assertRoles(t, c)
 	assertRules(t, c)
-}
-
-func TestClientConfigFromEnv(t *T) {
-	os.Setenv("RIVI_CONFIG_TOKEN", "token-from-env")
-	os.Setenv("RIVI_CONFIG_SECRET", "secret-from-env")
-	c, err := NewConfiguration("config_test.yml")
-	if err != nil {
-		t.Fatalf("Got error during config read. %s", err)
-	}
-	assert.Equal(t, "token-from-env", c.GetClientConfig().GetOAuthToken(), "token from env")
-	assert.Equal(t, "secret-from-env", c.GetClientConfig().GetSecret(), "secret from env")
-}
-
-func TestEmptyConfigTest(t *T) {
-	os.Setenv("RIVI_CONFIG_TOKEN", "token-from-env")
-	os.Setenv("RIVI_CONFIG_SECRET", "secret-from-env")
-	c, err := NewConfiguration("empty_config_test.yml")
-	if err != nil {
-		t.Fatalf("Got error during config read. %s", err)
-	}
-	assert.Equal(t, "token-from-env", c.GetClientConfig().GetOAuthToken(), "token from env")
-	assert.Equal(t, "secret-from-env", c.GetClientConfig().GetSecret(), "secret from env")
 }
 
 type testActionConfig struct {
