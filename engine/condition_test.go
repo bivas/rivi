@@ -158,7 +158,7 @@ func TestRefPatters(t *testing.T) {
 func TestCommentsCountNoOp(t *testing.T) {
 	var rule rule
 	rule.condition.Comments.Count = "5"
-	meta := &mockData{Comments: []types.Comment{{"user1", "comment1"}}}
+	meta := &mockData{Comments: []types.Comment{{Commenter: "user1", Comment: "comment1"}}}
 	assert.False(t, rule.Accept(meta), "shouldn't match")
 	rule.condition.Comments.Count = "1"
 	assert.True(t, rule.Accept(meta), "shouldn't match")
@@ -167,7 +167,7 @@ func TestCommentsCountNoOp(t *testing.T) {
 func TestCommentsCountEquals(t *testing.T) {
 	var rule rule
 	rule.condition.Comments.Count = "==5"
-	meta := &mockData{Comments: []types.Comment{{"user1", "comment1"}}}
+	meta := &mockData{Comments: []types.Comment{{Commenter: "user1", Comment: "comment1"}}}
 	assert.False(t, rule.Accept(meta), "shouldn't match")
 	rule.condition.Comments.Count = "==1"
 	assert.True(t, rule.Accept(meta), "shouldn't match")
@@ -176,7 +176,7 @@ func TestCommentsCountEquals(t *testing.T) {
 func TestCommentsCountLessThan(t *testing.T) {
 	var rule rule
 	rule.condition.Comments.Count = "<1"
-	meta := &mockData{Comments: []types.Comment{{"user1", "comment1"}}}
+	meta := &mockData{Comments: []types.Comment{{Commenter: "user1", Comment: "comment1"}}}
 	assert.False(t, rule.Accept(meta), "shouldn't match")
 	rule.condition.Comments.Count = "<5"
 	assert.True(t, rule.Accept(meta), "shouldn't match")
@@ -186,7 +186,7 @@ func TestCommentsCountLessThanEquals(t *testing.T) {
 	var rule rule
 	rule.condition.Comments.Count = "<=1"
 	meta := &mockData{Comments: []types.Comment{
-		{"user1", "comment1"}, {"user2", "comment2"}}}
+		{Commenter: "user1", Comment: "comment1"}, {Commenter: "user2", Comment: "comment2"}}}
 	assert.False(t, rule.Accept(meta), "shouldn't match")
 	rule.condition.Comments.Count = "<=5"
 	assert.True(t, rule.Accept(meta), "shouldn't match")
@@ -196,7 +196,7 @@ func TestCommentsCountGreaterThan(t *testing.T) {
 	var rule rule
 	rule.condition.Comments.Count = ">5"
 	meta := &mockData{Comments: []types.Comment{
-		{"user1", "comment1"}, {"user2", "comment2"}}}
+		{Commenter: "user1", Comment: "comment1"}, {Commenter: "user2", Comment: "comment2"}}}
 	assert.False(t, rule.Accept(meta), "shouldn't match")
 	rule.condition.Comments.Count = ">1"
 	assert.True(t, rule.Accept(meta), "shouldn't match")
@@ -205,7 +205,7 @@ func TestCommentsCountGreaterThan(t *testing.T) {
 func TestCommentsCountGreaterThanEquals(t *testing.T) {
 	var rule rule
 	rule.condition.Comments.Count = ">=5"
-	meta := &mockData{Comments: []types.Comment{{"user1", "comment1"}}}
+	meta := &mockData{Comments: []types.Comment{{Commenter: "user1", Comment: "comment1"}}}
 	assert.False(t, rule.Accept(meta), "shouldn't match")
 	rule.condition.Comments.Count = ">=1"
 	assert.True(t, rule.Accept(meta), "shouldn't match")
