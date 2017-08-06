@@ -37,8 +37,7 @@ type EventData interface {
 }
 
 type EventDataBuilder interface {
-	PartialBuildFromRequest(config client.ClientConfig, r *http.Request) (EventData, bool, error)
-	BuildFromRequest(config client.ClientConfig, r *http.Request) (EventData, bool, error)
+	BuildFromHook(config client.ClientConfig, r *http.Request) (EventData, bool, error)
 	BuildFromPayload(config client.ClientConfig, payload []byte) (EventData, bool, error)
 }
 
@@ -77,7 +76,7 @@ func BuildFromHook(config client.ClientConfig, r *http.Request) (EventData, bool
 		log.Error("No Builder to work with!")
 		return nil, false
 	}
-	result, process, err := builder.PartialBuildFromRequest(config, r)
+	result, process, err := builder.BuildFromHook(config, r)
 	if err != nil {
 		log.ErrorWith(log.MetaFields{log.E(err)}, "Unable to build from request")
 		return nil, false

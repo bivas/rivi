@@ -100,7 +100,7 @@ func (builder *eventDataBuilder) checkProcessState(context *builderContext) bool
 	return context.data.state != "closed"
 }
 
-func (builder *eventDataBuilder) PartialBuildFromRequest(config client.ClientConfig, r *http.Request) (types.EventData, bool, error) {
+func (builder *eventDataBuilder) BuildFromHook(config client.ClientConfig, r *http.Request) (types.EventData, bool, error) {
 	githubEvent := r.Header.Get("X-Github-Event")
 	if githubEvent == "ping" {
 		builder.logger.Info("Got GitHub 'ping' event")
@@ -131,10 +131,6 @@ func (builder *eventDataBuilder) PartialBuildFromRequest(config client.ClientCon
 	context.data = &eventData{owner: owner, repo: repo, payload: raw}
 	builder.readFromJson(context, pl)
 	return context.data, builder.checkProcessState(context), nil
-}
-
-func (builder *eventDataBuilder) BuildFromRequest(config client.ClientConfig, r *http.Request) (types.EventData, bool, error) {
-	panic("Don't use anymore")
 }
 
 func (builder *eventDataBuilder) BuildFromPayload(config client.ClientConfig, raw []byte) (types.EventData, bool, error) {

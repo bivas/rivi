@@ -18,11 +18,7 @@ func (m *mockEventDataBuilder) BuildFromPayload(config client.ClientConfig, payl
 	return &mocks.MockEventData{Labels: m.Labels}, true, nil
 }
 
-func (m *mockEventDataBuilder) BuildFromRequest(config client.ClientConfig, r *http.Request) (types.EventData, bool, error) {
-	return &mocks.MockEventData{Labels: m.Labels}, true, nil
-}
-
-func (m *mockEventDataBuilder) PartialBuildFromRequest(config client.ClientConfig, r *http.Request) (types.EventData, bool, error) {
+func (m *mockEventDataBuilder) BuildFromHook(config client.ClientConfig, r *http.Request) (types.EventData, bool, error) {
 	return &mocks.MockEventData{Labels: m.Labels}, true, nil
 }
 
