@@ -35,6 +35,11 @@ func (h *hookHandler) Run() {
 		key := data.GetShortName()
 		c, exists := h.processingCache.Get(key)
 		if !exists {
+			h.logger.DebugWith(
+				log.MetaFields{
+					log.F("issue", key),
+				},
+				"Creating new processing unit")
 			c = &processingUnit{
 				Channel: make(chan types.Data),
 				Handler: &loggerJobHandler{logger: h.logger.Get("job.handler")},
@@ -43,6 +48,11 @@ func (h *hookHandler) Run() {
 			c.(*processingUnit).Start()
 		}
 		h.processingCache.Set(key, c, cache.DefaultExpiration)
+		h.logger.DebugWith(
+			log.MetaFields{
+				log.F("issue", key),
+				log.F("pending", len(c.(*processingUnit).Channel)),
+			}, "Sending data to processing unit")
 		c.(*processingUnit).Channel <- data
 	}
 }
