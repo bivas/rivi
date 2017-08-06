@@ -100,6 +100,9 @@ func (c *config) readRolesSection() error {
 
 func (c *config) readRulesSection() error {
 	c.rules = make([]engine.Rule, 0)
+	if c.internal["rules"] == nil {
+		return nil
+	}
 	for name := range c.internal["rules"].AllSettings() {
 		subname := c.internal["rules"].Sub(name)
 		r := engine.NewRule(name, subname)
