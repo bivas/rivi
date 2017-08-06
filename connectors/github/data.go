@@ -30,6 +30,10 @@ type data struct {
 	reviewers    map[string]string
 }
 
+func (d *data) GetProvider() string {
+	return "github"
+}
+
 func (d *data) GetShortName() string {
 	return fmt.Sprintf("%s/%s#%d", d.owner, d.repo, d.number)
 }

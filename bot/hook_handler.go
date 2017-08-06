@@ -7,11 +7,8 @@ import (
 	"time"
 )
 
-type hookHandler struct {
-	incoming <-chan types.Data
-	logger   log.Logger
-
-	processingCache *cache.Cache
+type HookHandler interface {
+	Run()
 }
 
 type processingUnit struct {
@@ -25,7 +22,14 @@ func (p *processingUnit) Start() {
 	go p.Handler.Handle(p.Channel)
 }
 
-func (h *hookHandler) Run() {
+type channelHookHandler struct {
+	incoming <-chan types.Data
+	logger   log.Logger
+
+	processingCache *cache.Cache
+}
+
+func (h *channelHookHandler) Run() {
 	for {
 		data, ok := <-h.incoming
 		if !ok {
@@ -58,7 +62,7 @@ func (h *hookHandler) Run() {
 }
 
 func runHookHandler(incoming <-chan types.Data) {
-	handler := &hookHandler{
+	handler := &channelHookHandler{
 		incoming:        incoming,
 		processingCache: cache.New(time.Minute, 2*time.Minute),
 		logger:          log.Get("hook.handler")}

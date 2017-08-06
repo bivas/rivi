@@ -32,6 +32,10 @@ type MockData struct {
 	RawPayload       []byte
 }
 
+func (m *MockData) GetProvider() string {
+	return "mock"
+}
+
 func (m *MockData) GetShortName() string {
 	return fmt.Sprintf("%s/%s#%d", m.Owner, m.Repo, m.Number)
 }

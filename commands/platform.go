@@ -21,8 +21,8 @@ Usage: rivi	platform [options]
 	Starts rivi in platform mode and listen to incoming webhooks
 
 Options:
-	-port=8080				Listen on port (default: 8080)
-	-uri=/					URI path (default: "/")
+	-port=8080				Listen on port
+	-uri=/					URI path
 `
 }
 

@@ -30,10 +30,10 @@ type hookListener struct {
 func (h *hookListener) HandleEvent(r *http.Request) *HandledEventResult {
 	data, ok := types.BuildFromHook(h.conf, r)
 	if !ok {
-		return &HandledEventResult{Message: "Skipping rules processing"}
+		return &HandledEventResult{Message: "Skipping hook processing"}
 	}
 	h.queue.Send(data)
-	return &HandledEventResult{Message: "Processing " + data.GetLongName()}
+	return &HandledEventResult{Message: "Processing " + data.GetShortName()}
 }
 
 func NewHookListener() (Bot, error) {

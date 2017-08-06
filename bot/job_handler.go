@@ -17,7 +17,7 @@ func (h *loggerJobHandler) Handle(incoming chan types.Data) {
 	for {
 		data, ok := <-incoming
 		if !ok {
-			h.logger.Info("Stoping job handler")
+			h.logger.Info("Stopping job handler")
 			break
 		}
 		log.InfoWith(log.MetaFields{log.F("data", data.GetShortName())}, "Got data from job channel")

@@ -33,6 +33,7 @@ type Data interface {
 	GetChangedFiles() int
 	GetFileExtensions() []string
 	GetChanges() (int, int)
+	GetProvider() string
 	GetRawPayload() []byte
 }
 
@@ -84,9 +85,9 @@ func BuildFromHook(config client.ClientConfig, r *http.Request) (Data, bool) {
 	return result, process
 }
 
-func BuildComplete(config client.ClientConfig, r *http.Request, data Data) (Data, bool) {
-	builder := getBuilderFromRequest(r)
-	if builder == nil {
+func BuildComplete(config client.ClientConfig, data Data) (Data, bool) {
+	builder, exists := builders[data.GetProvider()]
+	if !exists {
 		log.Error("No Builder to work with!")
 		return nil, false
 	}

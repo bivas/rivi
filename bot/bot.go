@@ -60,7 +60,7 @@ func (b *bot) getIssueLock(namespaceLock *sync.Mutex, data types.Data) *sync.Mut
 	return issueLocker.(*sync.Mutex)
 }
 
-func (b *bot) processRules(namespaceLock *sync.Mutex, config config.Configuration, partial types.Data, r *http.Request) *HandledEventResult {
+func (b *bot) processRules(namespaceLock *sync.Mutex, config config.Configuration, partial types.Data) *HandledEventResult {
 	rules := engine.GroupByRuleOrder(config.GetRules())
 	issueLocker := b.getIssueLock(namespaceLock, partial)
 	defer issueLocker.Unlock()
@@ -68,7 +68,7 @@ func (b *bot) processRules(namespaceLock *sync.Mutex, config config.Configuratio
 	result := &HandledEventResult{
 		AppliedRules: []string{},
 	}
-	meta, ok := types.BuildComplete(config.GetClientConfig(), r, partial)
+	meta, ok := types.BuildComplete(config.GetClientConfig(), partial)
 	if !ok {
 		log.Debug("Skipping rule processing for %s (couldn't build complete data)", partial.GetShortName())
 		return result
@@ -104,7 +104,7 @@ func (b *bot) HandleEvent(r *http.Request) *HandledEventResult {
 		return &HandledEventResult{Message: "Skipping rules processing (could be not supported event type)"}
 	}
 	log.Debug("release namespace '%s' lock", namespace)
-	return b.processRules(locker.(*sync.Mutex), workingConfiguration, meta, r)
+	return b.processRules(locker.(*sync.Mutex), workingConfiguration, meta)
 }
 
 func New(configPaths ...string) (Bot, error) {
