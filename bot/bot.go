@@ -8,7 +8,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/bivas/rivi/config"
+	"github.com/bivas/rivi/engine"
+	"github.com/bivas/rivi/types"
 	"github.com/bivas/rivi/util/log"
+	"github.com/bivas/rivi/util/state"
 	"github.com/patrickmn/go-cache"
 )
 
@@ -23,14 +27,14 @@ type Bot interface {
 
 type bot struct {
 	defaultNamespace string
-	configurations   map[string]Configuration
+	configurations   map[string]config.Configuration
 
 	globalLocker     *sync.Mutex
 	namespaceMutexes *cache.Cache
 	repoIssueMutexes *cache.Cache
 }
 
-func (b *bot) getCurrentConfiguration(namespace string) (Configuration, error) {
+func (b *bot) getCurrentConfiguration(namespace string) (config.Configuration, error) {
 	if namespace == "" {
 		namespace = b.defaultNamespace
 	}
@@ -42,7 +46,7 @@ func (b *bot) getCurrentConfiguration(namespace string) (Configuration, error) {
 	return configuration, nil
 }
 
-func (b *bot) getIssueLock(namespaceLock *sync.Mutex, data EventData) *sync.Mutex {
+func (b *bot) getIssueLock(namespaceLock *sync.Mutex, data types.EventData) *sync.Mutex {
 	defer namespaceLock.Unlock()
 	id := data.GetShortName()
 	log.Debug("acquire namespace lock during rules process")
@@ -56,35 +60,22 @@ func (b *bot) getIssueLock(namespaceLock *sync.Mutex, data EventData) *sync.Mute
 	return issueLocker.(*sync.Mutex)
 }
 
-func (b *bot) processRules(namespaceLock *sync.Mutex, config Configuration, partial EventData, r *http.Request) *HandledEventResult {
-	rules := groupByRuleOrder(config.GetRules())
+func (b *bot) processRules(namespaceLock *sync.Mutex, config config.Configuration, partial types.EventData, r *http.Request) *HandledEventResult {
+	rules := engine.GroupByRuleOrder(config.GetRules())
 	issueLocker := b.getIssueLock(namespaceLock, partial)
 	defer issueLocker.Unlock()
 
-	applied := make([]Rule, 0)
 	result := &HandledEventResult{
 		AppliedRules: []string{},
 	}
-	data, ok := completeBuild(config.GetClientConfig(), r, partial)
+	meta, ok := types.BuildComplete(config.GetClientConfig(), r, partial)
 	if !ok {
 		log.Debug("Skipping rule processing for %s (couldn't build complete data)", partial.GetShortName())
 		return result
 	}
+	context := state.New(config, meta)
 	for _, group := range rules {
-		log.DebugWith(log.MetaFields{log.F("issue", data.GetShortName())}, "Processing rule group of %d order with %d rules", group.key, len(group.rules))
-		for _, rule := range group.rules {
-			if rule.Accept(data) {
-				log.DebugWith(log.MetaFields{log.F("issue", data.GetShortName())}, "Accepting rule %s", rule.Name())
-				applied = append(applied, rule)
-				result.AppliedRules = append(result.AppliedRules, rule.Name())
-			}
-		}
-		for _, rule := range applied {
-			log.DebugWith(log.MetaFields{log.F("issue", data.GetShortName())}, "Applying rule %s", rule.Name())
-			for _, action := range rule.Actions() {
-				action.Apply(config, data)
-			}
-		}
+		result.AppliedRules = append(result.AppliedRules, engine.RunGroup(group, context)...)
 	}
 	return result
 }
@@ -107,18 +98,18 @@ func (b *bot) HandleEvent(r *http.Request) *HandledEventResult {
 		locker.(*sync.Mutex).Unlock()
 		return &HandledEventResult{Message: err.Error()}
 	}
-	data, process := buildFromRequest(workingConfiguration.GetClientConfig(), r)
+	meta, process := types.BuildFromHook(workingConfiguration.GetClientConfig(), r)
 	if !process {
 		locker.(*sync.Mutex).Unlock()
 		return &HandledEventResult{Message: "Skipping rules processing (could be not supported event type)"}
 	}
 	log.Debug("release namespace '%s' lock", namespace)
-	return b.processRules(locker.(*sync.Mutex), workingConfiguration, data, r)
+	return b.processRules(locker.(*sync.Mutex), workingConfiguration, meta, r)
 }
 
 func New(configPaths ...string) (Bot, error) {
 	b := &bot{
-		configurations:   make(map[string]Configuration),
+		configurations:   make(map[string]config.Configuration),
 		globalLocker:     &sync.Mutex{},
 		namespaceMutexes: cache.New(time.Minute, 30*time.Second),
 		repoIssueMutexes: cache.New(time.Minute, 20*time.Second),
@@ -130,7 +121,7 @@ func New(configPaths ...string) (Bot, error) {
 		if index == 0 {
 			b.defaultNamespace = namespace
 		}
-		configuration, err := newConfiguration(configPath)
+		configuration, err := config.NewConfiguration(configPath)
 		if err != nil {
 			return nil, fmt.Errorf("Reading %s caused an error. %s", configPath, err)
 		}

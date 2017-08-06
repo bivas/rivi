@@ -4,6 +4,9 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/bivas/rivi/config/client"
+	"github.com/bivas/rivi/mocks"
+	"github.com/bivas/rivi/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -11,16 +14,16 @@ type mockEventDataBuilder struct {
 	Labels []string
 }
 
-func (m *mockEventDataBuilder) BuildFromPayload(config ClientConfig, payload []byte) (EventData, bool, error) {
-	return &mockConditionEventData{Labels: m.Labels}, true, nil
+func (m *mockEventDataBuilder) BuildFromPayload(config client.ClientConfig, payload []byte) (types.EventData, bool, error) {
+	return &mocks.MockEventData{Labels: m.Labels}, true, nil
 }
 
-func (m *mockEventDataBuilder) BuildFromRequest(config ClientConfig, r *http.Request) (EventData, bool, error) {
-	return &mockConditionEventData{Labels: m.Labels}, true, nil
+func (m *mockEventDataBuilder) BuildFromRequest(config client.ClientConfig, r *http.Request) (types.EventData, bool, error) {
+	return &mocks.MockEventData{Labels: m.Labels}, true, nil
 }
 
-func (m *mockEventDataBuilder) PartialBuildFromRequest(config ClientConfig, r *http.Request) (EventData, bool, error) {
-	return &mockConditionEventData{Labels: m.Labels}, true, nil
+func (m *mockEventDataBuilder) PartialBuildFromRequest(config client.ClientConfig, r *http.Request) (types.EventData, bool, error) {
+	return &mocks.MockEventData{Labels: m.Labels}, true, nil
 }
 
 func buildRequest(t *testing.T, url string) *http.Request {
@@ -32,9 +35,9 @@ func buildRequest(t *testing.T, url string) *http.Request {
 }
 
 func TestNewBotDefaultNamespace(t *testing.T) {
-	RegisterNewBuilder("TestNewBotDefaultNamespace",
+	types.RegisterNewDataBuilder("TestNewBotDefaultNamespace",
 		&mockEventDataBuilder{Labels: []string{}})
-	b, err := New("config_test.yml", "empty_config_test.yml")
+	b, err := New("../config/config_test.yml", "../config/empty_config_test.yml")
 	if err != nil {
 		t.Fatalf("Error while building a bot. %s", err)
 	}
@@ -47,13 +50,13 @@ func TestNewBotDefaultNamespace(t *testing.T) {
 }
 
 func TestNewBotExistingNamespace(t *testing.T) {
-	RegisterNewBuilder("TestNewBotExistingNamespace",
+	types.RegisterNewDataBuilder("TestNewBotExistingNamespace",
 		&mockEventDataBuilder{
 			Labels: []string{
 				"label2",
 				"pending-approval"},
 		})
-	b, err := New("config_test.yml", "empty_config_test.yml")
+	b, err := New("../config/config_test.yml", "../config/empty_config_test.yml")
 	if err != nil {
 		t.Fatalf("Error while building a bot. %s", err)
 	}
@@ -69,11 +72,11 @@ func TestNewBotExistingNamespace(t *testing.T) {
 }
 
 func TestNewBotNonExistingNamespace(t *testing.T) {
-	RegisterNewBuilder("TestNewBotNonExistingNamespace",
+	types.RegisterNewDataBuilder("TestNewBotNonExistingNamespace",
 		&mockEventDataBuilder{
 			Labels: []string{},
 		})
-	b, err := New("config_test.yml", "empty_config_test.yml")
+	b, err := New("../config/config_test.yml", "../config/empty_config_test.yml")
 	if err != nil {
 		t.Fatalf("Error while building a bot. %s", err)
 	}
