@@ -10,7 +10,7 @@ import (
 var la = log.Get("actions")
 
 type Action interface {
-	Apply(bag multistep.StateBag)
+	Apply(multistep.StateBag)
 }
 
 type ActionFactory interface {
