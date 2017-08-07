@@ -68,7 +68,7 @@ func (a *action) Apply(state multistep.StateBag) {
 
 func (a *action) randomUsers(config config.Configuration, meta types.Data, lookupRoles []string) []string {
 	possibleSet := util.StringSet{Transformer: strings.ToLower}
-	possibleSet.AddAll(config.GetRoleMembers(lookupRoles...)).Remove(meta.GetOrigin())
+	possibleSet.AddAll(config.GetRoleMembers(lookupRoles...)).Remove(meta.GetOrigin().User)
 	for _, assignee := range meta.GetAssignees() {
 		possibleSet.Remove(assignee)
 	}

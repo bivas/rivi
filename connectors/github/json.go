@@ -12,12 +12,16 @@ type pullRequestSection struct {
 	Assignees    []struct {
 		Login string `json:"login"`
 	} `json:"assignees"`
-	User struct {
-		Login string `json:"login"`
-	} `json:"user"`
 	Base struct {
 		Ref string `json:"ref"`
 	} `json:"base"`
+	Head struct {
+		Ref  string `json:"ref"`
+		Sha  string `json:"sha"`
+		User struct {
+			Login string `json:"login"`
+		} `json:"user"`
+	} `json:"head"`
 }
 
 type repositorySection struct {

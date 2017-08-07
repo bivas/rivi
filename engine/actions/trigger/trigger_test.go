@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/bivas/rivi/mocks"
+	"github.com/bivas/rivi/types"
 	"github.com/bivas/rivi/util/log"
 	"github.com/bivas/rivi/util/state"
 	"github.com/stretchr/testify/assert"
@@ -35,7 +36,7 @@ func TestTriggerDefaults(t *testing.T) {
 		State:  "tested",
 		Owner:  "test",
 		Repo:   "repo1",
-		Origin: "tester",
+		Origin: types.Origin{User: "tester"},
 	}
 	rule := &rule{
 		Endpoint: "http://example.com/trigger",
@@ -63,7 +64,7 @@ func TestTriggerGet(t *testing.T) {
 		State:  "tested",
 		Owner:  "test",
 		Repo:   "repo1",
-		Origin: "tester",
+		Origin: types.Origin{User: "tester"},
 	}
 	rule := &rule{
 		Endpoint: "http://example.com/trigger",
@@ -92,7 +93,7 @@ func TestTriggerHeaders(t *testing.T) {
 		State:  "tested",
 		Owner:  "test",
 		Repo:   "repo1",
-		Origin: "tester",
+		Origin: types.Origin{User: "tester"},
 	}
 	headers := make(map[string]string)
 	headers["not-allowed"] = "fail"

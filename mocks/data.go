@@ -15,7 +15,7 @@ type MockData struct {
 	Owner            string
 	Repo             string
 	Ref              string
-	Origin           string
+	Origin           types.Origin
 	Assignees        []string
 	AddedAssignees   []string
 	RemovedAssignees []string
@@ -65,7 +65,7 @@ func (m *MockData) GetState() string {
 	return m.State
 }
 
-func (m *MockData) GetOrigin() string {
+func (m *MockData) GetOrigin() types.Origin {
 	return m.Origin
 }
 

@@ -15,7 +15,7 @@ type Data interface {
 	GetTitle() string
 	GetDescription() string
 	GetState() string
-	GetOrigin() string
+	GetOrigin() Origin
 	GetOwner() string
 	GetRepo() string
 	GetRef() string

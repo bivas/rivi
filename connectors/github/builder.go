@@ -76,7 +76,11 @@ func (builder *dataBuilder) readFromJson(context *builderContext, payload *paylo
 	context.data.additions = payload.PullRequest.Additions
 	context.data.deletions = payload.PullRequest.Deletions
 	context.data.ref = payload.PullRequest.Base.Ref
-	context.data.origin = strings.ToLower(payload.PullRequest.User.Login)
+	context.data.origin = types.Origin{
+		User: strings.ToLower(payload.PullRequest.Head.User.Login),
+		Ref:  payload.PullRequest.Head.Ref,
+		Head: payload.PullRequest.Head.Sha[0:6],
+	}
 	context.data.state = payload.PullRequest.State
 }
 

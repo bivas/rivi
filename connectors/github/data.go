@@ -12,7 +12,7 @@ type data struct {
 	number       int
 	state        string
 	locked       bool
-	origin       string
+	origin       types.Origin
 	owner        string
 	repo         string
 	ref          string
@@ -144,7 +144,7 @@ func (d *data) GetDescription() string {
 	return d.description
 }
 
-func (d *data) GetOrigin() string {
+func (d *data) GetOrigin() types.Origin {
 	return d.origin
 }
 

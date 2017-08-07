@@ -136,7 +136,7 @@ func TestOriginComment(t *testing.T) {
 	action := action{rule: &rule{}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mocks.MockConfiguration{}
-	mockData := mocks.MockData{Assignees: []string{"user1"}, Origin: "user2", Comments: []types.Comment{
+	mockData := mocks.MockData{Assignees: []string{"user1"}, Origin: types.Origin{User: "user2"}, Comments: []types.Comment{
 		{Commenter: "user2", Comment: "approved"},
 	}}
 	meta := &mockMergableData{MockData: mockData}
@@ -148,7 +148,7 @@ func TestNotApprovedComment(t *testing.T) {
 	action := action{rule: &rule{}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mocks.MockConfiguration{}
-	mockData := mocks.MockData{Assignees: []string{"user1"}, Origin: "user2", Comments: []types.Comment{
+	mockData := mocks.MockData{Assignees: []string{"user1"}, Origin: types.Origin{User: "user2"}, Comments: []types.Comment{
 		{Commenter: "user1", Comment: "not approved"},
 	}}
 	meta := &mockMergableData{MockData: mockData}
@@ -160,7 +160,7 @@ func TestSameApprovedComment(t *testing.T) {
 	action := action{rule: &rule{Require: 2}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mocks.MockConfiguration{}
-	mockData := mocks.MockData{Assignees: []string{"user1"}, Origin: "user2", Comments: []types.Comment{
+	mockData := mocks.MockData{Assignees: []string{"user1"}, Origin: types.Origin{User: "user2"}, Comments: []types.Comment{
 		{Commenter: "user1", Comment: "approved"},
 		{Commenter: "user1", Comment: "approved"},
 	}}
@@ -173,7 +173,7 @@ func TestLabel(t *testing.T) {
 	action := action{rule: &rule{Label: "approved"}, logger: log.Get("automerge.test")}
 	action.rule.Defaults()
 	config := &mocks.MockConfiguration{}
-	mockData := mocks.MockData{Assignees: []string{"user1"}, Origin: "user2", Comments: []types.Comment{
+	mockData := mocks.MockData{Assignees: []string{"user1"}, Origin: types.Origin{User: "user2"}, Comments: []types.Comment{
 		{Commenter: "user1", Comment: "approved"},
 	}}
 	meta := &mockMergableData{MockData: mockData}

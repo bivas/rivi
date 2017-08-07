@@ -4,8 +4,9 @@ import (
 	"testing"
 
 	"github.com/bivas/rivi/mocks"
+	"github.com/bivas/rivi/types"
 	"github.com/bivas/rivi/util/log"
-	"github.com/mitchellh/multistep"
+	"github.com/bivas/rivi/util/state"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -30,10 +31,7 @@ func TestActionApplyRequire1NoAssignees(t *testing.T) {
 	roles["default"] = []string{"user1", "user2", "user3"}
 	config := &mocks.MockConfiguration{RoleMembers: roles}
 	meta := &mocks.MockData{Assignees: []string{}}
-	state := new(multistep.BasicStateBag)
-	state.Put("data", meta)
-	state.Put("config", config)
-	action.Apply(state)
+	action.Apply(state.New(config, meta))
 	assert.Len(t, meta.AddedAssignees, 1, "assignment")
 }
 
@@ -43,10 +41,7 @@ func TestActionApplyRequire2With1Assignee(t *testing.T) {
 	roles["default"] = []string{"user1", "user2", "user3"}
 	config := &mocks.MockConfiguration{RoleMembers: roles}
 	meta := &mocks.MockData{Assignees: []string{"user1"}}
-	state := new(multistep.BasicStateBag)
-	state.Put("data", meta)
-	state.Put("config", config)
-	action.Apply(state)
+	action.Apply(state.New(config, meta))
 	assert.Len(t, meta.AddedAssignees, 1, "assignment")
 	assert.Len(t, meta.Assignees, 2, "required")
 	assert.Contains(t, meta.Assignees, "user1", "original")
@@ -59,10 +54,7 @@ func TestActionApplyRequireFromRole(t *testing.T) {
 	roles["group"] = []string{"user4"}
 	config := &mocks.MockConfiguration{RoleMembers: roles}
 	meta := &mocks.MockData{Assignees: []string{}}
-	state := new(multistep.BasicStateBag)
-	state.Put("data", meta)
-	state.Put("config", config)
-	action.Apply(state)
+	action.Apply(state.New(config, meta))
 	assert.Len(t, meta.AddedAssignees, 1, "assignment")
 	assert.NotContains(t, meta.AddedAssignees, "user1", "matched group")
 	assert.NotContains(t, meta.AddedAssignees, "user2", "matched group")
@@ -76,11 +68,8 @@ func TestActionApplyWithoutOrigin(t *testing.T) {
 	roles["default"] = []string{"user1", "user2"}
 	for i := 0; i < 10; i++ {
 		config := &mocks.MockConfiguration{RoleMembers: roles}
-		meta := &mocks.MockData{Assignees: []string{}, Origin: "user1"}
-		state := new(multistep.BasicStateBag)
-		state.Put("data", meta)
-		state.Put("config", config)
-		action.Apply(state)
+		meta := &mocks.MockData{Assignees: []string{}, Origin: types.Origin{User: "user1"}}
+		action.Apply(state.New(config, meta))
 		assert.Len(t, meta.AddedAssignees, 1, "assignment")
 		assert.NotContains(t, meta.AddedAssignees, "user1", "matched group")
 		assert.Contains(t, meta.AddedAssignees, "user2", "matched group")
@@ -93,11 +82,8 @@ func TestActionApplyWithoutOriginCaseInsensitive(t *testing.T) {
 	roles["default"] = []string{"usEr1", "user2"}
 	for i := 0; i < 10; i++ {
 		config := &mocks.MockConfiguration{RoleMembers: roles}
-		meta := &mocks.MockData{Assignees: []string{}, Origin: "USER1"}
-		state := new(multistep.BasicStateBag)
-		state.Put("data", meta)
-		state.Put("config", config)
-		action.Apply(state)
+		meta := &mocks.MockData{Assignees: []string{}, Origin: types.Origin{User: "user1"}}
+		action.Apply(state.New(config, meta))
 		assert.Len(t, meta.AddedAssignees, 1, "assignment")
 		assert.NotContains(t, meta.AddedAssignees, "user1", "matched group")
 		assert.Contains(t, meta.AddedAssignees, "user2", "matched group")
@@ -111,10 +97,7 @@ func TestActionApplyHasAssignee(t *testing.T) {
 	roles["group"] = []string{"user4"}
 	config := &mocks.MockConfiguration{RoleMembers: roles}
 	meta := &mocks.MockData{Assignees: []string{"user1"}}
-	state := new(multistep.BasicStateBag)
-	state.Put("data", meta)
-	state.Put("config", config)
-	action.Apply(state)
+	action.Apply(state.New(config, meta))
 	assert.Len(t, meta.AddedAssignees, 0, "assignment")
 }
 
@@ -124,9 +107,6 @@ func TestActionApplyAllAssignees(t *testing.T) {
 	roles["default"] = []string{"user1", "user2"}
 	config := &mocks.MockConfiguration{RoleMembers: roles}
 	meta := &mocks.MockData{Assignees: []string{"user1", "user2"}}
-	state := new(multistep.BasicStateBag)
-	state.Put("data", meta)
-	state.Put("config", config)
-	action.Apply(state)
+	action.Apply(state.New(config, meta))
 	assert.Len(t, meta.AddedAssignees, 0, "assignment")
 }

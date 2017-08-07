@@ -64,8 +64,8 @@ func (m *mockData) GetState() string {
 	return m.State
 }
 
-func (m *mockData) GetOrigin() string {
-	return m.Origin
+func (m *mockData) GetOrigin() types.Origin {
+	return types.Origin{User: m.Origin}
 }
 
 func (m *mockData) GetOwner() string {
