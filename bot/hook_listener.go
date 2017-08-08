@@ -8,18 +8,6 @@ import (
 	"net/http"
 )
 
-type HookListenerQueue interface {
-	Send(types.Data)
-}
-
-type channelHookListenerQueue struct {
-	incoming chan types.Data
-}
-
-func (c *channelHookListenerQueue) Send(data types.Data) {
-	c.incoming <- data
-}
-
 type hookListener struct {
 	conf  client.ClientConfig
 	queue HookListenerQueue
@@ -37,12 +25,10 @@ func (h *hookListener) HandleEvent(r *http.Request) *HandledEventResult {
 }
 
 func NewHookListener() (Bot, error) {
-	logger := log.Get("hooklistener")
-	incomingHooks := make(chan types.Data)
-	go runHookHandler(incomingHooks)
+	logger := log.Get("hook.listener")
 	return &hookListener{
 		conf:   client.NewClientConfig(viper.New()),
-		queue:  &channelHookListenerQueue{incomingHooks},
+		queue:  CreateHookListenerQueue(),
 		logger: logger,
 	}, nil
 }
