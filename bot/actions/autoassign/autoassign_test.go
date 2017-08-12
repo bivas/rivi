@@ -8,6 +8,21 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestSerialization(t *testing.T) {
+	input := map[string]interface{}{
+		"roles":   []string{"role1", "role2"},
+		"require": 2,
+	}
+
+	var f factory
+	result := f.BuildAction(input)
+	assert.NotNil(t, result, "should create action")
+	s, ok := result.(*action)
+	assert.True(t, ok, "should be of this package")
+	assert.Equal(t, 2, s.rule.Require, "require")
+	assert.EqualValues(t, []string{"role1", "role2"}, s.rule.FromRoles, "roles")
+}
+
 func TestActionApplyRequire1NoAssignees(t *testing.T) {
 	action := action{rule: &rule{Require: 1}, logger: log.Get("autoassign.test")}
 	roles := make(map[string][]string)
@@ -80,6 +95,16 @@ func TestActionApplyHasAssignee(t *testing.T) {
 	roles["group"] = []string{"user4"}
 	config := &mock.MockConfiguration{RoleMembers: roles}
 	meta := &mock.MockEventData{Assignees: []string{"user1"}}
+	action.Apply(config, meta)
+	assert.Len(t, meta.AddedAssignees, 0, "assignment")
+}
+
+func TestActionApplyAllAssignees(t *testing.T) {
+	action := action{rule: &rule{Require: 1, FromRoles: []string{"group"}}, logger: log.Get("autoassign.test")}
+	roles := make(map[string][]string)
+	roles["default"] = []string{"user1", "user2"}
+	config := &mock.MockConfiguration{RoleMembers: roles}
+	meta := &mock.MockEventData{Assignees: []string{"user1", "user2"}}
 	action.Apply(config, meta)
 	assert.Len(t, meta.AddedAssignees, 0, "assignment")
 }

@@ -1,23 +1,30 @@
 [![Build Status](https://travis-ci.org/bivas/rivi.svg?branch=development)](https://travis-ci.org/bivas/rivi)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bivas/rivi)](https://goreportcard.com/report/github.com/bivas/rivi)
+[![codecov](https://codecov.io/gh/bivas/rivi/branch/development/graph/badge.svg)](https://codecov.io/gh/bivas/rivi)
 
-# rivi
-Automate your review process with Rivi the review bot
+# rivi - Automate your review process
+
+Managing a repository can require tedious administrative work, and as pull requests increase, it becomes even more complex. Today’s pull review flow lacks important visible information that leads to serious management issues. 
+
+Rivi is an innovative bot that automates repository management. Forget about manually checking which module was modified, or which people are in charge of a pull review, Rivi will do it for you. 
+Rivi enables automatic labeling with common parameters so that administrators can immediately understand their repository status with a quick glance. It also assigns relevant people to pull request reviews, allows to add comments, merges pull requests, sends triggers to relevant users and notifying them about issues that require prompt attention and more. 
+
+With Rivi, developers can focus on the actual code base and less on administrative unambiguous actions made every day.  We are looking to add more automation features to make the repository management process seamless, and our highest priority is to ensure that Rivi lives up to the community standards by providing true value and efficiency.
 
 ## Usage
 Rivi can be run as a service which listens to incoming repository webhooks. This service must be internet facing to accept incoming requests (e.g. GitHub).
 ```
-Usage of rivi:
-  -config string
-    	Bot configuration file(s)
-  -port int
-    	Bot listening port (default 8080)
-  -uri string
-    	Bot URI path (default "/")
+Usage: rivi server [options] CONFIGURATION_FILE(S)...
+
+	Starts rivi in server mode and listen to incoming webhooks
+
+Options:
+	-port=8080				Listen on port (default: 8080)
+	-uri=/					URI path (default: "/")
 ```
 ### Example
 ```
-$ rivi -port 9000 -config repo-x.yaml -config repo-y.yaml
+$ rivi server -port 9000 repo-x.yaml repo-y.yaml
 ```
 
 ### Docker
@@ -32,7 +39,7 @@ $ docker run --detach \
              --publish 8080:8080 \
              --env RIVI_CONFIG_TOKEN=<rivi oath token> \
              --volume /path/to/config/files:/config \
-             bivas/rivi rivi -config /config/repo-x.yaml
+             bivas/rivi rivi server /config/repo-x.yaml
 ```
 
 ## Requirements
@@ -137,6 +144,8 @@ rules:
           match: "master"
           patterns:
             - "integration_v[0-9]{2}$"
+        comments:
+          count: ">10"
         order: 5
       commenter:
         comment: "We have a match!"
@@ -162,6 +171,8 @@ The entire `condition` section is optional - you can run all rules all the time 
   - `starts-with` - issue description has a prefix
   - `ends-with` - issue description has a suffix
   - `patterns` - [pattern](https://golang.org/s/re2syntax) matching issue description (any of the patterns)
+- `comments`
+  - `count` - number of comments for issue (supported operators: `==`, `>`, `<`, `>=`, `<=`)
 - `order` - apply order hint to a rule. All rules are given order index **0**. 
 **Important**: This will not place a rule in the exact position, but can assist in re-order rules. 
 

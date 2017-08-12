@@ -51,12 +51,6 @@ func (a *action) findLookupRoles(config bot.Configuration, assignedRoles []strin
 
 func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 	assignees := meta.GetAssignees()
-	if len(assignees) > 0 && a.rule.IfNoAssignees {
-		a.logger.DebugWith(
-			log.MetaFields{log.F("issue", meta.GetShortName())},
-			"Skipping as there are assignees and no more are allowed")
-		return
-	}
 	if len(assignees) >= a.rule.Require {
 		a.logger.DebugWith(
 			log.MetaFields{log.F("issue", meta.GetShortName())},

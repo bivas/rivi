@@ -7,6 +7,19 @@ import (
 	"testing"
 )
 
+func TestSerialization(t *testing.T) {
+	input := map[string]interface{}{
+		"comment": "comment1",
+	}
+
+	var f factory
+	result := f.BuildAction(input)
+	assert.NotNil(t, result, "should create action")
+	s, ok := result.(*action)
+	assert.True(t, ok, "should be of this package")
+	assert.Equal(t, "comment1", s.rule.Comment, "comment")
+}
+
 func TestCommentNoComments(t *testing.T) {
 	action := action{rule: &rule{Comment: "comment1"}}
 	meta := &mock.MockEventData{Comments: []bot.Comment{}}

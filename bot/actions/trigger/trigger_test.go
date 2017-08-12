@@ -10,6 +10,21 @@ import (
 	"gopkg.in/jarcoal/httpmock.v1"
 )
 
+func TestSerialization(t *testing.T) {
+	input := map[string]interface{}{
+		"endpoint": "http://example.com",
+		"method":   "GET",
+	}
+
+	var f factory
+	result := f.BuildAction(input)
+	assert.NotNil(t, result, "should create action")
+	s, ok := result.(*action)
+	assert.True(t, ok, "should be of this package")
+	assert.Equal(t, "GET", s.rule.Method, "method")
+	assert.Equal(t, "http://example.com", s.rule.Endpoint, "endpoint")
+}
+
 func TestTriggerDefaults(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
