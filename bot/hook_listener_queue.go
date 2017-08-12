@@ -17,21 +17,21 @@ func (c *channelHookListenerQueue) Send(data types.Data) {
 	c.incoming <- data
 }
 
-type HookListenerQueueCreator func() HookListenerQueue
+type HookListenerQueueProvider func() HookListenerQueue
 
-func channelHookListenerQueueCreator() HookListenerQueue {
+func channelHookListenerQueueProvider() HookListenerQueue {
 	log.Get("hook.listener.channel").Debug("Creating hook listener queue creator")
 	incomingHooks := make(chan types.Data)
 	go runHookHandler(incomingHooks)
 	return &channelHookListenerQueue{incomingHooks}
 }
 
-var defaultHookListenerQueueCreator = channelHookListenerQueueCreator
+var defaultHookListenerQueueProvider = channelHookListenerQueueProvider
 
-func SetHookListenerQueueCreator(fn HookListenerQueueCreator) {
-	defaultHookListenerQueueCreator = fn
+func SetHookListenerQueueProvider(fn HookListenerQueueProvider) {
+	defaultHookListenerQueueProvider = fn
 }
 
 func CreateHookListenerQueue() HookListenerQueue {
-	return defaultHookListenerQueueCreator()
+	return defaultHookListenerQueueProvider()
 }
