@@ -17,6 +17,10 @@ type action struct {
 	logger log.Logger
 }
 
+func (a *action) String() string {
+	return fmt.Sprintf("%T{rule: %+v}", *a, a.rule)
+}
+
 type MergeableEventData interface {
 	Merge(mergeMethod string)
 }

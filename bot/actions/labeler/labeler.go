@@ -1,6 +1,7 @@
 package labeler
 
 import (
+	"fmt"
 	"github.com/bivas/rivi/bot"
 	"github.com/bivas/rivi/util/log"
 	"github.com/mitchellh/mapstructure"
@@ -10,6 +11,10 @@ type action struct {
 	rule *rule
 
 	logger log.Logger
+}
+
+func (a *action) String() string {
+	return fmt.Sprintf("%T{rule: %+v}", *a, a.rule)
 }
 
 func (a *action) Apply(config bot.Configuration, meta bot.EventData) {

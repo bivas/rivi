@@ -49,7 +49,17 @@ func (r *rule) Order() int {
 }
 
 func (r *rule) String() string {
-	return fmt.Sprintf("%#v", r)
+	format := `{
+		name: %s
+		condition: %+v
+		actions: %s
+	}`
+	actions := "{\n"
+	for index, action := range r.actions {
+		actions += fmt.Sprintf("			%d { %s }\n", index+1, action)
+	}
+	actions += "		}"
+	return fmt.Sprintf(format, r.name, r.condition, actions)
 }
 
 func (r *rule) Accept(meta EventData) bool {

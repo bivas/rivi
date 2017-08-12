@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"strings"
 
+	"fmt"
 	"github.com/bivas/rivi/bot"
 	"github.com/bivas/rivi/util"
 	"github.com/bivas/rivi/util/log"
@@ -14,6 +15,10 @@ type action struct {
 	rule *rule
 
 	logger log.Logger
+}
+
+func (a *action) String() string {
+	return fmt.Sprintf("%T{rule: %+v}", *a, a.rule)
 }
 
 func (a *action) findAssignedRoles(assignees []string, config bot.Configuration) []string {

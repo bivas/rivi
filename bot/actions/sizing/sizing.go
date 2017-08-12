@@ -1,6 +1,7 @@
 package sizing
 
 import (
+	"fmt"
 	"sort"
 
 	"github.com/bivas/rivi/bot"
@@ -13,6 +14,10 @@ type action struct {
 	items          rules
 	possibleLabels []string
 	logger         log.Logger
+}
+
+func (a *action) String() string {
+	return fmt.Sprintf("%T{items: %+v}", *a, a.items)
 }
 
 func (a *action) updatePossibleLabels() {
@@ -54,9 +59,9 @@ func (a *action) findMatchedLabel(meta bot.EventData) (*sizingRule, string, bool
 	return &defaultRule, defaultLabel, defaultExists
 }
 
-func (s *action) findCurrentMatchedLabel(meta bot.EventData) (string, bool) {
+func (a *action) findCurrentMatchedLabel(meta bot.EventData) (string, bool) {
 	for _, label := range meta.GetLabels() {
-		if util.StringSliceContains(s.possibleLabels, label) {
+		if util.StringSliceContains(a.possibleLabels, label) {
 			return label, true
 		}
 	}
@@ -76,7 +81,9 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 	matchedRule, matchedLabel, matched := a.findMatchedLabel(meta)
 	if exists && matched {
 		if currentMatchedLabel == matchedLabel {
-			a.logger.DebugWith(log.MetaFields{log.F("issue", meta.GetShortName())}, "No need to update label")
+			a.logger.DebugWith(
+				log.MetaFields{log.F("issue", meta.GetShortName())},
+				"No need to update label")
 			return
 		}
 		a.logger.DebugWith(
@@ -88,7 +95,9 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 			meta.AddComment(matchedRule.Comment)
 		}
 	} else if matched {
-		a.logger.DebugWith(log.MetaFields{log.F("issue", meta.GetShortName())}, "Updating label to %s",
+		a.logger.DebugWith(log.MetaFields{
+			log.F("issue", meta.GetShortName())},
+			"Updating label to %s",
 			matchedLabel)
 		meta.AddLabel(matchedLabel)
 		if matchedRule.Comment != "" {

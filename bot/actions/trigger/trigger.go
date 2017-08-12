@@ -18,6 +18,10 @@ type action struct {
 	logger log.Logger
 }
 
+func (a *action) String() string {
+	return fmt.Sprintf("%T{rule: %+v}", *a, a.rule)
+}
+
 func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 	request := a.prepareRequest(meta)
 	response, e := a.client.Do(request)

@@ -7,5 +7,6 @@ import (
 	_ "github.com/bivas/rivi/bot/actions/labeler"
 	_ "github.com/bivas/rivi/bot/actions/locker"
 	_ "github.com/bivas/rivi/bot/actions/sizing"
+	_ "github.com/bivas/rivi/bot/actions/slack"
 	_ "github.com/bivas/rivi/bot/actions/trigger"
 )
