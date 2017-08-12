@@ -21,6 +21,9 @@ type pullRequestSection struct {
 		User struct {
 			Login string `json:"login"`
 		} `json:"user"`
+		Repo struct {
+			GitURL string `json:"git_url"`
+		} `json:"repo"`
 	} `json:"head"`
 }
 

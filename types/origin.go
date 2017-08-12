@@ -1,7 +1,8 @@
 package types
 
 type Origin struct {
-	User string
-	Ref  string
-	Head string
+	User   string
+	Ref    string
+	Head   string
+	GitURL string
 }
