@@ -122,6 +122,7 @@ func (c *config) readSections() error {
 	}
 	for _, section := range sections {
 		if err := section(); err != nil {
+			lc.DebugWith(log.MetaFields{log.F("section", section), log.E(err)}, "Section got an error")
 			return err
 		}
 	}

@@ -11,6 +11,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+var lc = log.Get("engine.condition")
+
 type sectionCondition interface {
 	IsEmpty() bool
 	Match(meta types.Data) bool
@@ -33,7 +35,7 @@ func (c *FilesCondition) checkPattern(meta types.Data) bool {
 		for _, pattern := range c.Patterns {
 			re, err := regexp.Compile(pattern)
 			if err != nil {
-				log.WarningWith(
+				lc.WarningWith(
 					log.MetaFields{log.F("condition", "FileCondition"), log.F("issue", meta.GetShortName()), log.E(err)},
 					"Unable to compile regex '%s'", pattern)
 				continue
@@ -41,7 +43,7 @@ func (c *FilesCondition) checkPattern(meta types.Data) bool {
 			compiled = append(compiled, re)
 		}
 		if len(compiled) == 0 {
-			log.ErrorWith(
+			lc.ErrorWith(
 				log.MetaFields{log.F("condition", "FileCondition"), log.F("issue", meta.GetShortName())},
 				"All configured patterns have failed to compile")
 			return false
@@ -49,7 +51,7 @@ func (c *FilesCondition) checkPattern(meta types.Data) bool {
 		for _, check := range meta.GetFileNames() {
 			for _, reg := range compiled {
 				if reg.MatchString(check) {
-					log.DebugWith(
+					lc.DebugWith(
 						log.MetaFields{log.F("condition", "FileCondition"), log.F("issue", meta.GetShortName())},
 						"Matched with regex '%s' on file '%s'", reg.String(), check)
 					return true
@@ -67,7 +69,7 @@ func (c *FilesCondition) checkExt(meta types.Data) bool {
 		for _, check := range meta.GetFileExtensions() {
 			for _, ext := range c.Extensions {
 				if ext == check {
-					log.DebugWith(
+					lc.DebugWith(
 						log.MetaFields{log.F("condition", "FileCondition"), log.F("issue", meta.GetShortName())},
 						"Matched with extension '%s' on file '%s'", ext, check)
 					return true
@@ -95,13 +97,13 @@ func (c *TitleCondition) IsEmpty() bool {
 func (c *TitleCondition) Match(meta types.Data) bool {
 	title := meta.GetTitle()
 	if c.StartsWith != "" && strings.HasPrefix(title, c.StartsWith) {
-		log.DebugWith(
+		lc.DebugWith(
 			log.MetaFields{log.F("condition", "TitleCondition"), log.F("issue", meta.GetShortName())},
 			"Matched with prefix '%s' on title '%s'", c.StartsWith, title)
 		return true
 	}
 	if c.EndsWith != "" && strings.HasSuffix(title, c.EndsWith) {
-		log.DebugWith(
+		lc.DebugWith(
 			log.MetaFields{log.F("condition", "TitleCondition"), log.F("issue", meta.GetShortName())},
 			"Matched with suffix '%s' on title '%s'", c.EndsWith, title)
 		return true
@@ -111,7 +113,7 @@ func (c *TitleCondition) Match(meta types.Data) bool {
 		for _, pattern := range c.Patterns {
 			re, err := regexp.Compile(pattern)
 			if err != nil {
-				log.WarningWith(
+				lc.WarningWith(
 					log.MetaFields{log.F("condition", "TitleCondition"), log.F("issue", meta.GetShortName()), log.E(err)},
 					"Unable to compile regex '%s'", pattern)
 				continue
@@ -119,14 +121,14 @@ func (c *TitleCondition) Match(meta types.Data) bool {
 			compiled = append(compiled, re)
 		}
 		if len(compiled) == 0 {
-			log.ErrorWith(
+			lc.ErrorWith(
 				log.MetaFields{log.F("condition", "TitleCondition"), log.F("issue", meta.GetShortName())},
 				"All configured patterns have failed to compile")
 			return false
 		}
 		for _, reg := range compiled {
 			if reg.MatchString(title) {
-				log.DebugWith(
+				lc.DebugWith(
 					log.MetaFields{log.F("condition", "TitleCondition"), log.F("issue", meta.GetShortName())},
 					"Matched with pattern '%s' on title '%s'", reg.String(), title)
 				return true
@@ -149,7 +151,7 @@ func (c *DescriptionCondition) IsEmpty() bool {
 func (c *DescriptionCondition) Match(meta types.Data) bool {
 	description := meta.GetDescription()
 	if c.StartsWith != "" && strings.HasPrefix(description, c.StartsWith) {
-		log.DebugWith(
+		lc.DebugWith(
 			log.MetaFields{log.F("condition", "DescriptionCondition"), log.F("issue", meta.GetShortName())},
 			"Matched with prefix '%s' on description '%s'",
 			c.StartsWith,
@@ -157,7 +159,7 @@ func (c *DescriptionCondition) Match(meta types.Data) bool {
 		return true
 	}
 	if c.EndsWith != "" && strings.HasSuffix(description, c.EndsWith) {
-		log.DebugWith(
+		lc.DebugWith(
 			log.MetaFields{log.F("condition", "DescriptionCondition"), log.F("issue", meta.GetShortName())},
 			"Matched with suffix '%s' on description '%s'",
 			c.EndsWith,
@@ -169,21 +171,21 @@ func (c *DescriptionCondition) Match(meta types.Data) bool {
 		for _, pattern := range c.Patterns {
 			re, err := regexp.Compile(pattern)
 			if err != nil {
-				log.WarningWith(log.MetaFields{log.F("condition", "DescriptionCondition"), log.F("issue", meta.GetShortName()), log.E(err)},
+				lc.WarningWith(log.MetaFields{log.F("condition", "DescriptionCondition"), log.F("issue", meta.GetShortName()), log.E(err)},
 					"Unable to compile regex '%s'", pattern)
 				continue
 			}
 			compiled = append(compiled, re)
 		}
 		if len(compiled) == 0 {
-			log.ErrorWith(
+			lc.ErrorWith(
 				log.MetaFields{log.F("condition", "DescriptionCondition"), log.F("issue", meta.GetShortName())},
 				"All configured patterns have failed to compile")
 			return false
 		}
 		for _, reg := range compiled {
 			if reg.MatchString(description) {
-				log.DebugWith(
+				lc.DebugWith(
 					log.MetaFields{log.F("condition", "DescriptionCondition"), log.F("issue", meta.GetShortName())},
 					"Matched with pattern '%s' on description '%s'",
 					reg.String(),
@@ -207,7 +209,7 @@ func (c *RefCondition) IsEmpty() bool {
 func (c *RefCondition) Match(meta types.Data) bool {
 	ref := meta.GetRef()
 	if c.Equals != "" && ref == c.Equals {
-		log.DebugWith(
+		lc.DebugWith(
 			log.MetaFields{log.F("condition", "RefCondition"), log.F("issue", meta.GetShortName())},
 			"Matched RefCondition with match on ref '%s'", ref)
 		return true
@@ -217,7 +219,7 @@ func (c *RefCondition) Match(meta types.Data) bool {
 		for _, pattern := range c.Patterns {
 			re, err := regexp.Compile(pattern)
 			if err != nil {
-				log.WarningWith(
+				lc.WarningWith(
 					log.MetaFields{log.F("condition", "RefCondition"), log.F("issue", meta.GetShortName()), log.E(err)},
 					"Unable to compile regex '%s'", pattern)
 				continue
@@ -225,14 +227,14 @@ func (c *RefCondition) Match(meta types.Data) bool {
 			compiled = append(compiled, re)
 		}
 		if len(compiled) == 0 {
-			log.ErrorWith(
+			lc.ErrorWith(
 				log.MetaFields{log.F("condition", "RefCondition"), log.F("issue", meta.GetShortName())},
 				"All configured patterns have failed to compile")
 			return false
 		}
 		for _, reg := range compiled {
 			if reg.MatchString(ref) {
-				log.DebugWith(
+				lc.DebugWith(
 					log.MetaFields{log.F("condition", "RefCondition"), log.F("issue", meta.GetShortName())},
 					"Matched with regex '%s' on ref '%s'", reg.String(), ref)
 				return true
@@ -247,7 +249,7 @@ var commentsRegex = silentCompile("^([><]{1}[=]?|[=]{2}|)[ ]*([0-9]+)[ ]*$")
 func silentCompile(pattern string) *regexp.Regexp {
 	compiled, err := regexp.Compile(pattern)
 	if err != nil {
-		log.ErrorWith(
+		lc.ErrorWith(
 			log.MetaFields{log.F("pattern", pattern), log.E(err)},
 			"Unable to compile comments regex",
 		)
@@ -266,7 +268,7 @@ func (c *CommentsCondition) IsEmpty() bool {
 
 func (c *CommentsCondition) Match(meta types.Data) bool {
 	if commentsRegex == nil {
-		log.DebugWith(
+		lc.DebugWith(
 			log.MetaFields{log.F("condition", "CommentsCondition"),
 				log.F("issue", meta.GetShortName())},
 			"comments regex is nil'")
@@ -278,7 +280,7 @@ func (c *CommentsCondition) Match(meta types.Data) bool {
 	count := int64(len(meta.GetComments()))
 	countGroups := commentsRegex.FindStringSubmatch(c.Count)
 	if len(countGroups) != 3 {
-		log.WarningWith(
+		lc.WarningWith(
 			log.MetaFields{log.F("condition", "CommentsCondition"),
 				log.F("issue", meta.GetShortName()), log.F("groups", countGroups)},
 			"No groups matched'")
@@ -286,7 +288,7 @@ func (c *CommentsCondition) Match(meta types.Data) bool {
 	}
 	query, err := strconv.ParseInt(countGroups[2], 10, 64)
 	if err != nil {
-		log.WarningWith(
+		lc.WarningWith(
 			log.MetaFields{log.F("condition", "CommentsCondition"), log.E(err),
 				log.F("issue", meta.GetShortName()), log.F("groups", countGroups)},
 			"No groups matched")
@@ -298,7 +300,7 @@ func (c *CommentsCondition) Match(meta types.Data) bool {
 	case op == "" || op == "==":
 		//exact number or equals
 		matched = count == query
-		log.DebugWith(
+		lc.DebugWith(
 			log.MetaFields{log.F("condition", "CommentsCondition"), log.F("matcher", op),
 				log.F("issue", meta.GetShortName()), log.F("groups", countGroups),
 				log.F("matched", matched), log.F("comments.count", count)},
@@ -307,7 +309,7 @@ func (c *CommentsCondition) Match(meta types.Data) bool {
 	case op == ">":
 		// gt
 		matched = count > query
-		log.DebugWith(
+		lc.DebugWith(
 			log.MetaFields{log.F("condition", "CommentsCondition"), log.F("matcher", op),
 				log.F("issue", meta.GetShortName()), log.F("groups", countGroups),
 				log.F("matched", matched), log.F("comments.count", count)},
@@ -315,7 +317,7 @@ func (c *CommentsCondition) Match(meta types.Data) bool {
 	case op == ">=":
 		// gte
 		matched = count >= query
-		log.DebugWith(
+		lc.DebugWith(
 			log.MetaFields{log.F("condition", "CommentsCondition"), log.F("matcher", op),
 				log.F("issue", meta.GetShortName()), log.F("groups", countGroups),
 				log.F("matched", matched), log.F("comments.count", count)},
@@ -323,7 +325,7 @@ func (c *CommentsCondition) Match(meta types.Data) bool {
 	case op == "<":
 		// lt
 		matched = count < query
-		log.DebugWith(
+		lc.DebugWith(
 			log.MetaFields{log.F("condition", "CommentsCondition"), log.F("matcher", op),
 				log.F("issue", meta.GetShortName()), log.F("groups", countGroups),
 				log.F("matched", matched), log.F("comments.count", count)},
@@ -331,7 +333,7 @@ func (c *CommentsCondition) Match(meta types.Data) bool {
 	case op == "<=":
 		// lte
 		matched = count <= query
-		log.DebugWith(
+		lc.DebugWith(
 			log.MetaFields{log.F("condition", "CommentsCondition"), log.F("matcher", op),
 				log.F("issue", meta.GetShortName()), log.F("groups", countGroups),
 				log.F("matched", matched), log.F("comments.count", count)},
@@ -358,7 +360,7 @@ func (c *Condition) checkIfLabeled(meta types.Data) bool {
 		for _, check := range c.IfLabeled {
 			for _, label := range meta.GetLabels() {
 				if check == label {
-					log.DebugWith(
+					lc.DebugWith(
 						log.MetaFields{log.F("issue", meta.GetShortName())},
 						"Matched Condition with label '%s'", check)
 					return true
@@ -377,7 +379,7 @@ func (c *Condition) checkAllEmpty(meta types.Data) bool {
 		c.Ref.IsEmpty() &&
 		c.Comments.IsEmpty()
 	if empty {
-		log.DebugWith(
+		lc.DebugWith(
 			log.MetaFields{log.F("issue", meta.GetShortName())},
 			"Condition is empty")
 	}
@@ -397,7 +399,7 @@ func (c *Condition) Match(meta types.Data) bool {
 		for _, check := range c.SkipIfLabeled {
 			for _, label := range meta.GetLabels() {
 				if check == label {
-					log.DebugWith(
+					lc.DebugWith(
 						log.MetaFields{log.F("issue", meta.GetShortName())},
 						"Skipping Condition with label '%s'", check)
 					return false
@@ -414,7 +416,7 @@ func buildConditionFromConfiguration(config *viper.Viper) Condition {
 	if exists != nil {
 		condition := config.Sub("condition")
 		if e := condition.Unmarshal(&result); e != nil {
-			log.ErrorWith(log.MetaFields{log.E(e)}, "Unable to unmarshal rule condition")
+			lc.ErrorWith(log.MetaFields{log.E(e)}, "Unable to unmarshal rule condition")
 		}
 	}
 	return result

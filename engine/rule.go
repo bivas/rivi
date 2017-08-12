@@ -10,6 +10,8 @@ import (
 	"sort"
 )
 
+var lr = log.Get("engine.rule")
+
 type Rule interface {
 	Name() string
 	Order() int
@@ -52,7 +54,7 @@ func (r *rule) String() string {
 func (r *rule) Accept(meta types.Data) bool {
 	accept := r.condition.Match(meta)
 	if !accept {
-		log.DebugWith(log.MetaFields{log.F("issue", meta.GetShortName())}, "Skipping rule '%s'", r.name)
+		lr.DebugWith(log.MetaFields{log.F("issue", meta.GetShortName())}, "Skipping rule '%s'", r.name)
 	}
 	return accept
 }
@@ -91,7 +93,7 @@ func GroupByRuleOrder(rules []Rule) []RulesGroup {
 		group.Rules = append(group.Rules, rule)
 		groupIndexes[key] = group
 	}
-	log.Debug("%d Rules are grouped to %d rule groups", len(rules), len(groupIndexes))
+	lr.Debug("%d rules are grouped to %d rule groups", len(rules), len(groupIndexes))
 	groupsResult := make([]RulesGroup, 0)
 	for _, group := range groupIndexes {
 		groupsResult = append(groupsResult, group)

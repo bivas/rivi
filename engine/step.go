@@ -28,8 +28,11 @@ func Run(rule Rule, state multistep.StateBag) {
 	}
 	meta := state.Get("data").(types.Data)
 	lrs.DebugWith(
-		log.MetaFields{log.F("issue", meta.GetShortName()), log.F("steps", len(steps))},
-		"Applying rule %s", rule.Name())
+		log.MetaFields{
+			log.F("issue", meta.GetShortName()),
+			log.F("steps", len(steps)),
+			log.F("name", rule.Name())},
+		"Applying rule")
 	runner := &multistep.BasicRunner{Steps: steps}
 	runner.Run(state)
 }

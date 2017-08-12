@@ -20,7 +20,7 @@ func (c *channelHookListenerQueue) Send(data types.Data) {
 type HookListenerQueueProvider func() HookListenerQueue
 
 func channelHookListenerQueueProvider() HookListenerQueue {
-	log.Get("hook.listener.channel").Debug("Creating hook listener queue creator")
+	log.Get("hook.listener.queue").DebugWith(log.MetaFields{log.F("type", "channel")}, "Creating hook listener queue provider")
 	incomingHooks := make(chan types.Data)
 	go runHookHandler(incomingHooks)
 	return &channelHookListenerQueue{incomingHooks}

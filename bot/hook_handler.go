@@ -47,7 +47,7 @@ func (h *channelHookHandler) Run() {
 			c = &processingUnit{
 				Channel: make(chan types.Data),
 				// abstract this handler creation
-				Handler: &loggerJobHandler{logger: h.logger.Get("job.handler")},
+				Handler: &localJobHandler{logger: h.logger.Get("job.handler")},
 				logger:  h.logger.Get("unit"),
 			}
 			c.(*processingUnit).Start()

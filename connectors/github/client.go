@@ -173,7 +173,7 @@ func (c *ghClient) GetComments(issue int) []types.Comment {
 }
 
 func (c *ghClient) AddComment(issue int, comment string) types.Comment {
-	c.logger.DebugWith(log.MetaFields{log.F("issue.id", issue)}, "Adding comment '%s'", comment)
+	c.logger.DebugWith(log.MetaFields{log.F("issue.id", issue), log.F("comment", comment)}, "Adding comment")
 	commentObject := &github.IssueComment{Body: github.String(comment)}
 	posted, _, err := c.client.Issues.CreateComment(context.Background(), c.owner, c.repo, issue, commentObject)
 	if err != nil {
