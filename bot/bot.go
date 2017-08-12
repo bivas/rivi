@@ -61,23 +61,19 @@ func (b *bot) getIssueLock(namespaceLock *sync.Mutex, data types.Data) *sync.Mut
 }
 
 func (b *bot) processRules(namespaceLock *sync.Mutex, config config.Configuration, partial types.Data) *HandledEventResult {
-	rules := engine.GroupByRuleOrder(config.GetRules())
 	issueLocker := b.getIssueLock(namespaceLock, partial)
 	defer issueLocker.Unlock()
 
-	result := &HandledEventResult{
-		AppliedRules: []string{},
-	}
 	meta, ok := types.BuildComplete(config.GetClientConfig(), partial)
 	if !ok {
 		log.Debug("Skipping rule processing for %s (couldn't build complete data)", partial.GetShortName())
-		return result
+		return &HandledEventResult{
+			AppliedRules: []string{},
+		}
 	}
-	context := state.New(config, meta)
-	for _, group := range rules {
-		result.AppliedRules = append(result.AppliedRules, engine.RunGroup(group, context)...)
+	return &HandledEventResult{
+		AppliedRules: engine.ProcessRules(config.GetRules(), state.New(config, meta)),
 	}
-	return result
 }
 
 func (b *bot) HandleEvent(r *http.Request) *HandledEventResult {

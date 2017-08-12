@@ -5,6 +5,7 @@ import (
 	"github.com/bivas/rivi/engine/actions"
 	"github.com/bivas/rivi/types"
 	"github.com/bivas/rivi/util/log"
+	"github.com/mitchellh/multistep"
 	"github.com/spf13/viper"
 	"sort"
 )
@@ -105,4 +106,13 @@ func NewRule(name string, config *viper.Viper) Rule {
 		condition: buildConditionFromConfiguration(config),
 		actions:   actions.BuildActionsFromConfiguration(config),
 	}
+}
+
+func ProcessRules(rules []Rule, state multistep.StateBag) []string {
+	groups := GroupByRuleOrder(rules)
+	result := []string{}
+	for _, group := range groups {
+		result = append(result, RunGroup(group, state)...)
+	}
+	return result
 }
