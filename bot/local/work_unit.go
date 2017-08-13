@@ -1,7 +1,9 @@
-package bot
+package local
 
 import (
 	"errors"
+
+	"github.com/bivas/rivi/bot/env"
 	"github.com/bivas/rivi/config"
 	"github.com/bivas/rivi/engine"
 	"github.com/bivas/rivi/types"
@@ -9,32 +11,29 @@ import (
 	"github.com/bivas/rivi/util/state"
 )
 
-type JobHandler interface {
-	Handle(<-chan types.Data)
+type workUnit struct {
+	incoming <-chan types.Data
+	logger   log.Logger
 }
 
-type localJobHandler struct {
-	logger log.Logger
-}
-
-func (h *localJobHandler) internalHandle(data types.Data) error {
-	env, err := GetEnvironment()
+func (w *workUnit) internalHandle(data types.Data) error {
+	environment, err := env.GetEnvironment()
 	if err != nil {
-		h.logger.ErrorWith(
+		w.logger.ErrorWith(
 			log.MetaFields{log.E(err), log.F("issue", data.GetShortName())},
 			"Failed to get environment")
 		return err
 	}
-	defer env.Cleanup()
-	if err := env.Create(data); err != nil {
-		h.logger.ErrorWith(
+	defer environment.Cleanup()
+	if err := environment.Create(data); err != nil {
+		w.logger.ErrorWith(
 			log.MetaFields{log.E(err), log.F("issue", data.GetShortName())},
 			"Failed to create environment")
 		return err
 	}
-	c, err := config.NewConfiguration(env.ConfigFilePath())
+	c, err := config.NewConfiguration(environment.ConfigFilePath())
 	if err != nil {
-		h.logger.ErrorWith(
+		w.logger.ErrorWith(
 			log.MetaFields{log.E(err), log.F("issue", data.GetShortName())},
 			"Failed to create configuration")
 		return err
@@ -44,19 +43,23 @@ func (h *localJobHandler) internalHandle(data types.Data) error {
 		return errors.New("Nothing to process")
 	}
 	applied := engine.ProcessRules(c.GetRules(), state.New(c, meta))
-	h.logger.DebugWith(
+	w.logger.DebugWith(
 		log.MetaFields{log.F("rules", applied)}, "Applied rules")
 	return nil
 }
 
-func (h *localJobHandler) Handle(incoming <-chan types.Data) {
+func (w *workUnit) Handle() {
 	for {
-		data, ok := <-incoming
+		data, ok := <-w.incoming
 		if !ok {
-			h.logger.Info("Stopping job handler")
+			w.logger.Info("Stopping job handler")
 			break
 		}
-		h.logger.InfoWith(log.MetaFields{log.F("data", data.GetShortName())}, "Got data from job channel")
-		h.internalHandle(data)
+		w.logger.InfoWith(log.MetaFields{log.F("data", data.GetShortName())}, "Got data from job channel")
+		if err := w.internalHandle(data); err != nil {
+			w.logger.WarningWith(log.MetaFields{
+				log.E(err),
+				log.F("data", data.GetShortName())}, "Error when handling data")
+		}
 	}
 }

@@ -1,37 +1,16 @@
 package bot
 
 import (
-	"github.com/bivas/rivi/types"
-	"github.com/bivas/rivi/util/log"
+	"github.com/bivas/rivi/bot/api"
+	"github.com/bivas/rivi/bot/local"
 )
 
-type HookListenerQueue interface {
-	Send(types.Data)
-}
+var defaultHookListenerQueueProvider api.HookListenerQueueProvider = local.CreateHookListenerQueue
 
-type channelHookListenerQueue struct {
-	incoming chan types.Data
-}
-
-func (c *channelHookListenerQueue) Send(data types.Data) {
-	c.incoming <- data
-}
-
-type HookListenerQueueProvider func() HookListenerQueue
-
-func channelHookListenerQueueProvider() HookListenerQueue {
-	log.Get("hook.listener.queue").DebugWith(log.MetaFields{log.F("type", "channel")}, "Creating hook listener queue provider")
-	incomingHooks := make(chan types.Data)
-	go runHookHandler(incomingHooks)
-	return &channelHookListenerQueue{incomingHooks}
-}
-
-var defaultHookListenerQueueProvider = channelHookListenerQueueProvider
-
-func SetHookListenerQueueProvider(fn HookListenerQueueProvider) {
+func SetHookListenerQueueProvider(fn api.HookListenerQueueProvider) {
 	defaultHookListenerQueueProvider = fn
 }
 
-func CreateHookListenerQueue() HookListenerQueue {
+func CreateHookListenerQueue() api.HookListenerQueue {
 	return defaultHookListenerQueueProvider()
 }

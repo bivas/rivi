@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"github.com/bivas/rivi/bot/api"
 	"github.com/bivas/rivi/config/client"
 	"github.com/bivas/rivi/types"
 	"github.com/bivas/rivi/util/log"
@@ -10,7 +11,7 @@ import (
 
 type hookListener struct {
 	conf  client.ClientConfig
-	queue HookListenerQueue
+	queue api.HookListenerQueue
 
 	logger log.Logger
 }
