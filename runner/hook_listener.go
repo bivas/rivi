@@ -2,7 +2,7 @@ package runner
 
 import (
 	"github.com/bivas/rivi/config/client"
-	"github.com/bivas/rivi/runner/api"
+	"github.com/bivas/rivi/runner/internal"
 	"github.com/bivas/rivi/types/builder"
 	"github.com/bivas/rivi/util/log"
 	"github.com/spf13/viper"
@@ -11,7 +11,7 @@ import (
 
 type hookListener struct {
 	conf  client.ClientConfig
-	queue api.HookListenerQueue
+	queue internal.HookListenerQueue
 
 	logger log.Logger
 }

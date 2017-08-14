@@ -1,7 +1,7 @@
 package local
 
 import (
-	"github.com/bivas/rivi/runner/api"
+	"github.com/bivas/rivi/runner/internal"
 	"github.com/bivas/rivi/types"
 	"github.com/bivas/rivi/util/log"
 )
@@ -21,7 +21,7 @@ func (h *jobHandler) Start() {
 	go h.work.Handle()
 }
 
-func NewJobHandler() api.JobHandler {
+func NewJobHandler() internal.JobHandler {
 	c := make(chan types.Data)
 	h := &jobHandler{
 		channel: c,

@@ -3,7 +3,7 @@ package local
 import (
 	"time"
 
-	"github.com/bivas/rivi/runner/api"
+	"github.com/bivas/rivi/runner/internal"
 	"github.com/bivas/rivi/types"
 	"github.com/bivas/rivi/util/log"
 
@@ -39,11 +39,11 @@ func (h *channelHookHandler) Run() {
 			log.MetaFields{
 				log.F("issue", key),
 			}, "Sending data to job handler")
-		c.(api.JobHandler).Send(data)
+		c.(internal.JobHandler).Send(data)
 	}
 }
 
-func NewChannelHookHandler(incoming <-chan types.Data) api.HookHandler {
+func NewChannelHookHandler(incoming <-chan types.Data) internal.HookHandler {
 	return &channelHookHandler{
 		incoming:        incoming,
 		processingCache: cache.New(time.Minute, 2*time.Minute),

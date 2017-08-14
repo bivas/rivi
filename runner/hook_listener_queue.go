@@ -1,16 +1,16 @@
 package runner
 
 import (
-	"github.com/bivas/rivi/runner/api"
+	"github.com/bivas/rivi/runner/internal"
 	"github.com/bivas/rivi/runner/local"
 )
 
-var defaultHookListenerQueueProvider api.HookListenerQueueProvider = local.CreateHookListenerQueue
+var defaultHookListenerQueueProvider internal.HookListenerQueueProvider = local.CreateHookListenerQueue
 
-func SetHookListenerQueueProvider(fn api.HookListenerQueueProvider) {
+func SetHookListenerQueueProvider(fn internal.HookListenerQueueProvider) {
 	defaultHookListenerQueueProvider = fn
 }
 
-func CreateHookListenerQueue() api.HookListenerQueue {
+func CreateHookListenerQueue() internal.HookListenerQueue {
 	return defaultHookListenerQueueProvider()
 }
