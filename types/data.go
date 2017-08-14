@@ -1,8 +1,18 @@
 package types
 
-type Data interface {
+type InfoData interface {
 	GetShortName() string
 	GetLongName() string
+	GetProvider() string
+}
+
+type RawData interface {
+	GetRawPayload() []byte
+}
+
+type ReadOnlyData interface {
+	InfoData
+	RawData
 	GetNumber() int
 	GetTitle() string
 	GetDescription() string
@@ -13,18 +23,28 @@ type Data interface {
 	GetRef() string
 	GetLabels() []string
 	HasLabel(label string) bool
-	AddLabel(label string)
-	RemoveLabel(label string)
 	GetAssignees() []string
 	HasAssignee(assignee string) bool
-	AddAssignees(assignees ...string)
-	RemoveAssignees(assignees ...string)
 	GetComments() []Comment
-	AddComment(comment string)
 	GetFileNames() []string
 	GetChangedFiles() int
 	GetFileExtensions() []string
 	GetChanges() (int, int)
-	GetProvider() string
-	GetRawPayload() []byte
+}
+
+type MutableData interface {
+	AddLabel(label string)
+	RemoveLabel(label string)
+	AddAssignees(assignees ...string)
+	RemoveAssignees(assignees ...string)
+	AddComment(comment string)
+}
+
+type HookData interface {
+	ReadOnlyData
+}
+
+type Data interface {
+	ReadOnlyData
+	MutableData
 }

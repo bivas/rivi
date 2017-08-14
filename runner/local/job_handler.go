@@ -7,13 +7,13 @@ import (
 )
 
 type jobHandler struct {
-	channel chan types.Data
+	channel chan types.HookData
 	work    *workUnit
 
 	logger log.Logger
 }
 
-func (h *jobHandler) Send(data types.Data) {
+func (h *jobHandler) Send(data types.HookData) {
 	h.channel <- data
 }
 
@@ -22,7 +22,7 @@ func (h *jobHandler) Start() {
 }
 
 func NewJobHandler() internal.JobHandler {
-	c := make(chan types.Data)
+	c := make(chan types.HookData)
 	h := &jobHandler{
 		channel: c,
 		work: &workUnit{

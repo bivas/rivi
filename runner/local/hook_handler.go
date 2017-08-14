@@ -11,7 +11,7 @@ import (
 )
 
 type channelHookHandler struct {
-	incoming <-chan types.Data
+	incoming <-chan types.HookData
 	logger   log.Logger
 
 	processingCache *cache.Cache
@@ -43,7 +43,7 @@ func (h *channelHookHandler) Run() {
 	}
 }
 
-func NewChannelHookHandler(incoming <-chan types.Data) internal.HookHandler {
+func NewChannelHookHandler(incoming <-chan types.HookData) internal.HookHandler {
 	return &channelHookHandler{
 		incoming:        incoming,
 		processingCache: cache.New(time.Minute, 2*time.Minute),

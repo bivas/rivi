@@ -21,7 +21,7 @@ func (m *mockDataBuilder) BuildFromPayload(config client.ClientConfig, payload [
 	return &mocks.MockData{Labels: m.Labels, Provider: strings.ToLower(m.Provider)}, true, nil
 }
 
-func (m *mockDataBuilder) BuildFromHook(config client.ClientConfig, r *http.Request) (types.Data, bool, error) {
+func (m *mockDataBuilder) BuildFromHook(config client.ClientConfig, r *http.Request) (types.HookData, bool, error) {
 	return &mocks.MockData{Labels: m.Labels, Provider: strings.ToLower(m.Provider)}, true, nil
 }
 

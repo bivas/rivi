@@ -13,11 +13,11 @@ import (
 )
 
 type workUnit struct {
-	incoming <-chan types.Data
+	incoming <-chan types.HookData
 	logger   log.Logger
 }
 
-func (w *workUnit) internalHandle(data types.Data) error {
+func (w *workUnit) internalHandle(data types.HookData) error {
 	environment, err := env.GetEnvironment()
 	if err != nil {
 		w.logger.ErrorWith(

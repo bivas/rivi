@@ -7,10 +7,10 @@ import (
 )
 
 type channelHookListenerQueue struct {
-	incoming chan types.Data
+	incoming chan types.HookData
 }
 
-func (c *channelHookListenerQueue) Send(data types.Data) {
+func (c *channelHookListenerQueue) Send(data types.HookData) {
 	c.incoming <- data
 }
 
@@ -18,7 +18,7 @@ func channelHookListenerQueueProvider() internal.HookListenerQueue {
 	log.Get("hook.listener.queue").DebugWith(
 		log.MetaFields{
 			log.F("type", "channel")}, "Creating hook listener queue provider")
-	incomingHooks := make(chan types.Data)
+	incomingHooks := make(chan types.HookData)
 	handler := NewChannelHookHandler(incomingHooks)
 	go handler.Run()
 	return &channelHookListenerQueue{incomingHooks}

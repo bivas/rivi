@@ -106,7 +106,7 @@ func (builder *dataBuilder) checkProcessState(context *builderContext) bool {
 	return context.data.state != "closed"
 }
 
-func (builder *dataBuilder) BuildFromHook(config client.ClientConfig, r *http.Request) (types.Data, bool, error) {
+func (builder *dataBuilder) BuildFromHook(config client.ClientConfig, r *http.Request) (types.HookData, bool, error) {
 	githubEvent := r.Header.Get("X-Github-Event")
 	if githubEvent == "ping" {
 		builder.logger.Info("Got GitHub 'ping' event")

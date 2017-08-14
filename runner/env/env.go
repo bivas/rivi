@@ -25,7 +25,7 @@ var (
 )
 
 type Environment interface {
-	Create(types.Data) error
+	Create(types.ReadOnlyData) error
 	Cleanup() error
 	ConfigFilePath() string
 }
@@ -41,7 +41,7 @@ func (e *tempFSEnvironment) ConfigFilePath() string {
 	return e.rulesFile
 }
 
-func (e *tempFSEnvironment) clone(data types.Data) error {
+func (e *tempFSEnvironment) clone(data types.ReadOnlyData) error {
 	fs := osfs.New(e.dir)
 	p, _ := filesystem.NewStorage(fs)
 	e.logger.DebugWith(log.MetaFields{
@@ -74,7 +74,7 @@ func (e *tempFSEnvironment) clone(data types.Data) error {
 	return nil
 }
 
-func (e *tempFSEnvironment) Create(data types.Data) error {
+func (e *tempFSEnvironment) Create(data types.ReadOnlyData) error {
 	temp, err := ioutil.TempDir("", "rivi-env-")
 	if err != nil {
 		return err
