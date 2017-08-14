@@ -35,7 +35,7 @@ func (s *platformCommand) Run(args []string) int {
 	}
 	run, err := runner.NewHookListener()
 	if err != nil {
-		log.ErrorWith(log.MetaFields{log.E(err)}, "Unable to start bot handler")
+		log.ErrorWith(log.MetaFields{log.E(err)}, "Unable to start runner handler")
 		return 1
 	}
 	log.Info("Rivi is ready")

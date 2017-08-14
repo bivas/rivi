@@ -24,7 +24,7 @@ func TestTemplate(t *testing.T) {
 	expected :=
 		util.StripNonSpaceWhitespaces(`{
 			"time":"2017-10-28 10:13:44 +0000 UTC",
-			"message":"Triggered by Rivi Bot",
+			"message":"Triggered by Rivi",
 			"item":{
 				"repository":"my/repo",
 				"state":"open",

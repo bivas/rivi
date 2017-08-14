@@ -46,8 +46,8 @@ func TestTriggerDefaults(t *testing.T) {
 		"POST",
 		"http://example.com/trigger",
 		func(req *http.Request) (*http.Response, error) {
-			assert.Equal(t, "trigger", req.Header.Get("X-RiviBot-Event"), "missing correct event")
-			assert.Equal(t, "RiviBot-Agent/1.0", req.UserAgent(), "user agent")
+			assert.Equal(t, "trigger", req.Header.Get("X-Rivi-Event"), "missing correct event")
+			assert.Equal(t, "Rivi-Agent/1.0", req.UserAgent(), "user agent")
 			return httpmock.NewStringResponse(200, ""), nil
 		})
 	action := &action{rule: rule, client: http.DefaultClient, logger: log.Get("trigger.test")}
@@ -75,8 +75,8 @@ func TestTriggerGet(t *testing.T) {
 		"GET",
 		"http://example.com/trigger",
 		func(req *http.Request) (*http.Response, error) {
-			assert.Equal(t, "trigger", req.Header.Get("X-RiviBot-Event"), "missing correct event")
-			assert.Equal(t, "RiviBot-Agent/1.0", req.UserAgent(), "user agent")
+			assert.Equal(t, "trigger", req.Header.Get("X-Rivi-Event"), "missing correct event")
+			assert.Equal(t, "Rivi-Agent/1.0", req.UserAgent(), "user agent")
 			return httpmock.NewStringResponse(200, ""), nil
 		})
 	action := &action{rule: rule, client: http.DefaultClient, logger: log.Get("trigger.test")}
@@ -98,7 +98,7 @@ func TestTriggerHeaders(t *testing.T) {
 	headers := make(map[string]string)
 	headers["not-allowed"] = "fail"
 	headers["x-allowed"] = "allowed"
-	headers["x-rivibot-fake"] = "fail"
+	headers["x-rivi-fake"] = "fail"
 	rule := &rule{
 		Endpoint: "http://example.com/trigger",
 		Headers:  headers,
@@ -108,11 +108,11 @@ func TestTriggerHeaders(t *testing.T) {
 		"POST",
 		"http://example.com/trigger",
 		func(req *http.Request) (*http.Response, error) {
-			assert.Equal(t, "trigger", req.Header.Get("X-RiviBot-Event"), "missing correct event")
-			assert.Equal(t, "RiviBot-Agent/1.0", req.UserAgent(), "user agent")
+			assert.Equal(t, "trigger", req.Header.Get("X-Rivi-Event"), "missing correct event")
+			assert.Equal(t, "Rivi-Agent/1.0", req.UserAgent(), "user agent")
 			assert.Equal(t, "allowed", req.Header.Get("x-allowed"), "user added header")
 			assert.Empty(t, req.Header.Get("not-allowed"), "not allowed header")
-			assert.Empty(t, req.Header.Get("x-rivibot-fake"), "not allowed x-rivi header")
+			assert.Empty(t, req.Header.Get("x-rivi-fake"), "not allowed x-rivi header")
 			return httpmock.NewStringResponse(200, ""), nil
 		})
 	action := &action{rule: rule, client: http.DefaultClient, logger: log.Get("trigger.test")}

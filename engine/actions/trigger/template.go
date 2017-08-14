@@ -22,7 +22,7 @@ type message struct {
 
 var defaultTemplateBody = util.StripNonSpaceWhitespaces(`{
 	"time":"{{.Time}}",
-	"message":"Triggered by Rivi Bot",
+	"message":"Triggered by Rivi",
 	"item":{
 		"repository":"{{.Owner}}/{{.Repo}}",
 		"state":"{{.State}}",

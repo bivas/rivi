@@ -132,7 +132,7 @@ func (c *config) readSections() error {
 
 func (c *config) readConfiguration(configPath string) error {
 	c.internal["root"] = viper.New()
-	c.internal["root"].SetConfigName("bot")
+	c.internal["root"].SetConfigName("rivi")
 	c.internal["root"].SetConfigFile(configPath)
 
 	if err := c.internal["root"].ReadInConfig(); err != nil {

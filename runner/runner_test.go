@@ -33,25 +33,25 @@ func buildRequest(t *testing.T, url string) *http.Request {
 	return request
 }
 
-func TestNewBotDefaultNamespace(t *testing.T) {
-	builder.RegisterNewDataBuilder("TestNewBotDefaultNamespace",
-		&mockDataBuilder{Provider: "TestNewBotDefaultNamespace", Labels: []string{}})
+func TestNewRunnerDefaultNamespace(t *testing.T) {
+	builder.RegisterNewDataBuilder("TestNewRunnerDefaultNamespace",
+		&mockDataBuilder{Provider: "TestNewRunnerDefaultNamespace", Labels: []string{}})
 	b, err := New("../config/config_test.yml", "../config/empty_config_test.yml")
 	if err != nil {
 		t.Fatalf("Error while building a runnable. %s", err)
 	}
 	request := buildRequest(t, "http://localhost/")
-	request.Header.Add("X-TestNewBotDefaultNamespace", "mock")
+	request.Header.Add("X-TestNewRunnerDefaultNamespace", "mock")
 	response := b.HandleEvent(request)
 	assert.Len(t, response.AppliedRules, 1, "no rules applied")
 	assert.Equal(t, "rule2", response.AppliedRules[0], "rule2 on default")
 	assert.Empty(t, response.Message, "has error")
 }
 
-func TestNewBotExistingNamespace(t *testing.T) {
-	builder.RegisterNewDataBuilder("TestNewBotExistingNamespace",
+func TestNewRunnerExistingNamespace(t *testing.T) {
+	builder.RegisterNewDataBuilder("TestNewRunnerExistingNamespace",
 		&mockDataBuilder{
-			Provider: "TestNewBotExistingNamespace",
+			Provider: "TestNewRunnerExistingNamespace",
 			Labels: []string{
 				"label2",
 				"pending-approval"},
@@ -64,15 +64,15 @@ func TestNewBotExistingNamespace(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error while building request. %s", err)
 	}
-	request.Header.Add("X-TestNewBotExistingNamespace", "mock")
+	request.Header.Add("X-TestNewRunnerExistingNamespace", "mock")
 	response := b.HandleEvent(request)
 	assert.Len(t, response.AppliedRules, 1, "no rules applied")
 	assert.Equal(t, "rule1", response.AppliedRules[0], "rule1 on namespace")
 	assert.Empty(t, response.Message, "has error")
 }
 
-func TestNewBotNonExistingNamespace(t *testing.T) {
-	builder.RegisterNewDataBuilder("TestNewBotNonExistingNamespace",
+func TestNewRunnerNonExistingNamespace(t *testing.T) {
+	builder.RegisterNewDataBuilder("TestNewRunnerNonExistingNamespace",
 		&mockDataBuilder{
 			Labels: []string{},
 		})
@@ -80,11 +80,11 @@ func TestNewBotNonExistingNamespace(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error while building a runnable. %s", err)
 	}
-	request := buildRequest(t, "http://localhost/?namespace=TestNewBotNonExistingNamespace")
+	request := buildRequest(t, "http://localhost/?namespace=TestNewRunnerNonExistingNamespace")
 	if err != nil {
 		t.Fatalf("Error while building request. %s", err)
 	}
-	request.Header.Add("X-TestNewBotNonExistingNamespace", "mock")
+	request.Header.Add("X-TestNewRunnerNonExistingNamespace", "mock")
 	response := b.HandleEvent(request)
 	assert.Len(t, response.AppliedRules, 0, "no rules applied")
 	assert.NotEmpty(t, response.Message, "should have error")

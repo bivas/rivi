@@ -61,12 +61,12 @@ func (a *action) prepareRequest(meta types.Data) *http.Request {
 	return request
 }
 func (a *action) setRequestHeaders(request *http.Request) {
-	request.Header.Set("User-Agent", "RiviBot-Agent/1.0")
-	request.Header.Set("X-RiviBot-Event", "trigger")
+	request.Header.Set("User-Agent", "Rivi-Agent/1.0")
+	request.Header.Set("X-Rivi-Event", "trigger")
 	request.Header.Set("Content-Type", "application/json")
 	for name, value := range a.rule.Headers {
 		lowerName := strings.ToLower(name)
-		if !strings.HasPrefix(lowerName, "x-") || strings.HasPrefix(lowerName, "x-rivibot") {
+		if !strings.HasPrefix(lowerName, "x-") || strings.HasPrefix(lowerName, "x-rivi") {
 			a.logger.Warning("Skipping header '%s' (non x- headers are not allowed)", name)
 		} else {
 			request.Header.Set(name, value)

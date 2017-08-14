@@ -8,7 +8,7 @@ The following JSON will be posted to request:
 ```
 {
   "time": "<current timestamp>",
-  "message": "Triggered by Rivi Bot",
+  "message": "Triggered by Rivi",
   "item": {
     "repository": "<issue repository>",
     "state": "<issue state>",
@@ -20,8 +20,8 @@ The following JSON will be posted to request:
 
 The following headers will be set to request:
 
-- `X-RiviBot-Event=trigger` 
-- `User-Agent=RiviBot-Agent/1.0`
+- `X-Rivi-Event=trigger` 
+- `User-Agent=Rivi-Agent/1.0`
 
 ## Requirements
 
