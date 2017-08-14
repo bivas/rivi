@@ -31,7 +31,7 @@ func TestDefaultGet(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/", nil)
 	s.engine.ServeHTTP(w, req)
 
-	assert.Equal(t, "Running RiviBot", w.Body.String(), "default handler")
+	assert.Equal(t, "Running Rivi", w.Body.String(), "default handler")
 }
 
 func TestDefaultGetInPath(t *testing.T) {
@@ -43,5 +43,5 @@ func TestDefaultGetInPath(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/example", nil)
 	s.engine.ServeHTTP(w, req)
 
-	assert.Equal(t, "Running RiviBot", w.Body.String(), "default handler")
+	assert.Equal(t, "Running Rivi", w.Body.String(), "default handler")
 }

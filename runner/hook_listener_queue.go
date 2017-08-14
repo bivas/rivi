@@ -1,8 +1,8 @@
-package bot
+package runner
 
 import (
-	"github.com/bivas/rivi/bot/api"
-	"github.com/bivas/rivi/bot/local"
+	"github.com/bivas/rivi/runner/api"
+	"github.com/bivas/rivi/runner/local"
 )
 
 var defaultHookListenerQueueProvider api.HookListenerQueueProvider = local.CreateHookListenerQueue

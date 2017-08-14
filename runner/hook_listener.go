@@ -1,8 +1,8 @@
-package bot
+package runner
 
 import (
-	"github.com/bivas/rivi/bot/api"
 	"github.com/bivas/rivi/config/client"
+	"github.com/bivas/rivi/runner/api"
 	"github.com/bivas/rivi/types/builder"
 	"github.com/bivas/rivi/util/log"
 	"github.com/spf13/viper"
@@ -25,7 +25,7 @@ func (h *hookListener) HandleEvent(r *http.Request) *HandledEventResult {
 	return &HandledEventResult{Message: "Processing " + data.GetShortName()}
 }
 
-func NewHookListener() (Bot, error) {
+func NewHookListener() (Runner, error) {
 	logger := log.Get("hook.listener")
 	return &hookListener{
 		conf:   client.NewClientConfig(viper.New()),

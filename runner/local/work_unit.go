@@ -3,9 +3,9 @@ package local
 import (
 	"errors"
 
-	"github.com/bivas/rivi/bot/env"
 	"github.com/bivas/rivi/config"
 	"github.com/bivas/rivi/engine"
+	"github.com/bivas/rivi/runner/env"
 	"github.com/bivas/rivi/types"
 	"github.com/bivas/rivi/types/builder"
 	"github.com/bivas/rivi/util/log"

@@ -3,7 +3,7 @@ package local
 import (
 	"time"
 
-	"github.com/bivas/rivi/bot/api"
+	"github.com/bivas/rivi/runner/api"
 	"github.com/bivas/rivi/types"
 	"github.com/bivas/rivi/util/log"
 

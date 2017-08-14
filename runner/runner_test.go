@@ -1,4 +1,4 @@
-package bot
+package runner
 
 import (
 	"net/http"
@@ -38,7 +38,7 @@ func TestNewBotDefaultNamespace(t *testing.T) {
 		&mockDataBuilder{Provider: "TestNewBotDefaultNamespace", Labels: []string{}})
 	b, err := New("../config/config_test.yml", "../config/empty_config_test.yml")
 	if err != nil {
-		t.Fatalf("Error while building a bot. %s", err)
+		t.Fatalf("Error while building a runnable. %s", err)
 	}
 	request := buildRequest(t, "http://localhost/")
 	request.Header.Add("X-TestNewBotDefaultNamespace", "mock")
@@ -58,7 +58,7 @@ func TestNewBotExistingNamespace(t *testing.T) {
 		})
 	b, err := New("../config/config_test.yml", "../config/empty_config_test.yml")
 	if err != nil {
-		t.Fatalf("Error while building a bot. %s", err)
+		t.Fatalf("Error while building a runnable. %s", err)
 	}
 	request := buildRequest(t, "http://localhost/?namespace=empty_config_test")
 	if err != nil {
@@ -78,7 +78,7 @@ func TestNewBotNonExistingNamespace(t *testing.T) {
 		})
 	b, err := New("../config/config_test.yml", "../config/empty_config_test.yml")
 	if err != nil {
-		t.Fatalf("Error while building a bot. %s", err)
+		t.Fatalf("Error while building a runnable. %s", err)
 	}
 	request := buildRequest(t, "http://localhost/?namespace=TestNewBotNonExistingNamespace")
 	if err != nil {

@@ -1,4 +1,4 @@
-package bot
+package runner
 
 import (
 	"fmt"
@@ -22,11 +22,11 @@ type HandledEventResult struct {
 	Message      string   `json:"message,omitempty"`
 }
 
-type Bot interface {
+type Runner interface {
 	HandleEvent(r *http.Request) *HandledEventResult
 }
 
-type bot struct {
+type runnable struct {
 	defaultNamespace string
 	configurations   map[string]config.Configuration
 
@@ -35,7 +35,7 @@ type bot struct {
 	repoIssueMutexes *cache.Cache
 }
 
-func (b *bot) getCurrentConfiguration(namespace string) (config.Configuration, error) {
+func (b *runnable) getCurrentConfiguration(namespace string) (config.Configuration, error) {
 	if namespace == "" {
 		namespace = b.defaultNamespace
 	}
@@ -47,7 +47,7 @@ func (b *bot) getCurrentConfiguration(namespace string) (config.Configuration, e
 	return configuration, nil
 }
 
-func (b *bot) getIssueLock(namespaceLock *sync.Mutex, data types.Data) *sync.Mutex {
+func (b *runnable) getIssueLock(namespaceLock *sync.Mutex, data types.Data) *sync.Mutex {
 	defer namespaceLock.Unlock()
 	id := data.GetShortName()
 	log.Debug("acquire namespace lock during rules process")
@@ -61,7 +61,7 @@ func (b *bot) getIssueLock(namespaceLock *sync.Mutex, data types.Data) *sync.Mut
 	return issueLocker.(*sync.Mutex)
 }
 
-func (b *bot) processRules(namespaceLock *sync.Mutex, config config.Configuration, partial types.Data) *HandledEventResult {
+func (b *runnable) processRules(namespaceLock *sync.Mutex, config config.Configuration, partial types.Data) *HandledEventResult {
 	issueLocker := b.getIssueLock(namespaceLock, partial)
 	defer issueLocker.Unlock()
 
@@ -77,7 +77,7 @@ func (b *bot) processRules(namespaceLock *sync.Mutex, config config.Configuratio
 	}
 }
 
-func (b *bot) HandleEvent(r *http.Request) *HandledEventResult {
+func (b *runnable) HandleEvent(r *http.Request) *HandledEventResult {
 	namespace := r.URL.Query().Get("namespace")
 	b.globalLocker.Lock()
 	log.Debug("acquire global lock during namespace process")
@@ -104,8 +104,8 @@ func (b *bot) HandleEvent(r *http.Request) *HandledEventResult {
 	return b.processRules(locker.(*sync.Mutex), workingConfiguration, meta)
 }
 
-func New(configPaths ...string) (Bot, error) {
-	b := &bot{
+func New(configPaths ...string) (Runner, error) {
+	b := &runnable{
 		configurations:   make(map[string]config.Configuration),
 		globalLocker:     &sync.Mutex{},
 		namespaceMutexes: cache.New(time.Minute, 30*time.Second),
@@ -125,8 +125,8 @@ func New(configPaths ...string) (Bot, error) {
 		b.configurations[namespace] = configuration
 	}
 	if len(b.configurations) == 0 {
-		return nil, fmt.Errorf("Bot has no readable configuration!")
+		return nil, fmt.Errorf("Runner has no readable configuration!")
 	}
-	log.Debug("Bot is ready %+v", *b)
+	log.Debug("Runner is ready %+v", *b)
 	return b, nil
 }
