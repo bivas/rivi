@@ -2,11 +2,14 @@ package slack
 
 import (
 	"fmt"
+	"strings"
+	"text/template"
+
 	"github.com/bivas/rivi/bot"
+	"github.com/bivas/rivi/util"
 	"github.com/bivas/rivi/util/log"
 	"github.com/mitchellh/mapstructure"
 	api "github.com/nlopes/slack"
-	"text/template"
 )
 
 type action struct {
@@ -83,19 +86,39 @@ func (a *action) sendChannelMessage(config bot.Configuration, meta bot.EventData
 
 func (a *action) sendPrivateMessage(config bot.Configuration, meta bot.EventData) {
 	targets := a.getMessageRecipients(config, meta)
-	for _, slacker := range targets {
+	for _, slacker := range a.toSlackUserId(targets, meta) {
 		_, _, id, err := a.client.OpenIMChannel(slacker)
 		if err != nil {
 			a.logger.WarningWith(log.MetaFields{
 				log.F("issue", meta.GetShortName()),
 				log.E(err),
-				log.F("user", slacker)}, "Unable to open IM channel")
+				log.F("user.id", slacker)}, "Unable to open IM channel")
 			continue
 		}
 		if err := a.postMessage(id, targets, config, meta); err != nil {
 			continue
 		}
 	}
+}
+
+func (a *action) toSlackUserId(users []string, meta bot.EventData) []string {
+	result := make([]string, 0)
+	slackers, err := a.client.GetUsers()
+	if err != nil {
+		a.logger.WarningWith(log.MetaFields{
+			log.F("issue", meta.GetShortName()),
+			log.E(err)}, "Unable to get users")
+		return result
+	}
+	userSet := util.StringSet{Transformer: strings.ToLower}
+	userSet.AddAll(users)
+	for _, slacker := range slackers {
+		search := strings.ToLower(slacker.Name)
+		if userSet.Contains(search) {
+			result = append(result, slacker.ID)
+		}
+	}
+	return result
 }
 
 func (a *action) getMessageRecipients(config bot.Configuration, meta bot.EventData) []string {
@@ -114,7 +137,6 @@ func (a *action) getMessageRecipients(config bot.Configuration, meta bot.EventDa
 	}
 	return result
 }
-
 
 func (a *action) compileMessage() error {
 	t, err := template.New("slack-action").Parse(a.rule.Message)

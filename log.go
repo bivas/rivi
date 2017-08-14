@@ -7,10 +7,7 @@ import (
 )
 
 func isDebug() bool {
-	if len(os.Getenv("BOT_DEBUG")) > 0 {
-		return true
-	}
-	return false
+	return len(os.Getenv("BOT_DEBUG")) > 0
 }
 
 func logSetup() {
