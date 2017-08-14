@@ -7,6 +7,7 @@ import (
 	"github.com/bivas/rivi/config"
 	"github.com/bivas/rivi/engine"
 	"github.com/bivas/rivi/types"
+	"github.com/bivas/rivi/types/builder"
 	"github.com/bivas/rivi/util/log"
 	"github.com/bivas/rivi/util/state"
 )
@@ -38,7 +39,7 @@ func (w *workUnit) internalHandle(data types.Data) error {
 			"Failed to create configuration")
 		return err
 	}
-	meta, ok := types.BuildComplete(c.GetClientConfig(), data)
+	meta, ok := builder.BuildComplete(c.GetClientConfig(), data)
 	if !ok {
 		return errors.New("Nothing to process")
 	}

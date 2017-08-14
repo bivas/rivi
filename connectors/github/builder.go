@@ -15,6 +15,7 @@ import (
 
 	"github.com/bivas/rivi/config/client"
 	"github.com/bivas/rivi/types"
+	"github.com/bivas/rivi/types/builder"
 	"github.com/bivas/rivi/util"
 	"github.com/bivas/rivi/util/log"
 )
@@ -158,5 +159,5 @@ func (builder *dataBuilder) BuildFromPayload(config client.ClientConfig, raw []b
 }
 
 func init() {
-	types.RegisterNewDataBuilder("github", &dataBuilder{logger: log.Get("GitHub.DataBuilder")})
+	builder.RegisterNewDataBuilder("github", &dataBuilder{logger: log.Get("GitHub.DataBuilder")})
 }

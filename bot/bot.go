@@ -11,6 +11,7 @@ import (
 	"github.com/bivas/rivi/config"
 	"github.com/bivas/rivi/engine"
 	"github.com/bivas/rivi/types"
+	"github.com/bivas/rivi/types/builder"
 	"github.com/bivas/rivi/util/log"
 	"github.com/bivas/rivi/util/state"
 	"github.com/patrickmn/go-cache"
@@ -64,7 +65,7 @@ func (b *bot) processRules(namespaceLock *sync.Mutex, config config.Configuratio
 	issueLocker := b.getIssueLock(namespaceLock, partial)
 	defer issueLocker.Unlock()
 
-	meta, ok := types.BuildComplete(config.GetClientConfig(), partial)
+	meta, ok := builder.BuildComplete(config.GetClientConfig(), partial)
 	if !ok {
 		log.Debug("Skipping rule processing for %s (couldn't build complete data)", partial.GetShortName())
 		return &HandledEventResult{
@@ -94,7 +95,7 @@ func (b *bot) HandleEvent(r *http.Request) *HandledEventResult {
 		locker.(*sync.Mutex).Unlock()
 		return &HandledEventResult{Message: err.Error()}
 	}
-	meta, process := types.BuildFromHook(workingConfiguration.GetClientConfig(), r)
+	meta, process := builder.BuildFromHook(workingConfiguration.GetClientConfig(), r)
 	if !process {
 		locker.(*sync.Mutex).Unlock()
 		return &HandledEventResult{Message: "Skipping rules processing (could be not supported event type)"}

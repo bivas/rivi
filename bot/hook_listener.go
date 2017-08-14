@@ -3,7 +3,7 @@ package bot
 import (
 	"github.com/bivas/rivi/bot/api"
 	"github.com/bivas/rivi/config/client"
-	"github.com/bivas/rivi/types"
+	"github.com/bivas/rivi/types/builder"
 	"github.com/bivas/rivi/util/log"
 	"github.com/spf13/viper"
 	"net/http"
@@ -17,7 +17,7 @@ type hookListener struct {
 }
 
 func (h *hookListener) HandleEvent(r *http.Request) *HandledEventResult {
-	data, ok := types.BuildFromHook(h.conf, r)
+	data, ok := builder.BuildFromHook(h.conf, r)
 	if !ok {
 		return &HandledEventResult{Message: "Skipping hook processing"}
 	}

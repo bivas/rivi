@@ -7,6 +7,7 @@ import (
 	"github.com/bivas/rivi/config/client"
 	"github.com/bivas/rivi/mocks"
 	"github.com/bivas/rivi/types"
+	"github.com/bivas/rivi/types/builder"
 	"github.com/stretchr/testify/assert"
 	"strings"
 )
@@ -33,7 +34,7 @@ func buildRequest(t *testing.T, url string) *http.Request {
 }
 
 func TestNewBotDefaultNamespace(t *testing.T) {
-	types.RegisterNewDataBuilder("TestNewBotDefaultNamespace",
+	builder.RegisterNewDataBuilder("TestNewBotDefaultNamespace",
 		&mockDataBuilder{Provider: "TestNewBotDefaultNamespace", Labels: []string{}})
 	b, err := New("../config/config_test.yml", "../config/empty_config_test.yml")
 	if err != nil {
@@ -48,7 +49,7 @@ func TestNewBotDefaultNamespace(t *testing.T) {
 }
 
 func TestNewBotExistingNamespace(t *testing.T) {
-	types.RegisterNewDataBuilder("TestNewBotExistingNamespace",
+	builder.RegisterNewDataBuilder("TestNewBotExistingNamespace",
 		&mockDataBuilder{
 			Provider: "TestNewBotExistingNamespace",
 			Labels: []string{
@@ -71,7 +72,7 @@ func TestNewBotExistingNamespace(t *testing.T) {
 }
 
 func TestNewBotNonExistingNamespace(t *testing.T) {
-	types.RegisterNewDataBuilder("TestNewBotNonExistingNamespace",
+	builder.RegisterNewDataBuilder("TestNewBotNonExistingNamespace",
 		&mockDataBuilder{
 			Labels: []string{},
 		})
