@@ -26,7 +26,7 @@ func (h *hookListener) HandleEvent(r *http.Request) *HandledEventResult {
 }
 
 func NewHookListener() (Runner, error) {
-	logger := log.Get("hook.listener")
+	logger := runnerLog.Get("hook.listener")
 	return &hookListener{
 		conf:   client.NewClientConfig(viper.New()),
 		queue:  CreateHookListenerQueue(),

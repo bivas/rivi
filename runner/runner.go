@@ -17,6 +17,8 @@ import (
 	"github.com/patrickmn/go-cache"
 )
 
+var runnerLog = log.Get("runner")
+
 type HandledEventResult struct {
 	AppliedRules []string `json:"applied_rules,omitempty"`
 	Message      string   `json:"message,omitempty"`
@@ -41,7 +43,7 @@ func (b *runnable) getCurrentConfiguration(namespace string) (config.Configurati
 	}
 	configuration, exists := b.configurations[namespace]
 	if !exists {
-		log.Warning("Request for namespace '%s' matched nothing", namespace)
+		runnerLog.Warning("Request for namespace '%s' matched nothing", namespace)
 		return nil, fmt.Errorf("Request for namespace '%s' matched nothing", namespace)
 	}
 	return configuration, nil
@@ -50,13 +52,13 @@ func (b *runnable) getCurrentConfiguration(namespace string) (config.Configurati
 func (b *runnable) getIssueLock(namespaceLock *sync.Mutex, data types.InfoData) *sync.Mutex {
 	defer namespaceLock.Unlock()
 	id := data.GetShortName()
-	log.Debug("acquire namespace lock during rules process")
+	runnerLog.Debug("acquire namespace lock during rules process")
 	issueLocker, exists := b.repoIssueMutexes.Get(id)
 	if !exists {
 		issueLocker = &sync.Mutex{}
 		b.repoIssueMutexes.Set(id, issueLocker, cache.DefaultExpiration)
 	}
-	log.Debug("acquire repo issue %s lock during rules process", id)
+	runnerLog.Debug("acquire repo issue %s lock during rules process", id)
 	issueLocker.(*sync.Mutex).Lock()
 	return issueLocker.(*sync.Mutex)
 }
@@ -67,7 +69,7 @@ func (b *runnable) processRules(namespaceLock *sync.Mutex, config config.Configu
 
 	meta, ok := builder.BuildComplete(config.GetClientConfig(), partial)
 	if !ok {
-		log.Debug("Skipping rule processing for %s (couldn't build complete data)", partial.GetShortName())
+		runnerLog.Debug("Skipping rule processing for %s (couldn't build complete data)", partial.GetShortName())
 		return &HandledEventResult{
 			AppliedRules: []string{},
 		}
@@ -80,15 +82,15 @@ func (b *runnable) processRules(namespaceLock *sync.Mutex, config config.Configu
 func (b *runnable) HandleEvent(r *http.Request) *HandledEventResult {
 	namespace := r.URL.Query().Get("namespace")
 	b.globalLocker.Lock()
-	log.Debug("acquire global lock during namespace process")
+	runnerLog.Debug("acquire global lock during namespace process")
 	locker, exists := b.namespaceMutexes.Get(namespace)
 	if !exists {
 		locker = &sync.Mutex{}
 		b.namespaceMutexes.Set(namespace, locker, cache.DefaultExpiration)
 	}
-	log.Debug("acquire namespace '%s' lock", namespace)
+	runnerLog.Debug("acquire namespace '%s' lock", namespace)
 	locker.(*sync.Mutex).Lock()
-	log.Debug("release global lock during namespace process")
+	runnerLog.Debug("release global lock during namespace process")
 	b.globalLocker.Unlock()
 	workingConfiguration, err := b.getCurrentConfiguration(namespace)
 	if err != nil {
@@ -100,7 +102,7 @@ func (b *runnable) HandleEvent(r *http.Request) *HandledEventResult {
 		locker.(*sync.Mutex).Unlock()
 		return &HandledEventResult{Message: "Skipping rules processing (could be not supported event type)"}
 	}
-	log.Debug("release namespace '%s' lock", namespace)
+	runnerLog.Debug("release namespace '%s' lock", namespace)
 	return b.processRules(locker.(*sync.Mutex), workingConfiguration, meta)
 }
 
@@ -114,7 +116,7 @@ func New(configPaths ...string) (Runner, error) {
 	for index, configPath := range configPaths {
 		baseConfigPath := filepath.Base(configPath)
 		namespace := strings.TrimSuffix(baseConfigPath, filepath.Ext(baseConfigPath))
-		log.Debug("Loading configuration for namespace '%s'", namespace)
+		runnerLog.Debug("Loading configuration for namespace '%s'", namespace)
 		if index == 0 {
 			b.defaultNamespace = namespace
 		}
@@ -127,6 +129,6 @@ func New(configPaths ...string) (Runner, error) {
 	if len(b.configurations) == 0 {
 		return nil, fmt.Errorf("Runner has no readable configuration!")
 	}
-	log.Debug("Runner is ready %+v", *b)
+	runnerLog.Debug("Runner is ready %+v", *b)
 	return b, nil
 }

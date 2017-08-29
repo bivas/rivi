@@ -2,6 +2,7 @@ package commands
 
 import (
 	"flag"
+
 	"github.com/bivas/rivi/runner"
 	"github.com/bivas/rivi/server"
 	"github.com/bivas/rivi/util/log"
