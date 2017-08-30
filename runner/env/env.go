@@ -9,10 +9,6 @@ import (
 	"github.com/bivas/rivi/util/log"
 )
 
-const (
-	RULES_CONFIG_FILE = ".rivi.rules.yaml"
-)
-
 var (
 	le = log.Get("env")
 )
@@ -43,11 +39,11 @@ func (e *tempFSEnvironment) Create(data types.ReadOnlyData) error {
 		log.F("issue", data.GetShortName()),
 		log.F("dir", temp)}, "Created temp dir")
 	e.dir = temp
-	rules := filepath.Join(e.dir, RULES_CONFIG_FILE)
+	rules := filepath.Join(e.dir, types.RulesConfigFileName)
 	if err := ioutil.WriteFile(
 		rules,
 		[]byte(data.GetRepository().GetRulesFile()),
-		0400); err != nil {
+		0600); err != nil {
 		return err
 	}
 	e.rulesFile = rules

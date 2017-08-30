@@ -20,6 +20,40 @@ type ghClient struct {
 	logger log.Logger
 }
 
+func (c *ghClient) handleFileContentResponse(file *github.RepositoryContent, err error, fields *log.MetaFields) string {
+	if err != nil {
+		c.logger.ErrorWith(*fields, "Unable to get file")
+	}
+	content, err := file.GetContent()
+	if err != nil {
+		c.logger.ErrorWith(*fields, "Unable to get file content")
+		content = ""
+	}
+	return content
+}
+
+func (c *ghClient) GetFileContentFromRef(path, owner, repo, ref string) string {
+	opts := &github.RepositoryContentGetOptions{Ref: ref}
+	file, _, _, err := c.client.Repositories.GetContents(context.Background(), owner, repo, path, opts)
+	return c.handleFileContentResponse(file, err,
+		&log.MetaFields{
+			log.E(err),
+			log.F("repo", repo),
+			log.F("owner", owner),
+			log.F("path", path),
+			log.F("ref", ref)})
+}
+
+func (c *ghClient) GetFileContent(path string) string {
+	file, _, _, err := c.client.Repositories.GetContents(context.Background(), c.owner, c.repo, path, nil)
+	return c.handleFileContentResponse(file, err,
+		&log.MetaFields{
+			log.E(err),
+			log.F("repo", c.repo),
+			log.F("owner", c.owner),
+			log.F("path", path)})
+}
+
 func (c *ghClient) GetCollaborators() []string {
 	users, _, err := c.client.Repositories.ListCollaborators(context.Background(), c.owner, c.repo, nil)
 	result := make([]string, 0)

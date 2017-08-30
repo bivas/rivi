@@ -79,6 +79,7 @@ func (builder *dataBuilder) readFromJson(context *builderContext, payload *paylo
 	context.data.ref = payload.PullRequest.Base.Ref
 	context.data.origin = types.Origin{
 		User:   strings.ToLower(payload.PullRequest.Head.User.Login),
+		Repo:   payload.PullRequest.Head.Repo.Name,
 		Ref:    payload.PullRequest.Head.Ref,
 		Head:   payload.PullRequest.Head.Sha[0:6],
 		GitURL: payload.PullRequest.Head.Repo.GitURL,

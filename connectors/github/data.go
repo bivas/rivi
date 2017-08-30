@@ -56,7 +56,21 @@ func (d *data) IsCollaborator(name string) bool {
 }
 
 func (d *data) GetRulesFile() string {
-	panic("implement me")
+	hasUpdatedRules := false
+	for _, file := range d.fileNames {
+		if file == types.RulesConfigFileName {
+			hasUpdatedRules = true
+			break
+		}
+	}
+	if hasUpdatedRules && d.IsCollaborator(d.origin.User) {
+		return d.client.GetFileContentFromRef(
+			types.RulesConfigFileName,
+			d.origin.User,
+			d.origin.Repo,
+			d.origin.Head)
+	}
+	return d.client.GetFileContent(types.RulesConfigFileName)
 }
 
 func (d *data) GetRepository() types.Repository {

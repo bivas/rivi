@@ -26,12 +26,6 @@ func (w *workUnit) internalHandle(data types.HookData) error {
 		return err
 	}
 	defer environment.Cleanup()
-	if err := environment.Create(data); err != nil {
-		w.logger.ErrorWith(
-			log.MetaFields{log.E(err), log.F("issue", data.GetShortName())},
-			"Failed to create environment")
-		return err
-	}
 	c, err := config.NewConfiguration(environment.ConfigFilePath())
 	if err != nil {
 		w.logger.ErrorWith(
@@ -42,6 +36,12 @@ func (w *workUnit) internalHandle(data types.HookData) error {
 	meta, ok := builder.BuildComplete(c.GetClientConfig(), data)
 	if !ok {
 		return errors.New("Nothing to process")
+	}
+	if err := environment.Create(meta); err != nil {
+		w.logger.ErrorWith(
+			log.MetaFields{log.E(err), log.F("issue", data.GetShortName())},
+			"Failed to create environment")
+		return err
 	}
 	applied := engine.ProcessRules(c.GetRules(), state.New(c, meta))
 	w.logger.DebugWith(
