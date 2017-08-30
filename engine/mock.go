@@ -32,6 +32,26 @@ type mockData struct {
 	RawPayload       []byte
 }
 
+func (m *mockData) GetCollaborators() []string {
+	panic("implement me")
+}
+
+func (m *mockData) IsCollaborator(name string) bool {
+	panic("implement me")
+}
+
+func (m *mockData) GetAvailableLabels() []string {
+	panic("implement me")
+}
+
+func (m *mockData) GetRulesFile() string {
+	panic("implement me")
+}
+
+func (m *mockData) GetRepository() types.Repository {
+	return m
+}
+
 func (m *mockData) GetProvider() string {
 	return "mock"
 }

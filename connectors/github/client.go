@@ -20,6 +20,19 @@ type ghClient struct {
 	logger log.Logger
 }
 
+func (c *ghClient) GetCollaborators() []string {
+	users, _, err := c.client.Repositories.ListCollaborators(context.Background(), c.owner, c.repo, nil)
+	result := make([]string, 0)
+	if err != nil {
+		c.logger.ErrorWith(log.MetaFields{log.E(err), log.F("repo", c.repo)}, "Unable to get collaborators")
+	} else {
+		for _, user := range users {
+			result = append(result, strings.ToLower(*user.Login))
+		}
+	}
+	return result
+}
+
 func (c *ghClient) GetState(issue int) string {
 	c.logger.DebugWith(log.MetaFields{log.F("issue.id", issue)}, "Getting issue state")
 	response, _, err := c.client.Issues.Get(context.Background(), c.owner, c.repo, issue)

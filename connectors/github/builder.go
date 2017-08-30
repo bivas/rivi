@@ -134,7 +134,8 @@ func (builder *dataBuilder) BuildFromHook(config client.ClientConfig, r *http.Re
 	}
 	repo := pl.Repository.Name
 	owner := pl.Repository.Owner.Login
-	context.data = &data{owner: owner, repo: repo, payload: raw}
+	context.client = newClient(config, owner, repo)
+	context.data = &data{owner: owner, repo: repo, payload: raw, client: context.client}
 	builder.readFromJson(context, pl)
 	return context.data, builder.checkProcessState(context), nil
 }

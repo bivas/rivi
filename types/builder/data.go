@@ -30,19 +30,14 @@ func RegisterNewDataBuilder(provider string, builder DataBuilder) {
 }
 
 func getBuilderFromRequest(r *http.Request) DataBuilder {
-	var builder DataBuilder
 	for name := range r.Header {
 		for provider := range builders {
 			if strings.Contains(strings.ToLower(name), provider) {
-				builder = builders[provider]
-				break
+				return builders[provider]
 			}
 		}
-		if builder != nil {
-			break
-		}
 	}
-	return builder
+	return nil
 }
 
 func BuildFromHook(config client.ClientConfig, r *http.Request) (types.HookData, bool) {

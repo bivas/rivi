@@ -8,26 +8,59 @@ import (
 )
 
 type data struct {
-	client       *ghClient
-	number       int
-	state        string
-	locked       bool
-	origin       types.Origin
-	owner        string
-	repo         string
-	ref          string
-	title        string
-	description  string
-	changedFiles int
-	fileNames    []string
-	fileExt      []string
-	additions    int
-	deletions    int
-	labels       []string
-	assignees    []string
-	comments     []types.Comment
-	payload      []byte
-	reviewers    map[string]string
+	client        *ghClient
+	number        int
+	state         string
+	locked        bool
+	origin        types.Origin
+	owner         string
+	repo          string
+	ref           string
+	title         string
+	description   string
+	changedFiles  int
+	fileNames     []string
+	fileExt       []string
+	additions     int
+	deletions     int
+	labels        []string
+	assignees     []string
+	comments      []types.Comment
+	payload       []byte
+	reviewers     map[string]string
+	collaborators []string
+	repoLabels    []string
+}
+
+func (d *data) GetAvailableLabels() []string {
+	if len(d.repoLabels) == 0 {
+		d.repoLabels = d.client.GetAvailableLabels()
+	}
+	return d.repoLabels
+}
+
+func (d *data) GetCollaborators() []string {
+	if len(d.collaborators) == 0 {
+		d.collaborators = d.client.GetCollaborators()
+	}
+	return d.collaborators
+}
+
+func (d *data) IsCollaborator(name string) bool {
+	for _, collaborator := range d.GetCollaborators() {
+		if name == collaborator {
+			return true
+		}
+	}
+	return false
+}
+
+func (d *data) GetRulesFile() string {
+	panic("implement me")
+}
+
+func (d *data) GetRepository() types.Repository {
+	return d
 }
 
 func (d *data) GetProvider() string {

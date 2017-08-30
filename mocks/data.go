@@ -31,6 +31,34 @@ type MockData struct {
 	ChangesRemove    int
 	Provider         string
 	RawPayload       []byte
+	Collaborators    []string
+	AvailableLabels  []string
+	RulesFileContent string
+}
+
+func (m *MockData) GetCollaborators() []string {
+	return m.Collaborators
+}
+
+func (m *MockData) IsCollaborator(name string) bool {
+	for _, collaborator := range m.Collaborators {
+		if name == collaborator {
+			return true
+		}
+	}
+	return false
+}
+
+func (m *MockData) GetAvailableLabels() []string {
+	return m.AvailableLabels
+}
+
+func (m *MockData) GetRulesFile() string {
+	return m.RulesFileContent
+}
+
+func (m *MockData) GetRepository() types.Repository {
+	return m
 }
 
 func (m *MockData) GetProvider() string {

@@ -4,6 +4,7 @@ type InfoData interface {
 	GetShortName() string
 	GetLongName() string
 	GetProvider() string
+	GetRepository() Repository
 }
 
 type RawData interface {
