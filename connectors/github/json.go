@@ -15,17 +15,19 @@ type pullRequestSection struct {
 	Base struct {
 		Ref string `json:"ref"`
 	} `json:"base"`
-	Head struct {
-		Ref  string `json:"ref"`
-		Sha  string `json:"sha"`
-		User struct {
-			Login string `json:"login"`
-		} `json:"user"`
-		Repo struct {
-			Name   string `json:"name"`
-			GitURL string `json:"git_url"`
-		} `json:"repo"`
-	} `json:"head"`
+	Head headSection `json:"head"`
+}
+
+type headSection struct {
+	Ref  string `json:"ref"`
+	Sha  string `json:"sha"`
+	User struct {
+		Login string `json:"login"`
+	} `json:"user"`
+	Repo struct {
+		Name   string `json:"name"`
+		GitURL string `json:"git_url"`
+	} `json:"repo"`
 }
 
 type repositorySection struct {
@@ -36,8 +38,11 @@ type repositorySection struct {
 }
 
 type payload struct {
-	Action      string             `json:"action"`
-	Number      int                `json:"number"`
-	PullRequest pullRequestSection `json:"pull_request"`
-	Repository  repositorySection  `json:"repository"`
+	Action       string             `json:"action"`
+	Number       int                `json:"number"`
+	PullRequest  pullRequestSection `json:"pull_request"`
+	Repository   repositorySection  `json:"repository"`
+	Installation struct {
+		ID int `json:"id"`
+	} `json:"installation"`
 }

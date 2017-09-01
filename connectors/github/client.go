@@ -7,8 +7,10 @@ import (
 	"github.com/bivas/rivi/config/client"
 	"github.com/bivas/rivi/types"
 	"github.com/bivas/rivi/util/log"
+	"github.com/bradleyfalzon/ghinstallation"
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
+	"net/http"
 )
 
 type ghClient struct {
@@ -18,6 +20,9 @@ type ghClient struct {
 	repo   string
 
 	logger log.Logger
+}
+
+func (c *ghClient) d() {
 }
 
 func (c *ghClient) handleFileContentResponse(file *github.RepositoryContent, err error, fields *log.MetaFields) string {
@@ -274,5 +279,34 @@ func newClient(config client.ClientConfig, owner, repo string) *ghClient {
 		owner:  owner,
 		repo:   repo,
 		logger: log.Get("GitHub.Client"),
+	}
+}
+
+func newAppClient(config client.ClientConfig, owner, repo string, installation int) *ghClient {
+	logger := log.Get("Github.Client")
+	c, err := ghinstallation.NewKeyFromFile(
+		http.DefaultTransport,
+		config.GetApplicationID(),
+		installation,
+		"rivi.private-key.pem",
+	)
+	if err != nil {
+		logger.ErrorWith(
+			log.MetaFields{
+				log.E(err),
+				log.F("appid", config.GetApplicationID()),
+				log.F("installation", installation),
+				log.F("owner", owner),
+				log.F("repo", repo),
+			}, "Unable to create installation client",
+		)
+		return nil
+	}
+	return &ghClient{
+		client: github.NewClient(&http.Client{Transport: c}),
+		secret: []byte(config.GetSecret()),
+		owner:  owner,
+		repo:   repo,
+		logger: logger,
 	}
 }

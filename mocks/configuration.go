@@ -8,12 +8,17 @@ import (
 )
 
 type MockClientConfig struct {
-	OAuthToken string
-	Secret     string
+	OAuthToken    string
+	Secret        string
+	ApplicationID int
+}
+
+func (m *MockClientConfig) GetApplicationID() int {
+	return m.ApplicationID
 }
 
 func (m *MockClientConfig) GetOAuthToken() string {
-	return m.GetOAuthToken()
+	return m.OAuthToken
 }
 
 func (m *MockClientConfig) GetSecret() string {
