@@ -13,6 +13,8 @@ import (
 
 	"strings"
 
+	"errors"
+
 	"github.com/bivas/rivi/config/client"
 	"github.com/bivas/rivi/types"
 	"github.com/bivas/rivi/types/builder"
@@ -141,6 +143,9 @@ func (builder *dataBuilder) BuildFromHook(config client.ClientConfig, r *http.Re
 	} else {
 		context.client = newClient(config, owner, repo)
 	}
+	if context.client == nil {
+		return nil, false, errors.New("Unable to initialize github client")
+	}
 	context.data = &data{owner: owner, repo: repo, payload: raw, client: context.client}
 	builder.readFromJson(context, pl)
 	return context.data, builder.checkProcessState(context), nil
@@ -159,6 +164,9 @@ func (builder *dataBuilder) BuildFromPayload(config client.ClientConfig, raw []b
 		context.client = newAppClient(config, owner, repo, installation)
 	} else {
 		context.client = newClient(config, owner, repo)
+	}
+	if context.client == nil {
+		return nil, false, errors.New("Unable to initialize github client")
 	}
 	context.data = &data{owner: owner, repo: repo, payload: raw, client: context.client}
 	builder.readFromJson(context, &pl)

@@ -2,15 +2,16 @@ package github
 
 import (
 	"context"
+	"net/http"
 	"strings"
 
 	"github.com/bivas/rivi/config/client"
 	"github.com/bivas/rivi/types"
 	"github.com/bivas/rivi/util/log"
+
 	"github.com/bradleyfalzon/ghinstallation"
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
-	"net/http"
 )
 
 type ghClient struct {
@@ -268,6 +269,16 @@ func (c *ghClient) Merge(issue int, mergeMethod string) {
 }
 
 func newClient(config client.ClientConfig, owner, repo string) *ghClient {
+	logger := log.Get("Github.Client")
+	if config.GetOAuthToken() == "" {
+		logger.ErrorWith(
+			log.MetaFields{
+				log.F("owner", owner),
+				log.F("repo", repo),
+			}, "Client configuration missing required fields (oauth token)",
+		)
+		return nil
+	}
 	source := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: config.GetOAuthToken()},
 	)
@@ -278,17 +289,28 @@ func newClient(config client.ClientConfig, owner, repo string) *ghClient {
 		secret: []byte(config.GetSecret()),
 		owner:  owner,
 		repo:   repo,
-		logger: log.Get("GitHub.Client"),
+		logger: logger,
 	}
 }
 
 func newAppClient(config client.ClientConfig, owner, repo string, installation int) *ghClient {
 	logger := log.Get("Github.Client")
+	if config.GetApplicationID() == 0 || config.GetPrivateKeyFile() == "" {
+		logger.ErrorWith(
+			log.MetaFields{
+				log.F("appid", config.GetApplicationID()),
+				log.F("installation", installation),
+				log.F("owner", owner),
+				log.F("repo", repo),
+			}, "Client configuration missing required fields (appid, pem file)",
+		)
+		return nil
+	}
 	c, err := ghinstallation.NewKeyFromFile(
 		http.DefaultTransport,
 		config.GetApplicationID(),
 		installation,
-		"rivi.private-key.pem",
+		config.GetPrivateKeyFile(),
 	)
 	if err != nil {
 		logger.ErrorWith(

@@ -6,10 +6,15 @@ type ClientConfig interface {
 	GetOAuthToken() string
 	GetSecret() string
 	GetApplicationID() int
+	GetPrivateKeyFile() string
 }
 
 type clientConfig struct {
 	internal *viper.Viper
+}
+
+func (c *clientConfig) GetPrivateKeyFile() string {
+	return c.internal.GetString("private_key_file")
 }
 
 func (c *clientConfig) GetApplicationID() int {
@@ -29,5 +34,6 @@ func NewClientConfig(v *viper.Viper) ClientConfig {
 	v.BindEnv("token")
 	v.BindEnv("secret")
 	v.BindEnv("appid")
+	v.BindEnv("private_key_file")
 	return &clientConfig{v}
 }
