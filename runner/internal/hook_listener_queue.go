@@ -5,7 +5,7 @@ import (
 )
 
 type HookListenerQueue interface {
-	Send(types.HookData)
+	Enqueue(types.HookData)
 }
 
 type HookListenerQueueProvider func() HookListenerQueue

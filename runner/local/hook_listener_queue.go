@@ -10,7 +10,7 @@ type channelHookListenerQueue struct {
 	incoming chan types.HookData
 }
 
-func (c *channelHookListenerQueue) Send(data types.HookData) {
+func (c *channelHookListenerQueue) Enqueue(data types.HookData) {
 	c.incoming <- data
 }
 
