@@ -2,18 +2,17 @@ package local
 
 import (
 	"github.com/bivas/rivi/runner/internal"
-	"github.com/bivas/rivi/types"
 	"github.com/bivas/rivi/util/log"
 )
 
 type jobHandler struct {
-	channel chan types.HookData
+	channel chan internal.Message
 	work    *workUnit
 
 	logger log.Logger
 }
 
-func (h *jobHandler) Send(data types.HookData) {
+func (h *jobHandler) Send(data internal.Message) {
 	h.channel <- data
 }
 
@@ -22,7 +21,7 @@ func (h *jobHandler) Start() {
 }
 
 func NewJobHandler() internal.JobHandler {
-	c := make(chan types.HookData)
+	c := make(chan internal.Message)
 	h := &jobHandler{
 		channel: c,
 		work: &workUnit{

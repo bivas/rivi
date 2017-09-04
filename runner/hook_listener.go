@@ -22,7 +22,7 @@ func (h *hookListener) HandleEvent(r *http.Request) *HandledEventResult {
 	if !ok {
 		return &HandledEventResult{Message: "Skipping hook processing"}
 	}
-	h.queue.Enqueue(data)
+	h.queue.Enqueue(internal.Message{Data: data, Config: h.conf})
 	return &HandledEventResult{Message: "Processing " + data.GetShortName()}
 }
 

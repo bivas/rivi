@@ -1,11 +1,7 @@
 package internal
 
-import (
-	"github.com/bivas/rivi/types"
-)
-
 type HookListenerQueue interface {
-	Enqueue(types.HookData)
+	Enqueue(Message)
 }
 
 type HookListenerQueueProvider func() HookListenerQueue

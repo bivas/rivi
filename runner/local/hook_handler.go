@@ -4,14 +4,13 @@ import (
 	"time"
 
 	"github.com/bivas/rivi/runner/internal"
-	"github.com/bivas/rivi/types"
 	"github.com/bivas/rivi/util/log"
 
 	"github.com/patrickmn/go-cache"
 )
 
 type channelHookHandler struct {
-	incoming <-chan types.HookData
+	incoming <-chan internal.Message
 	logger   log.Logger
 
 	processingCache *cache.Cache
@@ -19,12 +18,12 @@ type channelHookHandler struct {
 
 func (h *channelHookHandler) Run() {
 	for {
-		data, ok := <-h.incoming
+		msg, ok := <-h.incoming
 		if !ok {
 			h.logger.Info("Hook channel has no more data - exiting")
 			break
 		}
-		key := data.GetShortName()
+		key := msg.Data.GetShortName()
 		c, exists := h.processingCache.Get(key)
 		if !exists {
 			h.logger.DebugWith(
@@ -39,11 +38,11 @@ func (h *channelHookHandler) Run() {
 			log.MetaFields{
 				log.F("issue", key),
 			}, "Sending data to job handler")
-		c.(internal.JobHandler).Send(data)
+		c.(internal.JobHandler).Send(msg)
 	}
 }
 
-func NewChannelHookHandler(incoming <-chan types.HookData) internal.HookHandler {
+func NewChannelHookHandler(incoming <-chan internal.Message) internal.HookHandler {
 	return &channelHookHandler{
 		incoming:        incoming,
 		processingCache: cache.New(time.Minute, 2*time.Minute),
