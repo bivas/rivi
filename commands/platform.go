@@ -17,9 +17,9 @@ type platformCommand struct {
 
 func (s *platformCommand) Help() string {
 	return `
-Usage: rivi	platform [options]
+Usage: rivi	server [options] [config]
 
-	Starts rivi in platform mode and listen to incoming webhooks
+	Starts rivi in server mode and listen to incoming webhooks
 
 Options:
 	-port=8080				Listen on port
@@ -34,7 +34,18 @@ func (s *platformCommand) Run(args []string) int {
 	if err := flagSet.Parse(args); err != nil {
 		return cli.RunResultHelp
 	}
-	run, err := runner.NewHookListener()
+
+	configFile := ""
+	switch flagSet.NArg() {
+	case 0:
+		// nothing
+	case 1:
+		configFile = flagSet.Args()[0]
+	default:
+		return cli.RunResultHelp
+	}
+
+	run, err := runner.NewHookListener(configFile)
 	if err != nil {
 		log.ErrorWith(log.MetaFields{log.E(err)}, "Unable to start runner handler")
 		return 1

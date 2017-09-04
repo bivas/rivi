@@ -2,6 +2,7 @@ package commands
 
 import (
 	"flag"
+
 	"github.com/bivas/rivi/runner"
 	"github.com/bivas/rivi/server"
 	"github.com/bivas/rivi/util/log"
@@ -16,9 +17,9 @@ type serverCommand struct {
 
 func (s *serverCommand) Help() string {
 	return `
-Usage: rivi	server [options] CONFIGURATION_FILE(S)...
+Usage: rivi	bot [options] CONFIGURATION_FILE(S)...
 
-	Starts rivi in server mode and listen to incoming webhooks
+	Starts rivi in bot mode and listen to incoming webhooks
 
 Options:
 	-port=8080				Listen on port (default: 8080)
@@ -27,7 +28,7 @@ Options:
 }
 
 func (s *serverCommand) Run(args []string) int {
-	flagSet := flag.NewFlagSet("server", flag.ContinueOnError)
+	flagSet := flag.NewFlagSet("bot", flag.ContinueOnError)
 	flagSet.IntVar(&s.port, "port", 8080, "Runner listening port")
 	flagSet.StringVar(&s.uri, "uri", "/", "Runner URI path")
 	if err := flagSet.Parse(args); err != nil {

@@ -1,12 +1,13 @@
 package runner
 
 import (
+	"net/http"
+
 	"github.com/bivas/rivi/config/client"
 	"github.com/bivas/rivi/runner/internal"
 	"github.com/bivas/rivi/types/builder"
 	"github.com/bivas/rivi/util/log"
 	"github.com/spf13/viper"
-	"net/http"
 )
 
 type hookListener struct {
@@ -25,10 +26,16 @@ func (h *hookListener) HandleEvent(r *http.Request) *HandledEventResult {
 	return &HandledEventResult{Message: "Processing " + data.GetShortName()}
 }
 
-func NewHookListener() (Runner, error) {
+func NewHookListener(clientCofiguration string) (Runner, error) {
 	logger := runnerLog.Get("hook.listener")
+	var conf client.ClientConfig
+	if clientCofiguration == "" {
+		conf = client.NewClientConfig(viper.New())
+	} else {
+		conf = client.NewClientConfigFromFile(clientCofiguration)
+	}
 	return &hookListener{
-		conf:   client.NewClientConfig(viper.New()),
+		conf:   conf,
 		queue:  CreateHookListenerQueue(),
 		logger: logger,
 	}, nil
