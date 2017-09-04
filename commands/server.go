@@ -17,28 +17,35 @@ type serverCommand struct {
 
 func (s *serverCommand) Help() string {
 	return `
-Usage: rivi	bot [options] CONFIGURATION_FILE(S)...
+Usage: rivi	server [options] [config]
 
-	Starts rivi in bot mode and listen to incoming webhooks
+	Starts rivi in server mode and listen to incoming webhooks
 
 Options:
-	-port=8080				Listen on port (default: 8080)
-	-uri=/					URI path (default: "/")
+	-port=8080				Listen on port
+	-uri=/					URI path
 `
 }
 
 func (s *serverCommand) Run(args []string) int {
-	flagSet := flag.NewFlagSet("bot", flag.ContinueOnError)
+	flagSet := flag.NewFlagSet("server", flag.ContinueOnError)
 	flagSet.IntVar(&s.port, "port", 8080, "Runner listening port")
 	flagSet.StringVar(&s.uri, "uri", "/", "Runner URI path")
 	if err := flagSet.Parse(args); err != nil {
 		return cli.RunResultHelp
 	}
-	if len(flagSet.Args()) == 0 {
-		log.Error("missing configuration file")
+
+	configFile := ""
+	switch flagSet.NArg() {
+	case 0:
+		// nothing
+	case 1:
+		configFile = flagSet.Args()[0]
+	default:
 		return cli.RunResultHelp
 	}
-	run, err := runner.New(flagSet.Args()...)
+
+	run, err := runner.NewHookListener(configFile)
 	if err != nil {
 		log.ErrorWith(log.MetaFields{log.E(err)}, "Unable to start runner handler")
 		return 1

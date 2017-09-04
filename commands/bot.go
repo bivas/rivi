@@ -10,42 +10,35 @@ import (
 	"github.com/mitchellh/cli"
 )
 
-type platformCommand struct {
+type botCommand struct {
 	port int
 	uri  string
 }
 
-func (s *platformCommand) Help() string {
+func (s *botCommand) Help() string {
 	return `
-Usage: rivi	server [options] [config]
+Usage: rivi	bot [options] CONFIGURATION_FILE(S)...
 
-	Starts rivi in server mode and listen to incoming webhooks
+	Starts rivi in bot mode and listen to incoming webhooks
 
 Options:
-	-port=8080				Listen on port
-	-uri=/					URI path
+	-port=8080				Listen on port (default: 8080)
+	-uri=/					URI path (default: "/")
 `
 }
 
-func (s *platformCommand) Run(args []string) int {
-	flagSet := flag.NewFlagSet("server", flag.ContinueOnError)
+func (s *botCommand) Run(args []string) int {
+	flagSet := flag.NewFlagSet("bot", flag.ContinueOnError)
 	flagSet.IntVar(&s.port, "port", 8080, "Runner listening port")
 	flagSet.StringVar(&s.uri, "uri", "/", "Runner URI path")
 	if err := flagSet.Parse(args); err != nil {
 		return cli.RunResultHelp
 	}
-
-	configFile := ""
-	switch flagSet.NArg() {
-	case 0:
-		// nothing
-	case 1:
-		configFile = flagSet.Args()[0]
-	default:
+	if len(flagSet.Args()) == 0 {
+		log.Error("missing configuration file")
 		return cli.RunResultHelp
 	}
-
-	run, err := runner.NewHookListener(configFile)
+	run, err := runner.New(flagSet.Args()...)
 	if err != nil {
 		log.ErrorWith(log.MetaFields{log.E(err)}, "Unable to start runner handler")
 		return 1
@@ -59,6 +52,6 @@ func (s *platformCommand) Run(args []string) int {
 	return 0
 }
 
-func (s *platformCommand) Synopsis() string {
+func (s *botCommand) Synopsis() string {
 	return "start rivi server"
 }
