@@ -184,7 +184,7 @@ The entire `condition` section is optional - you can run all rules all the time 
 - [`sizing`](engine/actions/sizing/sizing.md) - Size a pull request
 - [`trigger`](engine/actions/trigger/trigger.md) - Send HTTP triggers
 - [`locker`](engine/actions/locker/locker.md) - Lock an issue
-- [`slack`](bot/actions/slack/slack.md) - Send Slack messages
+- [`slack`](engine/actions/slack/slack.md) - Send Slack messages
 
 # Example Configuration
 

@@ -2,9 +2,10 @@ package slack
 
 import (
 	"bytes"
-	"github.com/bivas/rivi/bot"
 	"text/template"
 	"time"
+
+	"github.com/bivas/rivi/types"
 )
 
 type message struct {
@@ -14,11 +15,11 @@ type message struct {
 	State   string
 	Owner   string
 	Repo    string
-	Origin  string
+	Origin  types.Origin
 	Targets []string
 }
 
-func buildMessage(meta bot.EventData, targets []string) *message {
+func buildMessage(meta types.Data, targets []string) *message {
 	return &message{
 		Time:    time.Now(),
 		Number:  meta.GetNumber(),

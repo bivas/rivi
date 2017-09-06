@@ -5,10 +5,13 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/bivas/rivi/bot"
+	"github.com/bivas/rivi/config"
+	"github.com/bivas/rivi/engine/actions"
+	"github.com/bivas/rivi/types"
 	"github.com/bivas/rivi/util"
 	"github.com/bivas/rivi/util/log"
 	"github.com/mitchellh/mapstructure"
+	"github.com/mitchellh/multistep"
 	api "github.com/nlopes/slack"
 )
 
@@ -24,14 +27,16 @@ func (a *action) String() string {
 	return fmt.Sprintf("%T{rule: %+v}", *a, a.rule)
 }
 
-func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
+func (a *action) Apply(state multistep.StateBag) {
+	meta := state.Get("data").(types.Data)
+	conf := state.Get("config").(config.Configuration)
 	if a.rule.Channel == "" && a.rule.Notify == "" {
 		a.logger.DebugWith(
 			log.MetaFields{log.F("issue", meta.GetShortName())},
 			"Skipping action as both Channel and Notify settings are blank")
 		return
 	}
-	if err := a.initClient(config); err != nil {
+	if err := a.initClient(conf); err != nil {
 		a.logger.WarningWith(
 			log.MetaFields{log.F("issue", meta.GetShortName()), log.E(err)},
 			"Unable to init Slack client")
@@ -44,13 +49,13 @@ func (a *action) Apply(config bot.Configuration, meta bot.EventData) {
 		return
 	}
 	if a.rule.Channel == "" {
-		a.sendPrivateMessage(config, meta)
+		a.sendPrivateMessage(conf, meta)
 	} else {
-		a.sendChannelMessage(config, meta)
+		a.sendChannelMessage(conf, meta)
 	}
 }
 
-func (a *action) postMessage(id string, targets []string, config bot.Configuration, meta bot.EventData) error {
+func (a *action) postMessage(id string, targets []string, config config.Configuration, meta types.Data) error {
 	text, err := serializeMessage(a.template, buildMessage(meta, targets))
 	if err != nil {
 		a.logger.WarningWith(
@@ -70,7 +75,7 @@ func (a *action) postMessage(id string, targets []string, config bot.Configurati
 	return nil
 }
 
-func (a *action) sendChannelMessage(config bot.Configuration, meta bot.EventData) {
+func (a *action) sendChannelMessage(config config.Configuration, meta types.Data) {
 	channel, err := a.client.GetChannelInfo(a.rule.Channel)
 	if err != nil {
 		a.logger.WarningWith(
@@ -84,7 +89,7 @@ func (a *action) sendChannelMessage(config bot.Configuration, meta bot.EventData
 	a.postMessage(channel.ID, meta.GetAssignees(), config, meta)
 }
 
-func (a *action) sendPrivateMessage(config bot.Configuration, meta bot.EventData) {
+func (a *action) sendPrivateMessage(config config.Configuration, meta types.Data) {
 	targets := a.getMessageRecipients(config, meta)
 	for _, slacker := range a.toSlackUserId(targets, meta) {
 		_, _, id, err := a.client.OpenIMChannel(slacker)
@@ -101,7 +106,7 @@ func (a *action) sendPrivateMessage(config bot.Configuration, meta bot.EventData
 	}
 }
 
-func (a *action) toSlackUserId(users []string, meta bot.EventData) []string {
+func (a *action) toSlackUserId(users []string, meta types.Data) []string {
 	result := make([]string, 0)
 	slackers, err := a.client.GetUsers()
 	if err != nil {
@@ -121,7 +126,7 @@ func (a *action) toSlackUserId(users []string, meta bot.EventData) []string {
 	return result
 }
 
-func (a *action) getMessageRecipients(config bot.Configuration, meta bot.EventData) []string {
+func (a *action) getMessageRecipients(config config.Configuration, meta types.Data) []string {
 	var result []string
 	if a.rule.Notify == "assignees" {
 		result = meta.GetAssignees()
@@ -147,7 +152,7 @@ func (a *action) compileMessage() error {
 	return nil
 }
 
-func (a *action) initClient(configuration bot.Configuration) error {
+func (a *action) initClient(configuration config.Configuration) error {
 	inter, err := configuration.GetActionConfig("slack")
 	if err != nil {
 		return err
@@ -164,7 +169,7 @@ func (a *action) initClient(configuration bot.Configuration) error {
 type factory struct {
 }
 
-func (*factory) BuildAction(config map[string]interface{}) bot.Action {
+func (*factory) BuildAction(config map[string]interface{}) actions.Action {
 	item := rule{}
 	if e := mapstructure.Decode(config, &item); e != nil {
 		panic(e)
@@ -174,5 +179,5 @@ func (*factory) BuildAction(config map[string]interface{}) bot.Action {
 }
 
 func init() {
-	bot.RegisterAction("slack", &factory{})
+	actions.RegisterAction("slack", &factory{})
 }

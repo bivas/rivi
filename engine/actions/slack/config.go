@@ -1,10 +1,11 @@
 package slack
 
 import (
-	"github.com/bivas/rivi/bot"
+	"os"
+
+	actionConf "github.com/bivas/rivi/config/action"
 	"github.com/bivas/rivi/util/log"
 	"github.com/mitchellh/mapstructure"
-	"os"
 )
 
 type actionConfig struct {
@@ -21,7 +22,7 @@ func (c *actionConfig) Name() string {
 type configBuilder struct {
 }
 
-func (c *configBuilder) Build(config map[string]interface{}) (bot.ActionConfig, error) {
+func (c *configBuilder) Build(config map[string]interface{}) (actionConf.ActionConfig, error) {
 	var actionConfig actionConfig
 	if err := mapstructure.Decode(config, &actionConfig); err != nil {
 		return nil, err
@@ -34,5 +35,5 @@ func (c *configBuilder) Build(config map[string]interface{}) (bot.ActionConfig, 
 }
 
 func init() {
-	bot.RegisterActionConfigBuilder("slack", &configBuilder{})
+	actionConf.RegisterActionConfigBuilder("slack", &configBuilder{})
 }
