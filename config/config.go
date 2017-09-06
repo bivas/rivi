@@ -94,7 +94,7 @@ func (c *config) readRolesSection() error {
 	for role := range c.roles {
 		c.rolesKeys = append(c.rolesKeys, role)
 	}
-	lc.Debug("Loaded %d roles", len(c.rolesKeys))
+	log.DebugWith(log.MetaFields{log.F("roles", c.rolesKeys)}, "Loaded %d roles", len(c.rolesKeys))
 	return nil
 }
 

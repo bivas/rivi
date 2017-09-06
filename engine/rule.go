@@ -2,12 +2,13 @@ package engine
 
 import (
 	"fmt"
+	"sort"
+
 	"github.com/bivas/rivi/engine/actions"
 	"github.com/bivas/rivi/types"
 	"github.com/bivas/rivi/util/log"
 	"github.com/mitchellh/multistep"
 	"github.com/spf13/viper"
-	"sort"
 )
 
 var lr = log.Get("engine.rule")
@@ -48,7 +49,17 @@ func (r *rule) Order() int {
 }
 
 func (r *rule) String() string {
-	return fmt.Sprintf("%#v", r)
+	format := `{
+		name: %s
+		condition: %+v
+		actions: %s
+	}`
+	as := "{\n"
+	for index, action := range r.actions {
+		as += fmt.Sprintf("			%d { %s }\n", index+1, action)
+	}
+	as += "		}"
+	return fmt.Sprintf(format, r.name, r.condition, as)
 }
 
 func (r *rule) Accept(meta types.Data) bool {

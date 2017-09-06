@@ -1,6 +1,7 @@
 package autoassign
 
 import (
+	"fmt"
 	"math/rand"
 	"strings"
 
@@ -17,6 +18,10 @@ type action struct {
 	rule *rule
 
 	logger log.Logger
+}
+
+func (a *action) String() string {
+	return fmt.Sprintf("%T{rule: %+v}", *a, a.rule)
 }
 
 func (a *action) findAssignedRoles(assignees []string, config config.Configuration) []string {

@@ -1,6 +1,8 @@
 package labeler
 
 import (
+	"fmt"
+
 	"github.com/bivas/rivi/engine/actions"
 	"github.com/bivas/rivi/types"
 	"github.com/bivas/rivi/util/log"
@@ -12,6 +14,10 @@ type action struct {
 	rule *rule
 
 	logger log.Logger
+}
+
+func (a *action) String() string {
+	return fmt.Sprintf("%T{rule: %+v}", *a, a.rule)
 }
 
 func (a *action) Apply(state multistep.StateBag) {

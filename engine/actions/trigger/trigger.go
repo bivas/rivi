@@ -20,6 +20,10 @@ type action struct {
 	logger log.Logger
 }
 
+func (a *action) String() string {
+	return fmt.Sprintf("%T{rule: %+v}", *a, a.rule)
+}
+
 func (a *action) Apply(state multistep.StateBag) {
 	meta := state.Get("data").(types.Data)
 	request := a.prepareRequest(meta)
