@@ -6,6 +6,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/bivas/rivi/types"
 	"github.com/bivas/rivi/util"
 	"github.com/bivas/rivi/util/log"
 )
@@ -17,7 +18,7 @@ type message struct {
 	State  string
 	Owner  string
 	Repo   string
-	Origin string
+	Origin types.Origin
 }
 
 var defaultTemplateBody = util.StripNonSpaceWhitespaces(`{

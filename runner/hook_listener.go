@@ -22,17 +22,17 @@ func (h *hookListener) HandleEvent(r *http.Request) *HandledEventResult {
 	if !ok {
 		return &HandledEventResult{Message: "Skipping hook processing"}
 	}
-	h.queue.Enqueue(internal.Message{Data: data, Config: h.conf})
+	h.queue.Enqueue(internal.NewMessage(h.conf, data))
 	return &HandledEventResult{Message: "Processing " + data.GetShortName()}
 }
 
-func NewHookListener(clientCofiguration string) (Runner, error) {
+func NewHookListener(clientConfiguration string) (Runner, error) {
 	logger := runnerLog.Get("hook.listener")
 	var conf client.ClientConfig
-	if clientCofiguration == "" {
+	if clientConfiguration == "" {
 		conf = client.NewClientConfig(viper.New())
 	} else {
-		conf = client.NewClientConfigFromFile(clientCofiguration)
+		conf = client.NewClientConfigFromFile(clientConfiguration)
 	}
 	return &hookListener{
 		conf:   conf,

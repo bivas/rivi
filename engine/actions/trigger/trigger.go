@@ -49,7 +49,7 @@ func (a *action) prepareRequest(meta types.Data) *http.Request {
 		State:  meta.GetState(),
 		Owner:  meta.GetOwner(),
 		Repo:   meta.GetRepo(),
-		Origin: meta.GetOrigin().User,
+		Origin: meta.GetOrigin(),
 	}
 	body := processMessage(&a.rule.Body, message)
 	request, e := http.NewRequest(a.rule.Method, a.rule.Endpoint, body)

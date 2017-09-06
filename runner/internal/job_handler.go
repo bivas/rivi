@@ -1,5 +1,5 @@
 package internal
 
 type JobHandler interface {
-	Send(Message)
+	Send(*Message)
 }

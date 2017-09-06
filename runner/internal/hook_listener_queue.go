@@ -1,7 +1,7 @@
 package internal
 
 type HookListenerQueue interface {
-	Enqueue(Message)
+	Enqueue(*Message)
 }
 
 type HookListenerQueueProvider func() HookListenerQueue

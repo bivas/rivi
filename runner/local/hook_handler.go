@@ -10,7 +10,7 @@ import (
 )
 
 type channelHookHandler struct {
-	incoming <-chan internal.Message
+	incoming <-chan *internal.Message
 	logger   log.Logger
 
 	processingCache *cache.Cache
@@ -42,9 +42,13 @@ func (h *channelHookHandler) Run() {
 	}
 }
 
-func NewChannelHookHandler(incoming <-chan internal.Message) internal.HookHandler {
+func NewChannelHookHandler(incoming <-chan *internal.Message) internal.HookHandler {
+	processingCache := cache.New(time.Minute, 2*time.Minute)
+	processingCache.OnEvicted(func(key string, value interface{}) {
+		value.(internal.JobHandler).Send(nil)
+	})
 	return &channelHookHandler{
 		incoming:        incoming,
-		processingCache: cache.New(time.Minute, 2*time.Minute),
+		processingCache: processingCache,
 		logger:          log.Get("hook.handler")}
 }
