@@ -12,11 +12,11 @@ Rivi enables automatic labeling with common parameters so that administrators ca
 With Rivi, developers can focus on the actual code base and less on administrative unambiguous actions made every day.  We are looking to add more automation features to make the repository management process seamless, and our highest priority is to ensure that Rivi lives up to the community standards by providing true value and efficiency.
 
 ## Usage
-Rivi can be run as a service which listens to incoming repository webhooks. This service must be internet facing to accept incoming requests (e.g. GitHub).
+Rivi can be run as a bot which listens to incoming repository webhooks. This service must be internet facing to accept incoming requests (e.g. GitHub).
 ```
-Usage: rivi server [options] CONFIGURATION_FILE(S)...
+Usage: rivi bot [options] CONFIGURATION_FILE(S)...
 
-	Starts rivi in server mode and listen to incoming webhooks
+	Starts rivi in bot mode and listen to incoming webhooks
 
 Options:
 	-port=8080				Listen on port
@@ -24,7 +24,7 @@ Options:
 ```
 ### Example
 ```
-$ rivi server -port 9000 repo-x.yaml repo-y.yaml
+$ rivi bot -port 9000 repo-x.yaml repo-y.yaml
 ```
 
 ### Docker
@@ -39,7 +39,7 @@ $ docker run --detach \
              --publish 8080:8080 \
              --env RIVI_CONFIG_TOKEN=<rivi oauth token> \
              --volume /path/to/config/files:/config \
-             bivas/rivi rivi server /config/repo-x.yaml
+             bivas/rivi rivi bot /config/repo-x.yaml
 ```
 
 ## Requirements
