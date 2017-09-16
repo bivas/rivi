@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"path/filepath"
 	"sort"
 	"strings"
 
@@ -42,16 +41,6 @@ func (c *config) GetActionConfig(kind string) (action.ActionConfig, error) {
 		return nil, fmt.Errorf("No such action config %s", kind)
 	}
 	return config, nil
-}
-
-func (c *config) getSection(path string) (string, *viper.Viper) {
-	split := strings.SplitN(path, ".", 2)
-	item, exists := c.internal[split[0]]
-	if exists {
-		return split[1], item
-	} else {
-		return path, c.internal["root"]
-	}
 }
 
 func (c *config) GetClientConfig() client.ClientConfig {
@@ -138,19 +127,8 @@ func (c *config) readConfiguration(configPath string) error {
 	if err := c.internal["root"].ReadInConfig(); err != nil {
 		return err
 	}
-	rootConfigFir := filepath.Dir(configPath)
 	for _, section := range configSections {
-		sectionInclude := c.internal["root"].GetString(fmt.Sprintf("%s.include", section))
-		if sectionInclude != "" {
-			lc.Debug("Attempt loading %s config from file %s", section, sectionInclude)
-			c.internal[section] = viper.New()
-			c.internal[section].SetConfigFile(filepath.Join(rootConfigFir, sectionInclude))
-			if err := c.internal[section].ReadInConfig(); err != nil {
-				return err
-			}
-		} else {
-			c.internal[section] = c.internal["root"].Sub(section)
-		}
+		c.internal[section] = c.internal["root"].Sub(section)
 	}
 	return c.readSections()
 }
