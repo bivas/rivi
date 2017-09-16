@@ -7,8 +7,8 @@ import (
 )
 
 func New(config config.Configuration, data types.Data) multistep.StateBag {
-	state := new(multistep.BasicStateBag)
-	state.Put("data", data)
-	state.Put("config", config)
-	return state
+	result := new(multistep.BasicStateBag)
+	result.Put("data", data)
+	result.Put("config", config)
+	return result
 }
