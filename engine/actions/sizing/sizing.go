@@ -120,7 +120,8 @@ func (*factory) BuildAction(config map[string]interface{}) actions.Action {
 	for name, internal := range config {
 		var item sizingRule
 		if e := mapstructure.Decode(internal, &item); e != nil {
-			panic(e)
+			result.logger.ErrorWith(log.MetaFields{log.E(e)}, "Unable to sizing rule")
+			continue
 		}
 		item.Name = name
 		item.Defaults()

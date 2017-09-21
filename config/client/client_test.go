@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/spf13/viper"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -36,8 +35,8 @@ func (c *ClientConfigTest) TestClientConfigFromEnv() {
 	os.Setenv("RIVI_CONFIG_TOKEN", "token-from-env")
 	os.Setenv("RIVI_CONFIG_SECRET", "secret-from-env")
 	config := NewClientConfig(viper.New())
-	assert.Equal(c.T(), "token-from-env", config.GetOAuthToken(), "token from env")
-	assert.Equal(c.T(), "secret-from-env", config.GetSecret(), "secret from env")
+	c.Require().Equal(c.T(), "token-from-env", config.GetOAuthToken(), "token from env")
+	c.Require().Equal(c.T(), "secret-from-env", config.GetSecret(), "secret from env")
 }
 
 func (c *ClientConfigTest) TestConfigTest() {
@@ -45,18 +44,18 @@ func (c *ClientConfigTest) TestConfigTest() {
 	v.Set("token", "token-from-viper")
 	v.Set("secret", "secret-from-viper")
 	config := NewClientConfig(v)
-	assert.Equal(c.T(), "token-from-viper", config.GetOAuthToken(), "token from viper")
-	assert.Equal(c.T(), "secret-from-viper", config.GetSecret(), "secret from viper")
+	c.Require().Equal(c.T(), "token-from-viper", config.GetOAuthToken(), "token from viper")
+	c.Require().Equal(c.T(), "secret-from-viper", config.GetSecret(), "secret from viper")
 }
 
 func (c *ClientConfigTest) TestConfigFromDevNullFile() {
 	config := NewClientConfigFromFile("/dev/null")
-	assert.Empty(c.T(), config.GetSecret(), "no secret")
+	c.Require().Empty(c.T(), config.GetSecret(), "no secret")
 }
 
 func (c *ClientConfigTest) TestConfigFromFileWithConfigPart() {
 	config := NewClientConfigFromFile("client_config_test.yml")
-	assert.Equal(c.T(), "github-token", config.GetOAuthToken(), "token")
+	c.Require().Equal(c.T(), "github-token", config.GetOAuthToken(), "token")
 }
 
 func TestClientConfigTest(t *testing.T) {

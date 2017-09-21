@@ -68,25 +68,27 @@ func (builder *dataBuilder) readPayload(context *builderContext, r *http.Request
 }
 
 func (builder *dataBuilder) readFromJson(context *builderContext, payload *payload) {
-	if payload.PullRequest.Number > 0 {
-		context.data.number = payload.PullRequest.Number
+	pr := payload.PullRequest
+	if pr.Number > 0 {
+		context.data.number = pr.Number
 	} else {
 		context.data.number = payload.Number
 	}
-	context.data.title = payload.PullRequest.Title
-	context.data.description = payload.PullRequest.Body
-	context.data.changedFiles = payload.PullRequest.ChangedFiles
-	context.data.additions = payload.PullRequest.Additions
-	context.data.deletions = payload.PullRequest.Deletions
-	context.data.ref = payload.PullRequest.Base.Ref
+	context.data.title = pr.Title
+	context.data.description = pr.Body
+	context.data.changedFiles = pr.ChangedFiles
+	context.data.additions = pr.Additions
+	context.data.deletions = pr.Deletions
+	context.data.ref = pr.Base.Ref
+	head := pr.Head
 	context.data.origin = types.Origin{
-		User:   strings.ToLower(payload.PullRequest.Head.User.Login),
-		Repo:   payload.PullRequest.Head.Repo.Name,
-		Ref:    payload.PullRequest.Head.Ref,
-		Head:   payload.PullRequest.Head.Sha[0:6],
-		GitURL: payload.PullRequest.Head.Repo.GitURL,
+		User:   strings.ToLower(head.User.Login),
+		Repo:   head.Repo.Name,
+		Ref:    head.Ref,
+		Head:   head.Sha[0:6],
+		GitURL: head.Repo.GitURL,
 	}
-	context.data.state = payload.PullRequest.State
+	context.data.state = pr.State
 }
 
 func (builder *dataBuilder) readFromClient(context *builderContext) {

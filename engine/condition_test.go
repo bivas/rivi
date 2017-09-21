@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/bivas/rivi/types"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,6 +23,14 @@ func TestMatchLabel(t *testing.T) {
 	}
 	assert.Contains(t, matched, "rule1", "matched")
 	assert.NotContains(t, matched, "rule2", "matched")
+}
+
+func TestMatchNoLabel(t *testing.T) {
+	var rule1 rule
+	rule1.condition.IfLabeled = []string{"label1"}
+	meta := &mockData{Labels: []string{"pending-approval"}}
+	result := rule1.condition.Match(meta)
+	assert.False(t, result, "no label to match")
 }
 
 func TestSkipLabel(t *testing.T) {
@@ -71,6 +80,14 @@ func TestMatchExt(t *testing.T) {
 	}
 	assert.Len(t, matched, 1, "matched")
 	assert.Contains(t, matched, "rule4", "matched")
+}
+
+func TestMatchNoExt(t *testing.T) {
+	var tested rule
+	tested.condition.Files.Extensions = []string{".go"}
+	meta := &mockData{FileExtensions: []string{".scala"}}
+	result := tested.condition.Files.Match(meta)
+	assert.False(t, result, "nothing to match")
 }
 
 func TestTitleStartsWith(t *testing.T) {
@@ -209,4 +226,24 @@ func TestCommentsCountGreaterThanEquals(t *testing.T) {
 	assert.False(t, rule.Accept(meta), "shouldn't match")
 	rule.condition.Comments.Count = ">=1"
 	assert.True(t, rule.Accept(meta), "shouldn't match")
+}
+
+func TestCheckPatternNoPatterns(t *testing.T) {
+	result := patternCheck("test", []string{}, &mockData{}, func(types.Data) []string {
+		return nil
+	})
+	assert.False(t, result, "no pattern")
+}
+
+func TestCheckPatternNothingCompiles(t *testing.T) {
+	result := patternCheck("test", []string{"[a"}, &mockData{}, func(types.Data) []string {
+		return nil
+	})
+	assert.False(t, result, "no pattern compiled")
+}
+
+func TestBuildConditionFromEmptyConfiguration(t *testing.T) {
+	result := buildConditionFromConfiguration(viper.New())
+	assert.NotNil(t, result, "default condition")
+	assert.True(t, result.checkAllEmpty(&mockData{}), "empty condition")
 }

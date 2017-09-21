@@ -42,6 +42,7 @@ func (s *serverCommand) Run(args []string) int {
 	case 1:
 		configFile = flagSet.Args()[0]
 	default:
+		log.Error("Too many args provided (expected only 1)")
 		return cli.RunResultHelp
 	}
 

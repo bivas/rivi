@@ -18,6 +18,41 @@ type sectionCondition interface {
 	Match(meta types.Data) bool
 }
 
+func patternCheck(section string, patterns []string, meta types.Data, dataAccessor func(types.Data) []string) bool {
+	if len(patterns) == 0 {
+		return false
+	} else {
+		compiled := make([]*regexp.Regexp, 0)
+		for _, pattern := range patterns {
+			re, err := regexp.Compile(pattern)
+			if err != nil {
+				lc.WarningWith(
+					log.MetaFields{log.F("condition", section), log.F("issue", meta.GetShortName()), log.E(err)},
+					"Unable to compile regex '%s'", pattern)
+				continue
+			}
+			compiled = append(compiled, re)
+		}
+		if len(compiled) == 0 {
+			lc.ErrorWith(
+				log.MetaFields{log.F("condition", section), log.F("issue", meta.GetShortName())},
+				"All configured patterns have failed to compile")
+			return false
+		}
+		for _, check := range dataAccessor(meta) {
+			for _, reg := range compiled {
+				if reg.MatchString(check) {
+					lc.DebugWith(
+						log.MetaFields{log.F("condition", section), log.F("issue", meta.GetShortName())},
+						"Matched with regex '%s' on '%s'", reg.String(), check)
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
 type FilesCondition struct {
 	Patterns   []string `mapstructure:"patterns,omitempty"`
 	Extensions []string `mapstructure:"extensions,omitempty"`
@@ -28,38 +63,9 @@ func (c *FilesCondition) IsEmpty() bool {
 }
 
 func (c *FilesCondition) checkPattern(meta types.Data) bool {
-	if len(c.Patterns) == 0 {
-		return false
-	} else {
-		compiled := make([]*regexp.Regexp, 0)
-		for _, pattern := range c.Patterns {
-			re, err := regexp.Compile(pattern)
-			if err != nil {
-				lc.WarningWith(
-					log.MetaFields{log.F("condition", "FileCondition"), log.F("issue", meta.GetShortName()), log.E(err)},
-					"Unable to compile regex '%s'", pattern)
-				continue
-			}
-			compiled = append(compiled, re)
-		}
-		if len(compiled) == 0 {
-			lc.ErrorWith(
-				log.MetaFields{log.F("condition", "FileCondition"), log.F("issue", meta.GetShortName())},
-				"All configured patterns have failed to compile")
-			return false
-		}
-		for _, check := range meta.GetFileNames() {
-			for _, reg := range compiled {
-				if reg.MatchString(check) {
-					lc.DebugWith(
-						log.MetaFields{log.F("condition", "FileCondition"), log.F("issue", meta.GetShortName())},
-						"Matched with regex '%s' on file '%s'", reg.String(), check)
-					return true
-				}
-			}
-		}
-	}
-	return false
+	return patternCheck("FileCondition", c.Patterns, meta, func(types.Data) []string {
+		return meta.GetFileNames()
+	})
 }
 
 func (c *FilesCondition) checkExt(meta types.Data) bool {
@@ -108,34 +114,9 @@ func (c *TitleCondition) Match(meta types.Data) bool {
 			"Matched with suffix '%s' on title '%s'", c.EndsWith, title)
 		return true
 	}
-	if len(c.Patterns) > 0 {
-		compiled := make([]*regexp.Regexp, 0)
-		for _, pattern := range c.Patterns {
-			re, err := regexp.Compile(pattern)
-			if err != nil {
-				lc.WarningWith(
-					log.MetaFields{log.F("condition", "TitleCondition"), log.F("issue", meta.GetShortName()), log.E(err)},
-					"Unable to compile regex '%s'", pattern)
-				continue
-			}
-			compiled = append(compiled, re)
-		}
-		if len(compiled) == 0 {
-			lc.ErrorWith(
-				log.MetaFields{log.F("condition", "TitleCondition"), log.F("issue", meta.GetShortName())},
-				"All configured patterns have failed to compile")
-			return false
-		}
-		for _, reg := range compiled {
-			if reg.MatchString(title) {
-				lc.DebugWith(
-					log.MetaFields{log.F("condition", "TitleCondition"), log.F("issue", meta.GetShortName())},
-					"Matched with pattern '%s' on title '%s'", reg.String(), title)
-				return true
-			}
-		}
-	}
-	return false
+	return patternCheck("TitleCondition", c.Patterns, meta, func(types.Data) []string {
+		return []string{title}
+	})
 }
 
 type DescriptionCondition struct {
@@ -166,35 +147,9 @@ func (c *DescriptionCondition) Match(meta types.Data) bool {
 			description)
 		return true
 	}
-	if len(c.Patterns) > 0 {
-		compiled := make([]*regexp.Regexp, 0)
-		for _, pattern := range c.Patterns {
-			re, err := regexp.Compile(pattern)
-			if err != nil {
-				lc.WarningWith(log.MetaFields{log.F("condition", "DescriptionCondition"), log.F("issue", meta.GetShortName()), log.E(err)},
-					"Unable to compile regex '%s'", pattern)
-				continue
-			}
-			compiled = append(compiled, re)
-		}
-		if len(compiled) == 0 {
-			lc.ErrorWith(
-				log.MetaFields{log.F("condition", "DescriptionCondition"), log.F("issue", meta.GetShortName())},
-				"All configured patterns have failed to compile")
-			return false
-		}
-		for _, reg := range compiled {
-			if reg.MatchString(description) {
-				lc.DebugWith(
-					log.MetaFields{log.F("condition", "DescriptionCondition"), log.F("issue", meta.GetShortName())},
-					"Matched with pattern '%s' on description '%s'",
-					reg.String(),
-					description)
-				return true
-			}
-		}
-	}
-	return false
+	return patternCheck("DescriptionCondition", c.Patterns, meta, func(types.Data) []string {
+		return []string{description}
+	})
 }
 
 type RefCondition struct {
@@ -214,34 +169,9 @@ func (c *RefCondition) Match(meta types.Data) bool {
 			"Matched RefCondition with match on ref '%s'", ref)
 		return true
 	}
-	if len(c.Patterns) > 0 {
-		compiled := make([]*regexp.Regexp, 0)
-		for _, pattern := range c.Patterns {
-			re, err := regexp.Compile(pattern)
-			if err != nil {
-				lc.WarningWith(
-					log.MetaFields{log.F("condition", "RefCondition"), log.F("issue", meta.GetShortName()), log.E(err)},
-					"Unable to compile regex '%s'", pattern)
-				continue
-			}
-			compiled = append(compiled, re)
-		}
-		if len(compiled) == 0 {
-			lc.ErrorWith(
-				log.MetaFields{log.F("condition", "RefCondition"), log.F("issue", meta.GetShortName())},
-				"All configured patterns have failed to compile")
-			return false
-		}
-		for _, reg := range compiled {
-			if reg.MatchString(ref) {
-				lc.DebugWith(
-					log.MetaFields{log.F("condition", "RefCondition"), log.F("issue", meta.GetShortName())},
-					"Matched with regex '%s' on ref '%s'", reg.String(), ref)
-				return true
-			}
-		}
-	}
-	return false
+	return patternCheck("RefCondition", c.Patterns, meta, func(types.Data) []string {
+		return []string{ref}
+	})
 }
 
 var commentsRegex = silentCompile("^([><]{1}[=]?|[=]{2}|)[ ]*([0-9]+)[ ]*$")

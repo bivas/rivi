@@ -13,23 +13,23 @@ type ClientConfig interface {
 }
 
 type clientConfig struct {
-	internal *viper.Viper
+	*viper.Viper
 }
 
 func (c *clientConfig) GetPrivateKeyFile() string {
-	return c.internal.GetString("private_key_file")
+	return c.GetString("private_key_file")
 }
 
 func (c *clientConfig) GetApplicationID() int {
-	return c.internal.GetInt("appid")
+	return c.GetInt("appid")
 }
 
 func (c *clientConfig) GetOAuthToken() string {
-	return c.internal.GetString("token")
+	return c.GetString("token")
 }
 
 func (c *clientConfig) GetSecret() string {
-	return c.internal.GetString("secret")
+	return c.GetString("secret")
 }
 
 func NewClientConfig(v *viper.Viper) ClientConfig {

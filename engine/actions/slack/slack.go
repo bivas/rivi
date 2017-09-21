@@ -157,12 +157,12 @@ func (a *action) initClient(configuration config.Configuration) error {
 	if err != nil {
 		return err
 	}
-	config, ok := inter.(*actionConfig)
+	conf, ok := inter.(*actionConfig)
 	if !ok {
 		return fmt.Errorf("Action Config doesn't match required type (got %T)", inter)
 	}
-	a.client = api.New(config.ApiKey)
-	a.translator = config.Translator.Values
+	a.client = api.New(conf.ApiKey)
+	a.translator = conf.Translator.Values
 	return nil
 }
 
@@ -171,11 +171,13 @@ type factory struct {
 
 func (*factory) BuildAction(config map[string]interface{}) actions.Action {
 	item := rule{}
+	logger := log.Get("slack")
 	if e := mapstructure.Decode(config, &item); e != nil {
-		panic(e)
+		logger.ErrorWith(log.MetaFields{log.E(e)}, "Unable to build action")
+		return nil
 	}
 	item.Defaults()
-	return &action{rule: &item, logger: log.Get("slack")}
+	return &action{rule: &item, logger: logger}
 }
 
 func init() {

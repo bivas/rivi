@@ -1,9 +1,10 @@
 package action
 
 import (
+	"strings"
+
 	"github.com/bivas/rivi/util/log"
 	"github.com/spf13/viper"
-	"strings"
 )
 
 type ActionConfig interface {

@@ -32,6 +32,7 @@ func (s *botCommand) Run(args []string) int {
 	flagSet.IntVar(&s.port, "port", 8080, "Runner listening port")
 	flagSet.StringVar(&s.uri, "uri", "/", "Runner URI path")
 	if err := flagSet.Parse(args); err != nil {
+		log.ErrorWith(log.MetaFields{log.E(err)}, "command line arguments")
 		return cli.RunResultHelp
 	}
 	if len(flagSet.Args()) == 0 {

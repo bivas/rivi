@@ -83,11 +83,13 @@ type factory struct {
 
 func (*factory) BuildAction(config map[string]interface{}) actions.Action {
 	item := rule{}
+	logger := log.Get("trigger")
 	if e := mapstructure.Decode(config, &item); e != nil {
-		panic(e)
+		logger.ErrorWith(log.MetaFields{log.E(e)}, "Unable to build action")
+		return nil
 	}
 	item.Defaults()
-	return &action{rule: &item, client: http.DefaultClient, logger: log.Get("trigger")}
+	return &action{rule: &item, client: http.DefaultClient, logger: logger}
 }
 
 func init() {

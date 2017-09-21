@@ -5,6 +5,7 @@ import (
 
 	"github.com/bivas/rivi/engine/actions"
 	"github.com/bivas/rivi/types"
+	"github.com/bivas/rivi/util/log"
 	"github.com/mitchellh/mapstructure"
 	"github.com/mitchellh/multistep"
 )
@@ -27,7 +28,8 @@ type factory struct {
 func (*factory) BuildAction(config map[string]interface{}) actions.Action {
 	item := rule{}
 	if e := mapstructure.Decode(config, &item); e != nil {
-		panic(e)
+		log.Get("commenter").ErrorWith(log.MetaFields{log.E(e)}, "Unable to build action")
+		return nil
 	}
 	return &action{rule: &item}
 }

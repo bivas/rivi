@@ -1,10 +1,11 @@
 package actions
 
 import (
+	"strings"
+
 	"github.com/bivas/rivi/util/log"
 	"github.com/mitchellh/multistep"
 	"github.com/spf13/viper"
-	"strings"
 )
 
 var la = log.Get("actions")
@@ -41,7 +42,10 @@ func BuildActionsFromConfiguration(config *viper.Viper) []Action {
 		for _, support := range supportedActions {
 			if setting == support {
 				factory := registry[setting]
-				result = append(result, factory.BuildAction(config.GetStringMap(setting)))
+				action := factory.BuildAction(config.GetStringMap(setting))
+				if action != nil {
+					result = append(result, action)
+				}
 			}
 		}
 	}

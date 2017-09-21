@@ -47,12 +47,7 @@ func (d *data) GetCollaborators() []string {
 }
 
 func (d *data) IsCollaborator(name string) bool {
-	for _, collaborator := range d.GetCollaborators() {
-		if name == collaborator {
-			return true
-		}
-	}
-	return false
+	return util.InStringSlice(d.GetCollaborators(), name)
 }
 
 func (d *data) GetRulesFile() string {
@@ -142,12 +137,7 @@ func (d *data) GetLabels() []string {
 }
 
 func (d *data) HasLabel(label string) bool {
-	for _, name := range d.labels {
-		if name == label {
-			return true
-		}
-	}
-	return false
+	return util.InStringSlice(d.labels, label)
 }
 
 func (d *data) AddAssignees(assignees ...string) {
@@ -163,12 +153,7 @@ func (d *data) GetAssignees() []string {
 }
 
 func (d *data) HasAssignee(assignee string) bool {
-	for _, name := range d.assignees {
-		if name == assignee {
-			return true
-		}
-	}
-	return false
+	return util.InStringSlice(d.assignees, assignee)
 }
 
 func (d *data) GetComments() []types.Comment {

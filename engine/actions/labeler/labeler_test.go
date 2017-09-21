@@ -78,3 +78,8 @@ func TestReplaceLabeles(t *testing.T) {
 	assert.Len(t, meta.Labels, 1, "labels")
 	assert.Equal(t, meta.Labels[0], "label2", "label2")
 }
+
+func TestPrintWithoutLogger(t *testing.T) {
+	action := action{rule: &rule{Remove: "label1", Label: "label2"}, logger: log.Get("labeler.test")}
+	assert.NotContains(t, action.String(), "logger", "logger printed")
+}

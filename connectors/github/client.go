@@ -23,9 +23,6 @@ type ghClient struct {
 	logger log.Logger
 }
 
-func (c *ghClient) d() {
-}
-
 func (c *ghClient) handleFileContentResponse(file *github.RepositoryContent, err error, fields *log.MetaFields) string {
 	if err != nil {
 		c.logger.ErrorWith(*fields, "Unable to get file")

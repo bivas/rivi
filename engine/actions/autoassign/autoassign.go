@@ -112,11 +112,13 @@ type factory struct {
 
 func (*factory) BuildAction(config map[string]interface{}) actions.Action {
 	item := rule{}
+	logger := log.Get("autoassign")
 	if e := mapstructure.Decode(config, &item); e != nil {
-		panic(e)
+		logger.ErrorWith(log.MetaFields{log.E(e)}, "Unable to build action")
+		return nil
 	}
 	item.Defaults()
-	return &action{rule: &item, logger: log.Get("autoassign")}
+	return &action{rule: &item, logger: logger}
 }
 
 func init() {
