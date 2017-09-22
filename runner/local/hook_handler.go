@@ -3,14 +3,14 @@ package local
 import (
 	"time"
 
-	"github.com/bivas/rivi/runner/internal"
+	"github.com/bivas/rivi/runner/types"
 	"github.com/bivas/rivi/util/log"
 
 	"github.com/patrickmn/go-cache"
 )
 
 type channelHookHandler struct {
-	incoming <-chan *internal.Message
+	incoming <-chan *types.Message
 	logger   log.Logger
 
 	processingCache *cache.Cache
@@ -38,14 +38,14 @@ func (h *channelHookHandler) Run() {
 			log.MetaFields{
 				log.F("issue", key),
 			}, "Sending data to job handler")
-		c.(internal.JobHandler).Send(msg)
+		c.(types.JobHandler).Send(msg)
 	}
 }
 
-func NewChannelHookHandler(incoming <-chan *internal.Message) internal.HookHandler {
+func NewChannelHookHandler(incoming <-chan *types.Message) types.HookHandler {
 	processingCache := cache.New(time.Minute, 2*time.Minute)
 	processingCache.OnEvicted(func(key string, value interface{}) {
-		value.(internal.JobHandler).Send(nil)
+		value.(types.JobHandler).Send(nil)
 	})
 	return &channelHookHandler{
 		incoming:        incoming,

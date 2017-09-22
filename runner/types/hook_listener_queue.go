@@ -1,4 +1,4 @@
-package internal
+package types
 
 type HookListenerQueue interface {
 	Enqueue(*Message)

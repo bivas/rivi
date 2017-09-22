@@ -6,18 +6,18 @@ import (
 	"github.com/bivas/rivi/config"
 	"github.com/bivas/rivi/engine"
 	"github.com/bivas/rivi/runner/env"
-	"github.com/bivas/rivi/runner/internal"
+	"github.com/bivas/rivi/runner/types"
 	"github.com/bivas/rivi/types/builder"
 	"github.com/bivas/rivi/util/log"
 	"github.com/bivas/rivi/util/state"
 )
 
 type workUnit struct {
-	incoming <-chan *internal.Message
+	incoming <-chan *types.Message
 	logger   log.Logger
 }
 
-func (w *workUnit) internalHandle(msg *internal.Message) error {
+func (w *workUnit) internalHandle(msg *types.Message) error {
 	environment, err := env.GetEnvironment()
 	if err != nil {
 		w.logger.ErrorWith(
