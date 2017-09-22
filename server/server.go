@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/bivas/rivi/bot"
+	"github.com/bivas/rivi/runner"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"gopkg.in/gin-gonic/gin.v1"
 )
 
 type BotServer struct {
-	Bot  bot.Bot
-	Uri  string
-	Port int
+	Runner runner.Runner
+	Uri    string
+	Port   int
 
 	engine *gin.Engine
 }
@@ -39,11 +39,11 @@ func (server *BotServer) registerMetrics() {
 
 func (server *BotServer) registerDefaultHandler() {
 	server.engine.GET("/", func(c *gin.Context) {
-		c.String(200, "Running RiviBot")
+		c.String(200, "Running Rivi")
 	})
 	if server.Uri != "/" {
 		server.engine.GET(server.Uri, func(c *gin.Context) {
-			c.String(200, "Running RiviBot")
+			c.String(200, "Running Rivi")
 		})
 	}
 }
@@ -53,7 +53,7 @@ func (server *BotServer) Run() error {
 	server.registerMetrics()
 	server.registerDefaultHandler()
 	server.engine.POST(server.Uri, func(c *gin.Context) {
-		result := server.Bot.HandleEvent(c.Request)
+		result := server.Runner.HandleEvent(c.Request)
 		c.JSON(200, result)
 	})
 	return server.engine.Run(fmt.Sprintf(":%d", server.Port))

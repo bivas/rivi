@@ -1,0 +1,6 @@
+# test
+
+config:
+  provider: github
+  token: github-token
+  secret: github-secret

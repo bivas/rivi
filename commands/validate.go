@@ -2,7 +2,7 @@ package commands
 
 import (
 	"flag"
-	"github.com/bivas/rivi/bot"
+	"github.com/bivas/rivi/runner"
 	"github.com/bivas/rivi/util/log"
 	"github.com/mitchellh/cli"
 )
@@ -29,7 +29,7 @@ func (v *validateCommand) Run(args []string) int {
 	}
 	hadError := false
 	for _, file := range f.Args() {
-		_, err := bot.New(file)
+		_, err := runner.New(file)
 		if err != nil {
 			log.ErrorWith(log.MetaFields{log.F("config", file), log.E(err)}, "Config file failed")
 			hadError = true

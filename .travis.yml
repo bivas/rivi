@@ -3,7 +3,7 @@ services:
 - docker
 language: go
 go:
-- 1.8
+- 1.9
 - tip
 go_import_path: github.com/bivas/rivi
 install: true

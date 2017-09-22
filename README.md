@@ -12,19 +12,19 @@ Rivi enables automatic labeling with common parameters so that administrators ca
 With Rivi, developers can focus on the actual code base and less on administrative unambiguous actions made every day.  We are looking to add more automation features to make the repository management process seamless, and our highest priority is to ensure that Rivi lives up to the community standards by providing true value and efficiency.
 
 ## Usage
-Rivi can be run as a service which listens to incoming repository webhooks. This service must be internet facing to accept incoming requests (e.g. GitHub).
+Rivi can be run as a bot which listens to incoming repository webhooks. This service must be internet facing to accept incoming requests (e.g. GitHub).
 ```
-Usage: rivi server [options] CONFIGURATION_FILE(S)...
+Usage: rivi bot [options] CONFIGURATION_FILE(S)...
 
-	Starts rivi in server mode and listen to incoming webhooks
+	Starts rivi in bot mode and listen to incoming webhooks
 
 Options:
-	-port=8080				Listen on port (default: 8080)
-	-uri=/					URI path (default: "/")
+	-port=8080				Listen on port
+	-uri=/					URI path
 ```
 ### Example
 ```
-$ rivi server -port 9000 repo-x.yaml repo-y.yaml
+$ rivi bot -port 9000 repo-x.yaml repo-y.yaml
 ```
 
 ### Docker
@@ -37,9 +37,9 @@ You should visit [bivas/rivi](https://hub.docker.com/r/bivas/rivi/) Docker Hub p
 $ docker run --detach \
              --name rivi \
              --publish 8080:8080 \
-             --env RIVI_CONFIG_TOKEN=<rivi oath token> \
+             --env RIVI_CONFIG_TOKEN=<rivi oauth token> \
              --volume /path/to/config/files:/config \
-             bivas/rivi rivi server /config/repo-x.yaml
+             bivas/rivi rivi bot /config/repo-x.yaml
 ```
 
 ## Requirements
@@ -177,14 +177,14 @@ The entire `condition` section is optional - you can run all rules all the time 
 **Important**: This will not place a rule in the exact position, but can assist in re-order rules. 
 
 ### Available Actions
-- [`autoassign`](bot/actions/autoassign/autoassign.md) - Automatic assignment of issue reviewers
-- [`automerge`](bot/actions/automerge/automerge.md) - Automatic merge for approved pull requests
-- [`commenter`](bot/actions/commenter/commenter.md) - Add comment to an issue
-- [`labeler`](bot/actions/labeler/labeler.md) - Add/Remove label to/from an issue
-- [`sizing`](bot/actions/sizing/sizing.md) - Size a pull request
-- [`trigger`](bot/actions/trigger/trigger.md) - Send HTTP triggers
-- [`slack`](bot/actions/slack/slack.md) - Send Slack messages
-- [`locker`](bot/actions/locker/locker.md) - Lock an issue
+- [`autoassign`](engine/actions/autoassign/autoassign.md) - Automatic assignment of issue reviewers
+- [`automerge`](engine/actions/automerge/automerge.md) - Automatic merge for approved pull requests
+- [`commenter`](engine/actions/commenter/commenter.md) - Add comment to an issue
+- [`labeler`](engine/actions/labeler/labeler.md) - Add/Remove label to/from an issue
+- [`sizing`](engine/actions/sizing/sizing.md) - Size a pull request
+- [`trigger`](engine/actions/trigger/trigger.md) - Send HTTP triggers
+- [`locker`](engine/actions/locker/locker.md) - Lock an issue
+- [`slack`](engine/actions/slack/slack.md) - Send Slack messages
 
 # Example Configuration
 
