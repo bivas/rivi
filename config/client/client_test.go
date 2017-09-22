@@ -35,8 +35,8 @@ func (c *ClientConfigTest) TestClientConfigFromEnv() {
 	os.Setenv("RIVI_CONFIG_TOKEN", "token-from-env")
 	os.Setenv("RIVI_CONFIG_SECRET", "secret-from-env")
 	config := NewClientConfig(viper.New())
-	c.Require().Equal(c.T(), "token-from-env", config.GetOAuthToken(), "token from env")
-	c.Require().Equal(c.T(), "secret-from-env", config.GetSecret(), "secret from env")
+	c.Require().Equal("token-from-env", config.GetOAuthToken(), "token from env")
+	c.Require().Equal("secret-from-env", config.GetSecret(), "secret from env")
 }
 
 func (c *ClientConfigTest) TestConfigTest() {
@@ -44,18 +44,18 @@ func (c *ClientConfigTest) TestConfigTest() {
 	v.Set("token", "token-from-viper")
 	v.Set("secret", "secret-from-viper")
 	config := NewClientConfig(v)
-	c.Require().Equal(c.T(), "token-from-viper", config.GetOAuthToken(), "token from viper")
-	c.Require().Equal(c.T(), "secret-from-viper", config.GetSecret(), "secret from viper")
+	c.Require().Equal("token-from-viper", config.GetOAuthToken(), "token from viper")
+	c.Require().Equal("secret-from-viper", config.GetSecret(), "secret from viper")
 }
 
 func (c *ClientConfigTest) TestConfigFromDevNullFile() {
 	config := NewClientConfigFromFile("/dev/null")
-	c.Require().Empty(c.T(), config.GetSecret(), "no secret")
+	c.Require().Empty(config.GetSecret(), "no secret")
 }
 
 func (c *ClientConfigTest) TestConfigFromFileWithConfigPart() {
 	config := NewClientConfigFromFile("client_config_test.yml")
-	c.Require().Equal(c.T(), "github-token", config.GetOAuthToken(), "token")
+	c.Require().Equal("github-token", config.GetOAuthToken(), "token")
 }
 
 func TestClientConfigTest(t *testing.T) {
