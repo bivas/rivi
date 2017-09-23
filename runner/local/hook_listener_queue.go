@@ -1,15 +1,15 @@
 package local
 
 import (
-	"github.com/bivas/rivi/runner/internal"
+	"github.com/bivas/rivi/runner/types"
 	"github.com/bivas/rivi/util/log"
 )
 
 type channelHookListenerQueue struct {
-	incoming chan *internal.Message
+	incoming chan *types.Message
 }
 
-func (c *channelHookListenerQueue) Enqueue(data *internal.Message) {
+func (c *channelHookListenerQueue) Enqueue(data *types.Message) {
 	if data == nil {
 		close(c.incoming)
 		return
@@ -17,16 +17,16 @@ func (c *channelHookListenerQueue) Enqueue(data *internal.Message) {
 	c.incoming <- data
 }
 
-func channelHookListenerQueueProvider() internal.HookListenerQueue {
+func channelHookListenerQueueProvider() types.HookListenerQueue {
 	log.Get("hook.listener.queue").DebugWith(
 		log.MetaFields{
 			log.F("type", "channel")}, "Creating hook listener queue provider")
-	incomingHooks := make(chan *internal.Message)
+	incomingHooks := make(chan *types.Message)
 	handler := NewChannelHookHandler(incomingHooks)
 	go handler.Run()
 	return &channelHookListenerQueue{incomingHooks}
 }
 
-func CreateHookListenerQueue() internal.HookListenerQueue {
+func CreateHookListenerQueue() types.HookListenerQueue {
 	return channelHookListenerQueueProvider()
 }

@@ -43,3 +43,20 @@ func TestTemplate(t *testing.T) {
 		}`)
 	assert.Equal(t, expected, buf.String(), "json")
 }
+
+func TestTemplateWithOrigin(t *testing.T) {
+	temp, e := template.New("test").Parse(`{{.Origin.Ref}}`)
+	assert.NoError(t, e, "should not error")
+	msg := message{
+		Time:   time.Now(),
+		Number: 1,
+		Title:  "title1",
+		State:  "open",
+		Owner:  "my",
+		Repo:   "repo",
+		Origin: types.Origin{User: "self", Ref: "test"}}
+	var buf bytes.Buffer
+	temp.Execute(&buf, msg)
+	expected := "test"
+	assert.Equal(t, expected, buf.String(), "json")
+}
