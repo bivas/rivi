@@ -2,6 +2,7 @@ package trigger
 
 import (
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/bivas/rivi/mocks"
@@ -113,6 +114,36 @@ func TestTriggerHeaders(t *testing.T) {
 			assert.Equal(t, "allowed", req.Header.Get("x-allowed"), "user added header")
 			assert.Empty(t, req.Header.Get("not-allowed"), "not allowed header")
 			assert.Empty(t, req.Header.Get("x-rivi-fake"), "not allowed x-rivi header")
+			return httpmock.NewStringResponse(200, ""), nil
+		})
+	action := &action{rule: rule, client: http.DefaultClient, logger: log.Get("trigger.test")}
+	action.Apply(state.New(&mocks.MockConfiguration{}, meta))
+	assert.Nil(t, action.err, "error when sending trigger")
+}
+
+func TestEnvironmentEndpoint(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	meta := &mocks.MockData{
+		Number: 1,
+		Title:  "title1",
+		State:  "tested",
+		Owner:  "test",
+		Repo:   "repo1",
+		Origin: types.Origin{User: "tester"},
+	}
+	os.Setenv("MOCK_HOST", "mock")
+	os.Setenv("MOCK_PORT", "1111")
+	rule := &rule{
+		Endpoint: "http://${MOCK_HOST}:${MOCK_PORT}/trigger",
+	}
+	rule.Defaults()
+	httpmock.RegisterResponder(
+		"POST",
+		"http://mock:1111/trigger",
+		func(req *http.Request) (*http.Response, error) {
+			assert.Equal(t, "trigger", req.Header.Get("X-Rivi-Event"), "missing correct event")
+			assert.Equal(t, "Rivi-Agent/1.0", req.UserAgent(), "user agent")
 			return httpmock.NewStringResponse(200, ""), nil
 		})
 	action := &action{rule: rule, client: http.DefaultClient, logger: log.Get("trigger.test")}
