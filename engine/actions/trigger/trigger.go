@@ -3,6 +3,7 @@ package trigger
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -56,7 +57,7 @@ func (a *action) prepareRequest(meta types.Data) *http.Request {
 		Origin: meta.GetOrigin(),
 	}
 	body := processMessage(&a.rule.Body, message)
-	request, e := http.NewRequest(a.rule.Method, a.rule.Endpoint, body)
+	request, e := http.NewRequest(a.rule.Method, os.ExpandEnv(a.rule.Endpoint), body)
 	if e != nil {
 		a.logger.ErrorWith(log.MetaFields{log.F("issue", meta.GetShortName()), log.E(e)},
 			"Error trying to build trigger request", e)
