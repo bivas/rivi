@@ -7,10 +7,13 @@ import (
 
 	"io/ioutil"
 
+	"fmt"
+
 	"github.com/bivas/rivi/mocks"
 	"github.com/bivas/rivi/types"
 	"github.com/bivas/rivi/util/log"
 	"github.com/bivas/rivi/util/state"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/jarcoal/httpmock.v1"
 )
@@ -213,4 +216,50 @@ func TestBody(t *testing.T) {
 	action := &action{rule: rule, client: http.DefaultClient, logger: log.Get("trigger.test")}
 	action.Apply(state.New(&mocks.MockConfiguration{}, meta))
 	assert.Nil(t, action.err, "error when sending trigger")
+}
+
+func TestBuildAction(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	data := `
+trigger:
+  endpoint: "http://${JENKINS_URL}/job/testpipe/build?token=${JENKINS_TOKEN}"
+  content-type: "application/x-www-form-urlencoded"
+  body: >
+    foo='{ "parameter":[{"name":"NUCLIO_USER","value":"testme"}]}'
+
+`
+	os.Setenv("JENKINS_URL", "example.com")
+	os.Setenv("JENKINS_TOKEN", "token")
+	os.Setenv("RIVI_DEBUG", "abc")
+	v := viper.New()
+	dir, err := ioutil.TempDir("", "")
+	assert.NoError(t, err, "error1")
+	err = ioutil.WriteFile(dir+"/config.yaml", []byte(data), 0644)
+	assert.NoError(t, err, "error2")
+	v.SetConfigFile(dir + "/config.yaml")
+	err = v.ReadInConfig()
+	assert.NoError(t, err, "error3")
+	f := factory{}
+	m := v.GetStringMap("trigger")
+	action := f.BuildAction(m)
+	httpmock.RegisterResponder(
+		"POST",
+		"http://example.com/job/testpipe/build?token=token",
+		func(req *http.Request) (*http.Response, error) {
+			assert.Equal(t, "trigger", req.Header.Get("X-Rivi-Event"), "missing correct event")
+			assert.Equal(t, "Rivi-Agent/1.0", req.UserAgent(), "user agent")
+			bs, _ := ioutil.ReadAll(req.Body)
+			fmt.Println("body", string(bs))
+			return httpmock.NewStringResponse(200, ""), nil
+		})
+	meta := &mocks.MockData{
+		Number: 1,
+		Title:  "title1",
+		State:  "tested",
+		Owner:  "test",
+		Repo:   "repo1",
+		Origin: types.Origin{User: "tester"},
+	}
+	action.Apply(state.New(&mocks.MockConfiguration{}, meta))
 }
