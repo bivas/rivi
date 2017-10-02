@@ -5,6 +5,8 @@ import (
 	"os"
 	"testing"
 
+	"io/ioutil"
+
 	"github.com/bivas/rivi/mocks"
 	"github.com/bivas/rivi/types"
 	"github.com/bivas/rivi/util/log"
@@ -144,6 +146,68 @@ func TestEnvironmentEndpoint(t *testing.T) {
 		func(req *http.Request) (*http.Response, error) {
 			assert.Equal(t, "trigger", req.Header.Get("X-Rivi-Event"), "missing correct event")
 			assert.Equal(t, "Rivi-Agent/1.0", req.UserAgent(), "user agent")
+			return httpmock.NewStringResponse(200, ""), nil
+		})
+	action := &action{rule: rule, client: http.DefaultClient, logger: log.Get("trigger.test")}
+	action.Apply(state.New(&mocks.MockConfiguration{}, meta))
+	assert.Nil(t, action.err, "error when sending trigger")
+}
+
+func TestContentType(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	meta := &mocks.MockData{
+		Number: 1,
+		Title:  "title1",
+		State:  "tested",
+		Owner:  "test",
+		Repo:   "repo1",
+		Origin: types.Origin{User: "tester"},
+	}
+	rule := &rule{
+		Endpoint:    "http://example.com/trigger",
+		ContentType: "foofoofoo",
+	}
+	rule.Defaults()
+	httpmock.RegisterResponder(
+		"POST",
+		"http://example.com/trigger",
+		func(req *http.Request) (*http.Response, error) {
+			assert.Equal(t, "trigger", req.Header.Get("X-Rivi-Event"), "missing correct event")
+			assert.Equal(t, "Rivi-Agent/1.0", req.UserAgent(), "user agent")
+			assert.Equal(t, "foofoofoo", req.Header.Get("Content-Type"), "content type")
+			return httpmock.NewStringResponse(200, ""), nil
+		})
+	action := &action{rule: rule, client: http.DefaultClient, logger: log.Get("trigger.test")}
+	action.Apply(state.New(&mocks.MockConfiguration{}, meta))
+	assert.Nil(t, action.err, "error when sending trigger")
+}
+
+func TestBody(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	meta := &mocks.MockData{
+		Number: 1,
+		Title:  "title1",
+		State:  "tested",
+		Owner:  "test",
+		Repo:   "repo1",
+		Origin: types.Origin{User: "tester"},
+	}
+	rule := &rule{
+		Endpoint: "http://example.com/trigger",
+		Body:     `json='{"value":"{{.Owner}}"}'`,
+	}
+	rule.Defaults()
+	httpmock.RegisterResponder(
+		"POST",
+		"http://example.com/trigger",
+		func(req *http.Request) (*http.Response, error) {
+			assert.Equal(t, "trigger", req.Header.Get("X-Rivi-Event"), "missing correct event")
+			assert.Equal(t, "Rivi-Agent/1.0", req.UserAgent(), "user agent")
+			bs, err := ioutil.ReadAll(req.Body)
+			assert.NoError(t, err, "error in content")
+			assert.Equal(t, `json='{"value":"test"}'`, string(bs), "content")
 			return httpmock.NewStringResponse(200, ""), nil
 		})
 	action := &action{rule: rule, client: http.DefaultClient, logger: log.Get("trigger.test")}
