@@ -32,6 +32,10 @@ func (c *clientConfig) GetSecret() string {
 	return c.GetString("secret")
 }
 
+func NewDefaultClientConfig() ClientConfig {
+	return NewClientConfig(viper.New())
+}
+
 func NewClientConfig(v *viper.Viper) ClientConfig {
 	v.SetEnvPrefix("rivi_config")
 	v.BindEnv("token")
@@ -57,7 +61,7 @@ func NewClientConfigFromFile(file string) ClientConfig {
 				log.F("config", file),
 			}, "Error loading config from file",
 		)
-		return NewClientConfig(viper.New())
+		return NewDefaultClientConfig()
 	}
 	configViper := v.Sub("config")
 	if configViper != nil {
