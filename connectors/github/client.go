@@ -26,6 +26,7 @@ type ghClient struct {
 func (c *ghClient) handleFileContentResponse(file *github.RepositoryContent, err error, fields *log.MetaFields) string {
 	if err != nil {
 		c.logger.ErrorWith(*fields, "Unable to get file")
+		return ""
 	}
 	content, err := file.GetContent()
 	if err != nil {
