@@ -7,8 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"bytes"
-
 	"github.com/bivas/rivi/engine/actions"
 	"github.com/bivas/rivi/types"
 	"github.com/bivas/rivi/util/log"
@@ -37,13 +35,6 @@ func (a *action) Apply(state multistep.StateBag) {
 		log.F("method", request.Method),
 		log.F("content-length", request.ContentLength),
 	}, "Prepared Request")
-	cl, err := request.GetBody()
-	if err != nil {
-		panic(err)
-	}
-	r := new(bytes.Buffer)
-	r.ReadFrom(cl)
-	fmt.Println("reader", r.String())
 	response, e := a.client.Do(request)
 	if e != nil {
 		a.err = fmt.Errorf("Triggering to %s, resulted in error. %s",
