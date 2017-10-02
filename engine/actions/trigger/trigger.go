@@ -28,6 +28,13 @@ func (a *action) String() string {
 func (a *action) Apply(state multistep.StateBag) {
 	meta := state.Get("data").(types.Data)
 	request := a.prepareRequest(meta)
+	a.logger.DebugWith(log.MetaFields{
+		log.F("issue", meta.GetShortName()),
+		log.F("url", request.URL),
+		log.F("header", request.Header),
+		log.F("method", request.Method),
+		log.F("content-length", request.ContentLength),
+	}, "Prepared Request")
 	response, e := a.client.Do(request)
 	if e != nil {
 		a.err = fmt.Errorf("Triggering to %s, resulted in error. %s",
