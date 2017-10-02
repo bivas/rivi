@@ -68,7 +68,7 @@ func (a *action) prepareRequest(meta types.Data) *http.Request {
 func (a *action) setRequestHeaders(request *http.Request) {
 	request.Header.Set("User-Agent", "Rivi-Agent/1.0")
 	request.Header.Set("X-Rivi-Event", "trigger")
-	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Content-Type", a.rule.ContentType)
 	for name, value := range a.rule.Headers {
 		lowerName := strings.ToLower(name)
 		if !strings.HasPrefix(lowerName, "x-") || strings.HasPrefix(lowerName, "x-rivi") {
