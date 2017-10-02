@@ -32,6 +32,8 @@ None
 - `endpoint` (required) - the target endpoint
 - `method` (optional) - HTTP method (`GET` or `POST`) (default: **POST**)
 - `headers` (optional) - key-values to add to request. Must start with `X-` otherwise will not be included
+- `body` (optional) - Template for posted data
+- `content-type` (optional) - Set `Content-Type` header (default: **`application/json`**)
 
 ## Example
 ```yaml

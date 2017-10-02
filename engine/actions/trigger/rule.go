@@ -5,10 +5,11 @@ var (
 )
 
 type rule struct {
-	Endpoint string            `mapstructure:"endpoint"`
-	Method   string            `mapstructure:"method"`
-	Headers  map[string]string `mapstructure:"headers"`
-	Body     string            `mapstructure:"body"`
+	Endpoint    string            `mapstructure:"endpoint"`
+	Method      string            `mapstructure:"method"`
+	Headers     map[string]string `mapstructure:"headers"`
+	Body        string            `mapstructure:"body"`
+	ContentType string            `mapstructure:"content-type"`
 }
 
 func (r *rule) Defaults() {
@@ -21,5 +22,8 @@ func (r *rule) Defaults() {
 	}
 	if !allowedMethod {
 		r.Method = "POST"
+	}
+	if r.ContentType == "" {
+		r.ContentType = "application/json"
 	}
 }
