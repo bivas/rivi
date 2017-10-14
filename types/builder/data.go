@@ -30,11 +30,10 @@ func RegisterNewDataBuilder(provider string, builder DataBuilder) {
 }
 
 func getBuilderFromRequest(r *http.Request) DataBuilder {
-	for name := range r.Header {
-		for provider := range builders {
-			if strings.Contains(strings.ToLower(name), provider) {
-				return builders[provider]
-			}
+	userAgent := strings.ToLower(r.UserAgent())
+	for provider := range builders {
+		if strings.Contains(userAgent, provider) {
+			return builders[provider]
 		}
 	}
 	return nil
