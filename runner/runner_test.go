@@ -4,12 +4,13 @@ import (
 	"net/http"
 	"testing"
 
+	"strings"
+
 	"github.com/bivas/rivi/config/client"
 	"github.com/bivas/rivi/mocks"
 	"github.com/bivas/rivi/types"
 	"github.com/bivas/rivi/types/builder"
 	"github.com/stretchr/testify/assert"
-	"strings"
 )
 
 type mockDataBuilder struct {
@@ -41,7 +42,7 @@ func TestNewRunnerDefaultNamespace(t *testing.T) {
 		t.Fatalf("Error while building a runnable. %s", err)
 	}
 	request := buildRequest(t, "http://localhost/")
-	request.Header.Add("X-TestNewRunnerDefaultNamespace", "mock")
+	request.Header.Set("User-Agent", "X-TestNewRunnerDefaultNamespace")
 	response := b.HandleEvent(request)
 	assert.Len(t, response.AppliedRules, 1, "no rules applied")
 	assert.Equal(t, "rule2", response.AppliedRules[0], "rule2 on default")
@@ -64,7 +65,7 @@ func TestNewRunnerExistingNamespace(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error while building request. %s", err)
 	}
-	request.Header.Add("X-TestNewRunnerExistingNamespace", "mock")
+	request.Header.Set("User-Agent", "X-TestNewRunnerExistingNamespace")
 	response := b.HandleEvent(request)
 	assert.Len(t, response.AppliedRules, 1, "no rules applied")
 	assert.Equal(t, "rule1", response.AppliedRules[0], "rule1 on namespace")
@@ -84,7 +85,7 @@ func TestNewRunnerNonExistingNamespace(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error while building request. %s", err)
 	}
-	request.Header.Add("X-TestNewRunnerNonExistingNamespace", "mock")
+	request.Header.Set("User-Agent", "X-TestNewRunnerNonExistingNamespace")
 	response := b.HandleEvent(request)
 	assert.Len(t, response.AppliedRules, 0, "no rules applied")
 	assert.NotEmpty(t, response.Message, "should have error")
