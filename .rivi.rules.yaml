@@ -130,7 +130,7 @@ rules:
   build:
     condition:
       files:
-        patters:
+        patterns:
           - ".travis.yml"
           - "Dockerfile"
     labeler:
