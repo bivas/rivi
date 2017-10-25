@@ -18,7 +18,7 @@ type mockDataBuilder struct {
 	Provider string
 }
 
-func (m *mockDataBuilder) BuildFromPayload(config client.ClientConfig, payload []byte) (types.Data, bool, error) {
+func (m *mockDataBuilder) BuildFromPayload(config client.ClientConfig, ofType string, payload []byte) (types.Data, bool, error) {
 	return &mocks.MockData{Labels: m.Labels, Provider: strings.ToLower(m.Provider)}, true, nil
 }
 

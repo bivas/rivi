@@ -27,6 +27,7 @@ type data struct {
 	assignees     []string
 	comments      []types.Comment
 	payload       []byte
+	eventType     string
 	reviewers     map[string]string
 	collaborators []string
 	repoLabels    []string
@@ -114,6 +115,10 @@ func (d *data) LockState() bool {
 
 func (d *data) GetRawPayload() []byte {
 	return d.payload
+}
+
+func (d *data) GetRawType() string {
+	return d.eventType
 }
 
 func (d *data) Merge(mergeMethod string) {
