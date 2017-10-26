@@ -30,6 +30,11 @@ type mockData struct {
 	ChangesAdd       int
 	ChangesRemove    int
 	RawPayload       []byte
+	EventType        string
+}
+
+func (m *mockData) GetRawType() string {
+	return m.EventType
 }
 
 func (m *mockData) GetCollaborators() []string {
