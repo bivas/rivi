@@ -4,7 +4,10 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/bivas/rivi/config/client"
@@ -25,14 +28,31 @@ type dataBuilder struct {
 	logger         log.Logger
 }
 
-func validate(context *builderContext, payload []byte, request *http.Request) bool {
-	if len(context.secret) == 0 {
+func validate(secret, payload []byte, request *http.Request) bool {
+	if len(secret) == 0 {
 		return true
 	}
-	h := hmac.New(sha1.New, context.secret)
+	h := hmac.New(sha1.New, secret)
 	h.Write(payload)
 	result := fmt.Sprintf("sha1=%s", hex.EncodeToString(h.Sum(nil)))
 	return request.Header.Get("X-Hub-Signature") == result
+}
+
+func ReadPayload(secret []byte, r *http.Request) (*payload, []byte, error) {
+	body := r.Body
+	defer body.Close()
+	raw, err := ioutil.ReadAll(io.LimitReader(body, r.ContentLength))
+	if err != nil {
+		return nil, raw, err
+	}
+	if !validate(secret, raw, r) {
+		return nil, raw, fmt.Errorf("Payload could not be validated")
+	}
+	var pr payload
+	if e := json.Unmarshal(raw, &pr); e != nil {
+		return nil, raw, e
+	}
+	return &pr, raw, nil
 }
 
 func (builder *dataBuilder) findEventHandler(githubEvent string) eventHandler {

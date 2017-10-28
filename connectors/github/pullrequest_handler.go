@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -18,23 +16,6 @@ import (
 
 type pullRequestEventHandler struct {
 	logger log.Logger
-}
-
-func (h *pullRequestEventHandler) readPayload(context *builderContext, r *http.Request) (*payload, []byte, error) {
-	body := r.Body
-	defer body.Close()
-	raw, err := ioutil.ReadAll(io.LimitReader(body, r.ContentLength))
-	if err != nil {
-		return nil, raw, err
-	}
-	if !validate(context, raw, r) {
-		return nil, raw, fmt.Errorf("Payload could not be validated")
-	}
-	var pr payload
-	if e := json.Unmarshal(raw, &pr); e != nil {
-		return nil, raw, e
-	}
-	return &pr, raw, nil
 }
 
 func (h *pullRequestEventHandler) readFromJson(context *builderContext, payload *payload) {
@@ -85,7 +66,7 @@ func (h *pullRequestEventHandler) checkProcessState(context *builderContext) boo
 
 func (h *pullRequestEventHandler) FromRequest(config client.ClientConfig, r *http.Request) (types.HookData, bool, error) {
 	context := &builderContext{secret: []byte(config.GetSecret())}
-	pl, raw, err := h.readPayload(context, r)
+	pl, raw, err := ReadPayload(context.secret, r)
 	if err != nil {
 		return nil, false, err
 	}
@@ -98,9 +79,9 @@ func (h *pullRequestEventHandler) FromRequest(config client.ClientConfig, r *htt
 	owner := pl.Repository.Owner.Login
 	installation := pl.Installation.ID
 	if installation > 0 {
-		context.client = newAppClient(config, owner, repo, installation)
+		context.client = NewAppClient(config, owner, repo, installation)
 	} else {
-		context.client = newClient(config, owner, repo)
+		context.client = NewClient(config, owner, repo)
 	}
 	if context.client == nil {
 		return nil, false, errors.New("Unable to initialize github client")
@@ -123,9 +104,9 @@ func (h *pullRequestEventHandler) FromPayload(config client.ClientConfig, raw []
 	installation := pl.Installation.ID
 	context := &builderContext{}
 	if installation > 0 {
-		context.client = newAppClient(config, owner, repo, installation)
+		context.client = NewAppClient(config, owner, repo, installation)
 	} else {
-		context.client = newClient(config, owner, repo)
+		context.client = NewClient(config, owner, repo)
 	}
 	if context.client == nil {
 		return nil, false, errors.New("Unable to initialize github client")
