@@ -28,7 +28,7 @@ rules:
       files:
         patterns:
           - "connectors/github/"
-    labelers:
+    labeler:
       label: area/connectors/github
 
   internal-api:
