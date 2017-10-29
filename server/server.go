@@ -32,9 +32,10 @@ func (server *BotServer) initDefaults() {
 }
 
 func (server *BotServer) registerMetrics() {
-	registry := prometheus.NewRegistry()
-	registry.Register(prometheus.NewGoCollector())
-	server.engine.Any("/metrics", gin.WrapH(promhttp.HandlerFor(registry, promhttp.HandlerOpts{})))
+	prometheus.DefaultRegisterer.Register(prometheus.NewGoCollector())
+	server.engine.Any("/metrics", gin.WrapH(
+		promhttp.HandlerFor(
+			prometheus.DefaultGatherer, promhttp.HandlerOpts{})))
 }
 
 func (server *BotServer) registerDefaultHandler() {

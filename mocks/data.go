@@ -34,6 +34,11 @@ type MockData struct {
 	Collaborators    []string
 	AvailableLabels  []string
 	RulesFileContent string
+	EventType        string
+}
+
+func (m *MockData) GetRawType() string {
+	return m.EventType
 }
 
 func (m *MockData) GetCollaborators() []string {
