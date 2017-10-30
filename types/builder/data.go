@@ -13,7 +13,7 @@ var l log.Logger = log.Get("data.builder")
 
 type DataBuilder interface {
 	BuildFromHook(config client.ClientConfig, r *http.Request) (types.HookData, bool, error)
-	BuildFromPayload(config client.ClientConfig, payload []byte) (types.Data, bool, error)
+	BuildFromPayload(config client.ClientConfig, ofType string, payload []byte) (types.Data, bool, error)
 }
 
 var builders map[string]DataBuilder = make(map[string]DataBuilder)
@@ -59,7 +59,7 @@ func BuildComplete(config client.ClientConfig, data types.ReadOnlyData) (types.D
 		l.Error("No existing builder to work with!")
 		return nil, false
 	}
-	result, process, err := builder.BuildFromPayload(config, data.GetRawPayload())
+	result, process, err := builder.BuildFromPayload(config, data.GetRawType(), data.GetRawPayload())
 	if err != nil {
 		l.ErrorWith(log.MetaFields{log.E(err)}, "Unable to build from payload.")
 		return nil, false

@@ -9,6 +9,7 @@ type InfoData interface {
 
 type RawData interface {
 	GetRawPayload() []byte
+	GetRawType() string
 }
 
 type ReadOnlyData interface {

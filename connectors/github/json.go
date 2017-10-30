@@ -35,6 +35,7 @@ type repositorySection struct {
 	Owner struct {
 		Login string `json:"login"`
 	} `json:"owner"`
+	Private bool `json:"private"`
 }
 
 type payload struct {

@@ -266,7 +266,7 @@ func (c *ghClient) Merge(issue int, mergeMethod string) {
 	}
 }
 
-func newClient(config client.ClientConfig, owner, repo string) *ghClient {
+func NewClient(config client.ClientConfig, owner, repo string) *ghClient {
 	logger := log.Get("Github.Client")
 	if config.GetOAuthToken() == "" {
 		logger.ErrorWith(
@@ -291,7 +291,7 @@ func newClient(config client.ClientConfig, owner, repo string) *ghClient {
 	}
 }
 
-func newAppClient(config client.ClientConfig, owner, repo string, installation int) *ghClient {
+func NewAppClient(config client.ClientConfig, owner, repo string, installation int) *ghClient {
 	logger := log.Get("Github.Client")
 	if config.GetApplicationID() == 0 || config.GetPrivateKeyFile() == "" {
 		logger.ErrorWith(
