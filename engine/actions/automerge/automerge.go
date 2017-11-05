@@ -1,6 +1,7 @@
 package automerge
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -8,8 +9,10 @@ import (
 	"github.com/bivas/rivi/types"
 	"github.com/bivas/rivi/util"
 	"github.com/bivas/rivi/util/log"
+
 	"github.com/mitchellh/mapstructure"
 	"github.com/mitchellh/multistep"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type action struct {
@@ -33,11 +36,12 @@ type HasReviewersAPIData interface {
 }
 
 func (a *action) merge(meta types.Data) {
+	counter.Inc()
 	if a.rule.Label == "" {
 		mergeable, ok := meta.(MergeableData)
 		if !ok {
 			a.logger.Warning("Event data does not support merge. Check your configurations")
-			a.err = fmt.Errorf("Event data does not support merge")
+			a.err = errors.New("event data does not support merge")
 			return
 		}
 		mergeable.Merge(a.rule.Strategy)
@@ -129,6 +133,9 @@ func (*factory) BuildAction(config map[string]interface{}) actions.Action {
 	return &action{rule: &item, logger: logger}
 }
 
+var counter = actions.NewCounter("automerge")
+
 func init() {
 	actions.RegisterAction("automerge", &factory{})
+	prometheus.Register(counter)
 }

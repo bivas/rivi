@@ -10,6 +10,7 @@ import (
 	"github.com/bivas/rivi/types/builder"
 	"github.com/bivas/rivi/util/log"
 	"github.com/bivas/rivi/util/state"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type workUnit struct {
@@ -28,7 +29,7 @@ func (w *workUnit) internalHandle(msg *types.Message) error {
 	defer environment.Cleanup()
 	meta, ok := builder.BuildComplete(msg.Config, msg.Data)
 	if !ok {
-		return errors.New("Nothing to process")
+		return errors.New("nothing to process")
 	}
 	if err := environment.Create(meta); err != nil {
 		w.logger.ErrorWith(
@@ -60,10 +61,33 @@ func (w *workUnit) Handle() {
 			log.MetaFields{
 				log.F("data", msg.Data.GetShortName()),
 			}, "Got data from job channel")
+		timer := prometheus.NewTimer(handleHistogram)
 		if err := w.internalHandle(msg); err != nil {
+			handleErrorCounter.Inc()
 			w.logger.WarningWith(log.MetaFields{
 				log.E(err),
 				log.F("data", msg.Data.GetShortName())}, "Error when handling data")
 		}
+		timer.ObserveDuration()
 	}
+}
+
+var (
+	handleHistogram = prometheus.NewHistogram(prometheus.HistogramOpts{
+		Namespace: "rivi",
+		Subsystem: "workunit",
+		Name:      "handle",
+		Help:      "Measure handling of event data",
+	})
+	handleErrorCounter = prometheus.NewCounter(prometheus.CounterOpts{
+		Namespace: "rivi",
+		Subsystem: "workunit",
+		Name:      "failure",
+		Help:      "Failure to handle event data",
+	})
+)
+
+func init() {
+	prometheus.Register(handleHistogram)
+	prometheus.Register(handleErrorCounter)
 }
