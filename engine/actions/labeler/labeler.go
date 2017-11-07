@@ -8,6 +8,7 @@ import (
 	"github.com/bivas/rivi/util/log"
 	"github.com/mitchellh/mapstructure"
 	"github.com/mitchellh/multistep"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type action struct {
@@ -29,6 +30,7 @@ func (a *action) Apply(state multistep.StateBag) {
 				log.MetaFields{log.F("issue", meta.GetShortName())},
 				"Skipping label '%s' as it already exists", apply)
 		} else {
+			counter.Inc()
 			meta.AddLabel(apply)
 		}
 	}
@@ -39,6 +41,7 @@ func (a *action) Apply(state multistep.StateBag) {
 				log.MetaFields{log.F("issue", meta.GetShortName())},
 				"Skipping label '%s' removal as it does not exists", remove)
 		} else {
+			counter.Inc()
 			meta.RemoveLabel(remove)
 		}
 	}
@@ -57,6 +60,9 @@ func (*factory) BuildAction(config map[string]interface{}) actions.Action {
 	return &action{rule: &item, logger: logger}
 }
 
+var counter = actions.NewCounter("labeler")
+
 func init() {
 	actions.RegisterAction("labeler", &factory{})
+	prometheus.Register(counter)
 }

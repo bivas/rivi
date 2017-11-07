@@ -7,6 +7,7 @@ import (
 	"github.com/bivas/rivi/runner/types"
 	"github.com/bivas/rivi/types/builder"
 	"github.com/bivas/rivi/util/log"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/viper"
 )
 
@@ -18,8 +19,11 @@ type hookListener struct {
 }
 
 func (h *hookListener) HandleEvent(r *http.Request) *HandledEventResult {
+	timer := prometheus.NewTimer(incomingWebhooksHistogram)
+	defer timer.ObserveDuration()
 	data, ok := builder.BuildFromHook(h.conf, r)
 	if !ok {
+		skippedWebhooksCounter.Inc()
 		return &HandledEventResult{Message: "Skipping hook processing"}
 	}
 	h.queue.Enqueue(types.NewMessage(h.conf, data))
@@ -43,4 +47,23 @@ func NewHookListenerWithClientConfig(config client.ClientConfig) Runner {
 		queue:  CreateHookListenerQueue(),
 		logger: logger,
 	}
+}
+
+var incomingWebhooksHistogram = prometheus.NewHistogram(prometheus.HistogramOpts{
+	Namespace: "rivi",
+	Subsystem: "webhook",
+	Name:      "incoming",
+	Help:      "Measure incoming webhook processing",
+})
+
+var skippedWebhooksCounter = prometheus.NewCounter(prometheus.CounterOpts{
+	Namespace: "rivi",
+	Subsystem: "webhook",
+	Name:      "skipped",
+	Help:      "Measure skipped webhooks",
+})
+
+func init() {
+	prometheus.Register(incomingWebhooksHistogram)
+	prometheus.Register(skippedWebhooksCounter)
 }

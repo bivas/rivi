@@ -1,10 +1,13 @@
 package actions
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/bivas/rivi/util/log"
+
 	"github.com/mitchellh/multistep"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/viper"
 )
 
@@ -50,4 +53,13 @@ func BuildActionsFromConfiguration(config *viper.Viper) []Action {
 		}
 	}
 	return result
+}
+
+func NewCounter(name string) prometheus.Counter {
+	return prometheus.NewCounter(prometheus.CounterOpts{
+		Namespace: "rivi",
+		Subsystem: "actions",
+		Name:      name,
+		Help:      fmt.Sprintf("Action counter for %s", name),
+	})
 }

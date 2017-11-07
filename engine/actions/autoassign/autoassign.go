@@ -12,6 +12,7 @@ import (
 	"github.com/bivas/rivi/util/log"
 	"github.com/mitchellh/mapstructure"
 	"github.com/mitchellh/multistep"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type action struct {
@@ -67,6 +68,7 @@ func (a *action) Apply(state multistep.StateBag) {
 
 	winners := a.randomUsers(conf, meta, lookupRoles)
 	if len(winners) > 0 {
+		counter.Inc()
 		meta.AddAssignees(winners...)
 	}
 }
@@ -121,6 +123,9 @@ func (*factory) BuildAction(config map[string]interface{}) actions.Action {
 	return &action{rule: &item, logger: logger}
 }
 
+var counter = actions.NewCounter("autoassign")
+
 func init() {
 	actions.RegisterAction("autoassign", &factory{})
+	prometheus.Register(counter)
 }

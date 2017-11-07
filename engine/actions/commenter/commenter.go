@@ -8,6 +8,7 @@ import (
 	"github.com/bivas/rivi/util/log"
 	"github.com/mitchellh/mapstructure"
 	"github.com/mitchellh/multistep"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type action struct {
@@ -19,6 +20,7 @@ func (a *action) String() string {
 }
 
 func (a *action) Apply(state multistep.StateBag) {
+	counter.Inc()
 	state.Get("data").(types.Data).AddComment(a.rule.Comment)
 }
 
@@ -34,6 +36,9 @@ func (*factory) BuildAction(config map[string]interface{}) actions.Action {
 	return &action{rule: &item}
 }
 
+var counter = actions.NewCounter("commenter")
+
 func init() {
 	actions.RegisterAction("commenter", &factory{})
+	prometheus.Register(counter)
 }

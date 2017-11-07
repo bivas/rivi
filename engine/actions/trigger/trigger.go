@@ -12,6 +12,7 @@ import (
 	"github.com/bivas/rivi/util/log"
 	"github.com/mitchellh/mapstructure"
 	"github.com/mitchellh/multistep"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type action struct {
@@ -35,13 +36,14 @@ func (a *action) Apply(state multistep.StateBag) {
 		log.F("method", request.Method),
 		log.F("content-length", request.ContentLength),
 	}, "Prepared Request")
+	counter.Inc()
 	response, e := a.client.Do(request)
 	if e != nil {
-		a.err = fmt.Errorf("Triggering to %s, resulted in error. %s",
+		a.err = fmt.Errorf("triggering to %s, resulted in error. %s",
 			a.rule.Endpoint,
 			e)
 	} else if response.StatusCode >= 400 {
-		a.err = fmt.Errorf("Triggering to %s, resulted in wrong status code. %d",
+		a.err = fmt.Errorf("triggering to %s, resulted in wrong status code. %d",
 			a.rule.Endpoint,
 			response.StatusCode)
 	}
@@ -100,6 +102,9 @@ func (*factory) BuildAction(config map[string]interface{}) actions.Action {
 	return &action{rule: &item, client: http.DefaultClient, logger: logger}
 }
 
+var counter = actions.NewCounter("trigger")
+
 func init() {
 	actions.RegisterAction("trigger", &factory{})
+	prometheus.Register(counter)
 }

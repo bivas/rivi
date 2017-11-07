@@ -13,6 +13,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/mitchellh/multistep"
 	api "github.com/nlopes/slack"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type action struct {
@@ -86,6 +87,7 @@ func (a *action) sendChannelMessage(config config.Configuration, meta types.Data
 			"Unable to get channel info")
 		return
 	}
+	counter.Inc()
 	a.postMessage(channel.ID, meta.GetAssignees(), config, meta)
 }
 
@@ -100,6 +102,7 @@ func (a *action) sendPrivateMessage(config config.Configuration, meta types.Data
 				log.F("user.id", slacker)}, "Unable to open IM channel")
 			continue
 		}
+		counter.Inc()
 		if err := a.postMessage(id, targets, config, meta); err != nil {
 			continue
 		}
@@ -180,6 +183,9 @@ func (*factory) BuildAction(config map[string]interface{}) actions.Action {
 	return &action{rule: &item, logger: logger}
 }
 
+var counter = actions.NewCounter("slack")
+
 func init() {
 	actions.RegisterAction("slack", &factory{})
+	prometheus.Register(counter)
 }

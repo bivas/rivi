@@ -10,6 +10,7 @@ import (
 	"github.com/bivas/rivi/util/log"
 	"github.com/mitchellh/mapstructure"
 	"github.com/mitchellh/multistep"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type action struct {
@@ -92,6 +93,7 @@ func (a *action) Apply(state multistep.StateBag) {
 		a.logger.DebugWith(
 			log.MetaFields{log.F("issue", meta.GetShortName())},
 			"Updating label from %s to %s", currentMatchedLabel, matchedLabel)
+		counter.Inc()
 		meta.RemoveLabel(currentMatchedLabel)
 		meta.AddLabel(matchedLabel)
 		if matchedRule.Comment != "" {
@@ -102,6 +104,7 @@ func (a *action) Apply(state multistep.StateBag) {
 			log.F("issue", meta.GetShortName())},
 			"Updating label to %s",
 			matchedLabel)
+		counter.Inc()
 		meta.AddLabel(matchedLabel)
 		if matchedRule.Comment != "" {
 			meta.AddComment(matchedRule.Comment)
@@ -130,6 +133,9 @@ func (*factory) BuildAction(config map[string]interface{}) actions.Action {
 	return &result
 }
 
+var counter = actions.NewCounter("sizing")
+
 func init() {
 	actions.RegisterAction("sizing", &factory{})
+	prometheus.Register(counter)
 }
