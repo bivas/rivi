@@ -12,7 +12,7 @@ Rivi enables automatic labeling with common parameters so that maitainers can im
 With Rivi, developers can focus on the actual code base and less on administrative unambiguous actions made every day.  We are looking to add more automation features to make the repository management process seamless, and our highest priority is to ensure that Rivi lives up to the community standards by providing true value and efficiency.
 
 ## Usage
-Rivi is available as a Github Application. Find out more at rivi-cm.org
+Rivi is available as a Github Application. Find out more at [rivi-cm.org](http://rivi-cm.org)
 
 ### Executable
 Rivi can be run as a bot which listens to incoming repository webhooks. This service must be internet facing to accept incoming requests (e.g. GitHub).
