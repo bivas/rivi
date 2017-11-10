@@ -1,0 +1,172 @@
+rules:
+  rivi:
+    condition:
+      files:
+        patterns:
+          - ".rivi.rules.yaml"
+    labeler:
+      label: rivi
+
+  cli:
+    condition:
+      files:
+        patterns:
+          - "commands/"
+    labeler:
+      label: area/cli
+
+  documentation:
+    condition:
+      files:
+        extensions:
+          - ".md"
+    labeler:
+      label: documentation
+
+  connectors-github:
+    condition:
+      files:
+        patterns:
+          - "connectors/github/"
+    labeler:
+      label: area/connectors/github
+
+  internal-api:
+    condition:
+      files:
+        patterns:
+          - "types/"
+    labeler:
+      label: area/api/internal
+
+  condition:
+    condition:
+      files:
+        patterns:
+          - "engine/condition.go"
+    labeler:
+      label: area/core/condition
+
+  rule:
+    condition:
+      files:
+        patterns:
+          - "engine/rule.go"
+    labeler:
+      label: area/core/rule
+
+  action-autoassign:
+    condition:
+      files:
+        patterns:
+          - "engine/actions/autoassign/"
+    labeler:
+      label: area/actions/autoassign
+
+  action-automerge:
+    condition:
+      files:
+        patterns:
+          - "engine/actions/automerge/"
+    labeler:
+      label: area/actions/automerge
+
+  action-commenter:
+    condition:
+      files:
+        patterns:
+          - "engine/actions/commenter/"
+    labeler:
+      label: area/actions/commenter
+
+  action-labeler:
+    condition:
+      files:
+        patterns:
+          - "engine/actions/labeler/"
+    labeler:
+      label: area/actions/labeler
+
+  action-locker:
+    condition:
+      files:
+        patterns:
+          - "engine/actions/locker/"
+    labeler:
+      label: area/actions/locker
+
+  action-sizing:
+    condition:
+      files:
+        patterns:
+          - "engine/actions/sizing/"
+    labeler:
+      label: area/actions/sizing
+
+  action-slack:
+    condition:
+      files:
+        patterns:
+          - "engine/actions/slack/"
+    labeler:
+      label: area/actions/slack
+
+  action-trigger:
+    condition:
+      files:
+        patterns:
+          - "engine/actions/trigger/"
+    labeler:
+      label: area/actions/trigger
+
+  runner:
+    condition:
+      files:
+        patterns:
+          - "runner/"
+    labeler:
+      label: area/runner
+
+  build:
+    condition:
+      files:
+        patterns:
+          - ".travis.yml"
+          - "Dockerfile"
+    labeler:
+      label: area/build
+
+  pr-size:
+    condition:
+      skip-if-labeled:
+        - pending-approval
+        - size/approved
+    sizing:
+      xs:
+        label: size/xs
+        changed-files-threshold: 3
+        changes-threshold: 40
+      s:
+        label: size/s
+        changed-files-threshold: 5
+        changes-threshold: 120
+      m:
+        label: size/m
+        changed-files-threshold: 15
+        changes-threshold: 500
+      l:
+        label: size/l
+        changed-files-threshold: 25
+      xl:
+        label: size/xl
+        changed-files-threshold: 40
+      default:
+        comment: "This PR is HUGE! Need an admin to approve it"
+        label: pending-approval
+
+  pr-size-approved:
+    condition:
+      if-labeled:
+        - size/approved
+    labeler:
+      remove: pending-approval

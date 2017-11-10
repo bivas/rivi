@@ -1,5 +1,5 @@
 package main
 
 import (
-	_ "github.com/bivas/rivi/bot/connector/github"
+	_ "github.com/bivas/rivi/connectors/github"
 )
