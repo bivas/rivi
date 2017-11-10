@@ -36,8 +36,12 @@ after_success:
     fi
   - if [ "$TRAVIS_TAG" != "" ]; then
     export DOCKER_TAG="$TRAVIS_TAG";
+    git checkout master ;
+    git pull --ff-only ;
+    git merge $TRAVIS_TAG --no-ff ;
+    git push ;
     fi
-  - if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+  - if [ "$TRAVIS_PULL_REQUEST" == "false" && "$DOCKER_TAG" != "unstable" ]; then
     docker build --tag bivas/rivi:$DOCKER_TAG --label "rivi.hash=$TRAVIS_COMMIT" . ;
     docker login -u="$DOCKER_USER" -p="$DOCKER_PASS";
     docker push bivas/rivi:$DOCKER_TAG ;
