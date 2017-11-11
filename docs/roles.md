@@ -1,4 +1,8 @@
-# Roles Section
+# Configuration File Structure
+
+In your `.rivi.rules.yaml` file you can add the following `roles` section
+
+## Roles Section
 
 List of roles for selecting (login) users for assignment.
 ```yaml

@@ -12,7 +12,7 @@ Ability to send a Slack message
 
 have `RIVI_SLACK_API_KEY` set as environment variable
 
-If you require role based notification - a [roles](../../../docs/roles.md) section should be defined
+If you require role based notification - a [roles](../../../docs/roles.md) section must be configured
 
 ## Options
 

@@ -16,9 +16,15 @@ Rivi is available as a Github Application. Find out more at [rivi-cm.org](http:/
 
 If you wish to host rivi on your local environment, please follow the [installation guide](docs/installation.md)
 
+## Configuration File Structure
+
+Place a `.rivi.rules.yaml` file at the repository root directory to be processed.
+
+This configuration file might have multiple sections (depending on your scenario), but the only required one is `rules` section
+
 ## Rules Section
 
-Configure rules to be processed by the bot on each issue event. Each rule may have several actions.
+Configure rules to be processed on each issue event. Each rule may have several actions.
 ### Structure
 
 ```yaml
