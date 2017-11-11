@@ -13,6 +13,7 @@ With Rivi, developers can focus on the actual code base and less on administrati
 
 ## Usage
 Rivi is available as a Github Application. Find out more at [rivi-cm.org](http://rivi-cm.org)
+
 If you wish to host rivi on your local environment, please follow the [installation guide](docs/installation.md)
 
 ## Rules Section
@@ -74,6 +75,7 @@ rules:
 ### Condition
 
 The entire `condition` section is optional - you can run all rules all the time and see if it helps :smile:
+
 Find out about available `condition` options [here](docs/condition.md)
 
 ### Available Actions
