@@ -1,4 +1,4 @@
-# Changes in module
+# Changes to a module
 
 ## Example `.rivi.rules.yaml`
 
