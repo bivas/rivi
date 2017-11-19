@@ -1,4 +1,4 @@
-# Changes to build files
+# Review changes to build files
 
 ## Example `rivi.rules.yaml`
 
