@@ -19,7 +19,7 @@ The entire `condition` section is optional - you can run all rules all the time 
     * `ends-with` - issue description has a suffix
     * `patterns` - [pattern](https://golang.org/s/re2syntax) matching issue description (any of the patterns)
 - `comments`
-    8 `count` - number of comments for issue (supported operators: `==`, `>`, `<`, `>=`, `<=`)
+    * `count` - number of comments for issue (supported operators: `==`, `>`, `<`, `>=`, `<=`)
 - `order` - apply order hint to a rule. All rules are given order index **0**.
    **Important**: This will not place a rule in the exact position, but can assist in re-order rules.
 
