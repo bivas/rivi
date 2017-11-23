@@ -24,7 +24,7 @@ This configuration file might have multiple sections (depending on your scenario
 
 ## Rules Section
 
-Configure rules to be processed on each issue event. Each rule may have several actions.
+Configure rules to be processed on each issue event. Each rule may have several actions. See [examples](docs/examples/README.md) for various rules.
 ### Structure
 
 ```yaml
