@@ -22,7 +22,7 @@ The entire `condition` section is optional - you can run all rules all the time 
     * `count` - number of comments for issue (supported operators: `==`, `>`, `<`, `>=`, `<=`)
 - `patch`
     * `hunk`
-        * `starts-at` - hunk starting position in the file. e.g headers validation should `start-at: 1`
+        * `starts-at` - hunk starting position in the file. e.g headers validation should `start-at: 1` (can be omitted to check all hunks)
         * `pattern` - [pattern](https://golang.org/s/re2syntax) matching issue patch(s) hunk(s)
 - `order` - apply order hint to a rule. All rules are given order index **0**.
    **Important**: This will not place a rule in the exact position, but can assist in re-order rules.
