@@ -191,6 +191,20 @@ func (c *ghClient) RemoveAssignees(issue int, assignees ...string) []string {
 	return result
 }
 
+func (c *ghClient) GetPatch(issue int) map[string]*string {
+	c.logger.DebugWith(log.MetaFields{log.F("issue.id", issue)}, "Getting file names")
+	files, _, err := c.client.PullRequests.ListFiles(context.Background(), c.owner, c.repo, issue, nil)
+	result := make(map[string]*string, 0)
+	if err != nil {
+		c.logger.ErrorWith(log.MetaFields{log.E(err), log.F("issue.id", issue)}, "Unable to get patch for issue")
+	} else {
+		for _, p := range files {
+			result[*p.Filename] = p.Patch
+		}
+	}
+	return result
+}
+
 func (c *ghClient) GetFileNames(issue int) []string {
 	c.logger.DebugWith(log.MetaFields{log.F("issue.id", issue)}, "Getting file names")
 	files, _, err := c.client.PullRequests.ListFiles(context.Background(), c.owner, c.repo, issue, nil)

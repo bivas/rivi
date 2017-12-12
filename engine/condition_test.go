@@ -228,6 +228,69 @@ func TestCommentsCountGreaterThanEquals(t *testing.T) {
 	assert.True(t, rule.Accept(meta), "shouldn't match")
 }
 
+func TestPatchFirstLine(t *testing.T) {
+	var rule rule
+	rule.condition.Patch.Hunk.StartsAt = 1
+	rule.condition.Patch.Hunk.Pattern = "first"
+	patch :=
+		`@@ -0,0 +1,1 @@
++This is the Copyright line`
+	meta := &mockData{Patch: map[string]*string{
+		"file1.txt": &patch,
+	}}
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	rule.condition.Patch.Hunk.Pattern = "Copyright"
+	assert.True(t, rule.Accept(meta), "should match")
+}
+
+func TestPatchNoMatchingHunk(t *testing.T) {
+	var rule rule
+	rule.condition.Patch.Hunk.StartsAt = 5
+	rule.condition.Patch.Hunk.Pattern = "Copyright"
+	patch :=
+		`@@ -0,0 +1,1 @@
++This is the Copyright line`
+	meta := &mockData{Patch: map[string]*string{
+		"file1.txt": &patch,
+	}}
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	rule.condition.Patch.Hunk.StartsAt = 1
+	assert.True(t, rule.Accept(meta), "should match")
+}
+
+func TestPatchAnyHunk(t *testing.T) {
+	var rule rule
+	rule.condition.Patch.Hunk.Pattern = "foofoo"
+	patch :=
+		`@@ -0,0 +1,10 @@
++This is the first line
++This is the second line
++This is the third line
++This is the forth line
++This is the fifth line
++
++
++
++
++Last line after blanks`
+	meta := &mockData{Patch: map[string]*string{
+		"file1.txt": &patch,
+	}}
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+	rule.condition.Patch.Hunk.Pattern = "blanks"
+	assert.True(t, rule.Accept(meta), "should match")
+}
+
+func TestPatchNoPatch(t *testing.T) {
+	var rule rule
+	rule.condition.Patch.Hunk.StartsAt = 5
+	rule.condition.Patch.Hunk.Pattern = "Copyright"
+	meta := &mockData{Patch: map[string]*string{
+		"file1.txt": nil,
+	}}
+	assert.False(t, rule.Accept(meta), "shouldn't match")
+}
+
 func TestCheckPatternNoPatterns(t *testing.T) {
 	result := patternCheck("test", []string{}, &mockData{}, func(types.Data) []string {
 		return nil

@@ -203,19 +203,15 @@ func (c *CommentsCondition) IsEmpty() bool {
 }
 
 func (c *CommentsCondition) Match(meta types.Data) bool {
+	if c.IsEmpty() {
+		return false
+	}
 	commentsConditionCounter.Inc()
 	if commentsRegex == nil {
 		lc.WarningWith(
 			log.MetaFields{log.F("condition", "CommentsCondition"),
 				log.F("issue", meta.GetShortName())},
 			"comments regex is nil")
-		return false
-	}
-	if c.Count == "" {
-		lc.DebugWith(
-			log.MetaFields{log.F("condition", "CommentsCondition"),
-				log.F("issue", meta.GetShortName())},
-			"comments count is empty")
 		return false
 	}
 	count := int64(len(meta.GetComments()))
@@ -292,6 +288,7 @@ type Condition struct {
 	Description   DescriptionCondition `mapstructure:"description,omitempty"`
 	Ref           RefCondition         `mapstructure:"ref,omitempty"`
 	Comments      CommentsCondition    `mapstructure:"comments,omitempty"`
+	Patch         PatchCondition       `mapstructure:"patch,omitempty"`
 }
 
 func (c *Condition) checkIfLabeled(meta types.Data) bool {
@@ -319,7 +316,8 @@ func (c *Condition) checkAllEmpty(meta types.Data) bool {
 		c.Title.IsEmpty() &&
 		c.Description.IsEmpty() &&
 		c.Ref.IsEmpty() &&
-		c.Comments.IsEmpty()
+		c.Comments.IsEmpty() &&
+		c.Patch.IsEmpty()
 	if empty {
 		lc.DebugWith(
 			log.MetaFields{log.F("issue", meta.GetShortName())},
@@ -336,7 +334,8 @@ func (c *Condition) Match(meta types.Data) bool {
 		c.Description.Match(meta) ||
 		c.Files.Match(meta) ||
 		c.Ref.Match(meta) ||
-		c.Comments.Match(meta)
+		c.Comments.Match(meta) ||
+		c.Patch.Match(meta)
 
 	if match && len(c.SkipIfLabeled) > 0 {
 		blockByLabelConditionCounter.Inc()
@@ -372,6 +371,7 @@ var (
 	fileConditionCounter         = createCounter("files")
 	refConditionCounter          = createCounter("ref")
 	titleConditionCounter        = createCounter("title")
+	patchConditionCounter        = createCounter("patch")
 )
 
 func buildConditionFromConfiguration(config *viper.Viper) Condition {
@@ -395,4 +395,5 @@ func init() {
 	prometheus.Register(fileConditionCounter)
 	prometheus.Register(refConditionCounter)
 	prometheus.Register(titleConditionCounter)
+	prometheus.Register(patchConditionCounter)
 }

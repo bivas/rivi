@@ -31,6 +31,11 @@ type mockData struct {
 	ChangesRemove    int
 	RawPayload       []byte
 	EventType        string
+	Patch            map[string]*string
+}
+
+func (m *mockData) GetPatch() map[string]*string {
+	return m.Patch
 }
 
 func (m *mockData) GetRawType() string {
