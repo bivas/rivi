@@ -20,6 +20,10 @@ The entire `condition` section is optional - you can run all rules all the time 
     * `patterns` - [pattern](https://golang.org/s/re2syntax) matching issue description (any of the patterns)
 - `comments`
     * `count` - number of comments for issue (supported operators: `==`, `>`, `<`, `>=`, `<=`)
+- `patch`
+    * `hunk`
+        * `starts-at` - hunk starting position in the file. e.g headers validation should `start-at: 1`
+        * `pattern` - [pattern](https://golang.org/s/re2syntax) matching issue patch(s) hunk(s)
 - `order` - apply order hint to a rule. All rules are given order index **0**.
    **Important**: This will not place a rule in the exact position, but can assist in re-order rules.
 
@@ -54,6 +58,10 @@ rules:
             - "integration_v[0-9]{2}$"
         comments:
           count: ">10"
+        patch:
+          hunk:
+            starts-at: 1
+            pattern: "Copyright Header"
         order: 5
       commenter:
         comment: "We have a match!"
