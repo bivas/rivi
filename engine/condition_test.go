@@ -275,7 +275,7 @@ func TestPatchMatchingHunkStartAtWithExtension(t *testing.T) {
 	assert.True(t, rule.Accept(meta), "any should match")
 	rule.condition.MatchKind = "all"
 	assert.False(t, rule.Accept(meta), "all shouldn't match")
-	rule.condition.Files.Extensions = []string{".go"}
+	rule.condition.Files.Extensions = []string{".scala", ".go"}
 	assert.True(t, rule.Accept(meta), "ext should match")
 }
 
