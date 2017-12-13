@@ -281,6 +281,7 @@ func (c *CommentsCondition) Match(meta types.Data) bool {
 
 type Condition struct {
 	Order         int                  `mapstructure:"order,omitempty"`
+	MatchKind     string               `mapstructure:"match-kind,omitempty"`
 	IfLabeled     []string             `mapstructure:"if-labeled,omitempty"`
 	SkipIfLabeled []string             `mapstructure:"skip-if-labeled,omitempty"`
 	Files         FilesCondition       `mapstructure:"files,omitempty"`
@@ -328,14 +329,36 @@ func (c *Condition) checkAllEmpty(meta types.Data) bool {
 }
 
 func (c *Condition) Match(meta types.Data) bool {
-	match := c.checkAllEmpty(meta) ||
-		c.checkIfLabeled(meta) ||
-		c.Title.Match(meta) ||
-		c.Description.Match(meta) ||
-		c.Files.Match(meta) ||
-		c.Ref.Match(meta) ||
-		c.Comments.Match(meta) ||
-		c.Patch.Match(meta)
+	sections := []sectionCondition{
+		&c.Title,
+		&c.Description,
+		&c.Files,
+		&c.Ref,
+		&c.Comments,
+		&c.Patch,
+	}
+	match := false
+	switch strings.ToLower(c.MatchKind) {
+	case "any", "":
+		match = c.checkAllEmpty(meta) || c.checkIfLabeled(meta)
+		if !match {
+			for _, section := range sections {
+				match = match || section.Match(meta)
+			}
+		}
+	case "all":
+		match = c.checkAllEmpty(meta)
+		if !match {
+			match = len(c.IfLabeled) == 0 || c.checkIfLabeled(meta)
+			for _, section := range sections {
+				match = match && (section.IsEmpty() || section.Match(meta))
+			}
+		}
+	default:
+		lc.WarningWith(
+			log.MetaFields{log.F("match-kind", c.MatchKind), log.F("issue", meta.GetShortName())},
+			"Unknown match kind")
+	}
 
 	if match && len(c.SkipIfLabeled) > 0 {
 		blockByLabelConditionCounter.Inc()

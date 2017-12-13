@@ -243,7 +243,7 @@ func TestPatchFirstLine(t *testing.T) {
 	assert.True(t, rule.Accept(meta), "should match")
 }
 
-func TestPatchNoMatchingHunk(t *testing.T) {
+func TestPatchMatchingHunkStartAt(t *testing.T) {
 	var rule rule
 	rule.condition.Patch.Hunk.StartsAt = 5
 	rule.condition.Patch.Hunk.Pattern = "Copyright"
@@ -256,6 +256,27 @@ func TestPatchNoMatchingHunk(t *testing.T) {
 	assert.False(t, rule.Accept(meta), "shouldn't match")
 	rule.condition.Patch.Hunk.StartsAt = 1
 	assert.True(t, rule.Accept(meta), "should match")
+}
+
+func TestPatchMatchingHunkStartAtWithExtension(t *testing.T) {
+	var rule rule
+	rule.condition.Patch.Hunk.StartsAt = 1
+	rule.condition.Patch.Hunk.Pattern = "Copyright"
+	rule.condition.MatchKind = "any"
+	rule.condition.Files.Extensions = []string{".scala"}
+	patch :=
+		`@@ -0,0 +1,1 @@
++This is the Copyright line`
+	meta := &mockData{
+		Patch: map[string]*string{
+			"file1.txt": &patch,
+		},
+		FileExtensions: []string{".go"}}
+	assert.True(t, rule.Accept(meta), "any should match")
+	rule.condition.MatchKind = "all"
+	assert.False(t, rule.Accept(meta), "all shouldn't match")
+	rule.condition.Files.Extensions = []string{".go"}
+	assert.True(t, rule.Accept(meta), "ext should match")
 }
 
 func TestPatchAnyHunk(t *testing.T) {
