@@ -7,6 +7,7 @@ These examples are complete `.rivi.rules.yaml` configuration file to be placed i
 * [Review changes to build files](build.md)
 * [Sizing check and approval](sizing.md)
 * [Check if tests exist](tests.md)
+* [Check if copyright header is missing](header.md)
 * [Pull-requests to integration branch](integration.md)
 * [Detect configuration changes](configuration.md)
 * [Warn if committing binaries](binary.md)

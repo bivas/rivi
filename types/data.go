@@ -50,3 +50,8 @@ type Data interface {
 	ReadOnlyData
 	MutableData
 }
+
+type ExtendedData interface {
+	Data
+	GetPatch() map[string]*string
+}

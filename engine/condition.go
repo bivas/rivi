@@ -203,19 +203,15 @@ func (c *CommentsCondition) IsEmpty() bool {
 }
 
 func (c *CommentsCondition) Match(meta types.Data) bool {
+	if c.IsEmpty() {
+		return false
+	}
 	commentsConditionCounter.Inc()
 	if commentsRegex == nil {
 		lc.WarningWith(
 			log.MetaFields{log.F("condition", "CommentsCondition"),
 				log.F("issue", meta.GetShortName())},
 			"comments regex is nil")
-		return false
-	}
-	if c.Count == "" {
-		lc.DebugWith(
-			log.MetaFields{log.F("condition", "CommentsCondition"),
-				log.F("issue", meta.GetShortName())},
-			"comments count is empty")
 		return false
 	}
 	count := int64(len(meta.GetComments()))
@@ -285,6 +281,7 @@ func (c *CommentsCondition) Match(meta types.Data) bool {
 
 type Condition struct {
 	Order         int                  `mapstructure:"order,omitempty"`
+	MatchKind     string               `mapstructure:"match-kind,omitempty"`
 	IfLabeled     []string             `mapstructure:"if-labeled,omitempty"`
 	SkipIfLabeled []string             `mapstructure:"skip-if-labeled,omitempty"`
 	Files         FilesCondition       `mapstructure:"files,omitempty"`
@@ -292,6 +289,7 @@ type Condition struct {
 	Description   DescriptionCondition `mapstructure:"description,omitempty"`
 	Ref           RefCondition         `mapstructure:"ref,omitempty"`
 	Comments      CommentsCondition    `mapstructure:"comments,omitempty"`
+	Patch         PatchCondition       `mapstructure:"patch,omitempty"`
 }
 
 func (c *Condition) checkIfLabeled(meta types.Data) bool {
@@ -319,7 +317,8 @@ func (c *Condition) checkAllEmpty(meta types.Data) bool {
 		c.Title.IsEmpty() &&
 		c.Description.IsEmpty() &&
 		c.Ref.IsEmpty() &&
-		c.Comments.IsEmpty()
+		c.Comments.IsEmpty() &&
+		c.Patch.IsEmpty()
 	if empty {
 		lc.DebugWith(
 			log.MetaFields{log.F("issue", meta.GetShortName())},
@@ -330,13 +329,36 @@ func (c *Condition) checkAllEmpty(meta types.Data) bool {
 }
 
 func (c *Condition) Match(meta types.Data) bool {
-	match := c.checkAllEmpty(meta) ||
-		c.checkIfLabeled(meta) ||
-		c.Title.Match(meta) ||
-		c.Description.Match(meta) ||
-		c.Files.Match(meta) ||
-		c.Ref.Match(meta) ||
-		c.Comments.Match(meta)
+	sections := []sectionCondition{
+		&c.Title,
+		&c.Description,
+		&c.Files,
+		&c.Ref,
+		&c.Comments,
+		&c.Patch,
+	}
+	match := false
+	switch strings.ToLower(c.MatchKind) {
+	case "any", "":
+		match = c.checkAllEmpty(meta) || c.checkIfLabeled(meta)
+		if !match {
+			for _, section := range sections {
+				match = match || section.Match(meta)
+			}
+		}
+	case "all":
+		match = c.checkAllEmpty(meta)
+		if !match {
+			match = len(c.IfLabeled) == 0 || c.checkIfLabeled(meta)
+			for _, section := range sections {
+				match = match && (section.IsEmpty() || section.Match(meta))
+			}
+		}
+	default:
+		lc.WarningWith(
+			log.MetaFields{log.F("match-kind", c.MatchKind), log.F("issue", meta.GetShortName())},
+			"Unknown match kind")
+	}
 
 	if match && len(c.SkipIfLabeled) > 0 {
 		blockByLabelConditionCounter.Inc()
@@ -372,6 +394,7 @@ var (
 	fileConditionCounter         = createCounter("files")
 	refConditionCounter          = createCounter("ref")
 	titleConditionCounter        = createCounter("title")
+	patchConditionCounter        = createCounter("patch")
 )
 
 func buildConditionFromConfiguration(config *viper.Viper) Condition {
@@ -395,4 +418,5 @@ func init() {
 	prometheus.Register(fileConditionCounter)
 	prometheus.Register(refConditionCounter)
 	prometheus.Register(titleConditionCounter)
+	prometheus.Register(patchConditionCounter)
 }
