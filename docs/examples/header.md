@@ -15,7 +15,8 @@ rules:
         patch:
           hunk:
             starts-at: 1
-            pattern: "^((?!Copyright)[\s\S])*$"
+            not-patterns: 
+              - "(?i)(copyright)"
       labeler:
         label: missing-copyright
 ```
