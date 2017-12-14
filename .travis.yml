@@ -36,10 +36,6 @@ after_success:
     fi
   - if [ "$TRAVIS_TAG" != "" ]; then
     export DOCKER_TAG="$TRAVIS_TAG";
-    git checkout master ;
-    git pull --ff-only ;
-    git merge $TRAVIS_TAG --no-ff ;
-    git push ;
     fi
   - if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$DOCKER_TAG" != "unstable" ]; then
     docker build --tag bivas/rivi:$DOCKER_TAG --label "rivi.hash=$TRAVIS_COMMIT" . ;
@@ -51,6 +47,13 @@ before_deploy:
 - GOOS=linux  GOARCH=amd64 go build -o rivi-${VERSION}-linux-amd64
 - GOOS=darwin GOARCH=amd64 go build -o rivi-${VERSION}-darwin-amd64
 - GOOS=windows GOARCH=amd64 go build -o rivi-${VERSION}-windows-amd64
+after_deploy:
+- git config --global user.email "travis@travis-ci.org"
+- git config --global user.name "Travis CI"
+- git checkout master ;
+- git pull --ff-only ;
+- git merge $TRAVIS_TAG --no-ff ;
+- git push ;
 deploy:
   provider: releases
   api_key:
