@@ -123,7 +123,7 @@ func NewRule(name string, config *viper.Viper) Rule {
 
 func ProcessRules(rules []Rule, state multistep.StateBag) []string {
 	groups := GroupByRuleOrder(rules)
-	result := []string{}
+	result := make([]string, 0)
 	for _, group := range groups {
 		result = append(result, RunGroup(group, state)...)
 	}

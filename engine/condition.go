@@ -20,7 +20,7 @@ type sectionCondition interface {
 	Match(meta types.Data) bool
 }
 
-func patternCheck(section string, patterns []string, meta types.Data, dataAccessor func(types.Data) []string) bool {
+func matchNotPatterns(section string, patterns []string, meta types.Data, dataAccessor func(types.Data) []string) bool {
 	if len(patterns) == 0 {
 		return false
 	} else {
@@ -29,8 +29,58 @@ func patternCheck(section string, patterns []string, meta types.Data, dataAccess
 			re, err := regexp.Compile(pattern)
 			if err != nil {
 				lc.WarningWith(
-					log.MetaFields{log.F("condition", section), log.F("issue", meta.GetShortName()), log.E(err)},
-					"Unable to compile regex '%s'", pattern)
+					log.MetaFields{
+						log.F("condition", section),
+						log.F("issue", meta.GetShortName()),
+						log.E(err),
+						log.F("regex", pattern),
+					},
+					"Unable to compile a not regex")
+				continue
+			}
+			compiled = append(compiled, re)
+		}
+		if len(compiled) == 0 {
+			lc.ErrorWith(
+				log.MetaFields{log.F("condition", section), log.F("issue", meta.GetShortName())},
+				"All configured not-patterns have failed to compile")
+			return false
+		}
+		for _, check := range dataAccessor(meta) {
+			for _, reg := range compiled {
+				if !reg.MatchString(check) {
+					lc.DebugWith(
+						log.MetaFields{
+							log.F("condition", section),
+							log.F("issue", meta.GetShortName()),
+							log.F("pattern", reg.String()),
+							log.F("check", check),
+						},
+						"Matched with not-pattern")
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+func matchPatterns(section string, patterns []string, meta types.Data, dataAccessor func(types.Data) []string) bool {
+	if len(patterns) == 0 {
+		return false
+	} else {
+		compiled := make([]*regexp.Regexp, 0)
+		for _, pattern := range patterns {
+			re, err := regexp.Compile(pattern)
+			if err != nil {
+				lc.WarningWith(
+					log.MetaFields{
+						log.F("condition", section),
+						log.F("issue", meta.GetShortName()),
+						log.E(err),
+						log.F("regex", pattern),
+					},
+					"Unable to compile regex")
 				continue
 			}
 			compiled = append(compiled, re)
@@ -45,8 +95,13 @@ func patternCheck(section string, patterns []string, meta types.Data, dataAccess
 			for _, reg := range compiled {
 				if reg.MatchString(check) {
 					lc.DebugWith(
-						log.MetaFields{log.F("condition", section), log.F("issue", meta.GetShortName())},
-						"Matched with regex '%s' on '%s'", reg.String(), check)
+						log.MetaFields{
+							log.F("condition", section),
+							log.F("issue", meta.GetShortName()),
+							log.F("pattern", reg.String()),
+							log.F("check", check),
+						},
+						"Matched with pattern")
 					return true
 				}
 			}
@@ -65,7 +120,7 @@ func (c *FilesCondition) IsEmpty() bool {
 }
 
 func (c *FilesCondition) checkPattern(meta types.Data) bool {
-	return patternCheck("FileCondition", c.Patterns, meta, func(types.Data) []string {
+	return matchPatterns("FileCondition", c.Patterns, meta, func(types.Data) []string {
 		return meta.GetFileNames()
 	})
 }
@@ -118,7 +173,7 @@ func (c *TitleCondition) Match(meta types.Data) bool {
 			"Matched with suffix '%s' on title '%s'", c.EndsWith, title)
 		return true
 	}
-	return patternCheck("TitleCondition", c.Patterns, meta, func(types.Data) []string {
+	return matchPatterns("TitleCondition", c.Patterns, meta, func(types.Data) []string {
 		return []string{title}
 	})
 }
@@ -152,7 +207,7 @@ func (c *DescriptionCondition) Match(meta types.Data) bool {
 			description)
 		return true
 	}
-	return patternCheck("DescriptionCondition", c.Patterns, meta, func(types.Data) []string {
+	return matchPatterns("DescriptionCondition", c.Patterns, meta, func(types.Data) []string {
 		return []string{description}
 	})
 }
@@ -175,7 +230,7 @@ func (c *RefCondition) Match(meta types.Data) bool {
 			"Matched RefCondition with match on ref '%s'", ref)
 		return true
 	}
-	return patternCheck("RefCondition", c.Patterns, meta, func(types.Data) []string {
+	return matchPatterns("RefCondition", c.Patterns, meta, func(types.Data) []string {
 		return []string{ref}
 	})
 }
@@ -203,19 +258,15 @@ func (c *CommentsCondition) IsEmpty() bool {
 }
 
 func (c *CommentsCondition) Match(meta types.Data) bool {
+	if c.IsEmpty() {
+		return false
+	}
 	commentsConditionCounter.Inc()
 	if commentsRegex == nil {
 		lc.WarningWith(
 			log.MetaFields{log.F("condition", "CommentsCondition"),
 				log.F("issue", meta.GetShortName())},
 			"comments regex is nil")
-		return false
-	}
-	if c.Count == "" {
-		lc.DebugWith(
-			log.MetaFields{log.F("condition", "CommentsCondition"),
-				log.F("issue", meta.GetShortName())},
-			"comments count is empty")
 		return false
 	}
 	count := int64(len(meta.GetComments()))
@@ -285,6 +336,7 @@ func (c *CommentsCondition) Match(meta types.Data) bool {
 
 type Condition struct {
 	Order         int                  `mapstructure:"order,omitempty"`
+	MatchKind     string               `mapstructure:"match-kind,omitempty"`
 	IfLabeled     []string             `mapstructure:"if-labeled,omitempty"`
 	SkipIfLabeled []string             `mapstructure:"skip-if-labeled,omitempty"`
 	Files         FilesCondition       `mapstructure:"files,omitempty"`
@@ -292,6 +344,7 @@ type Condition struct {
 	Description   DescriptionCondition `mapstructure:"description,omitempty"`
 	Ref           RefCondition         `mapstructure:"ref,omitempty"`
 	Comments      CommentsCondition    `mapstructure:"comments,omitempty"`
+	Patch         PatchCondition       `mapstructure:"patch,omitempty"`
 }
 
 func (c *Condition) checkIfLabeled(meta types.Data) bool {
@@ -319,7 +372,8 @@ func (c *Condition) checkAllEmpty(meta types.Data) bool {
 		c.Title.IsEmpty() &&
 		c.Description.IsEmpty() &&
 		c.Ref.IsEmpty() &&
-		c.Comments.IsEmpty()
+		c.Comments.IsEmpty() &&
+		c.Patch.IsEmpty()
 	if empty {
 		lc.DebugWith(
 			log.MetaFields{log.F("issue", meta.GetShortName())},
@@ -330,13 +384,36 @@ func (c *Condition) checkAllEmpty(meta types.Data) bool {
 }
 
 func (c *Condition) Match(meta types.Data) bool {
-	match := c.checkAllEmpty(meta) ||
-		c.checkIfLabeled(meta) ||
-		c.Title.Match(meta) ||
-		c.Description.Match(meta) ||
-		c.Files.Match(meta) ||
-		c.Ref.Match(meta) ||
-		c.Comments.Match(meta)
+	sections := []sectionCondition{
+		&c.Title,
+		&c.Description,
+		&c.Files,
+		&c.Ref,
+		&c.Comments,
+		&c.Patch,
+	}
+	match := false
+	switch strings.ToLower(c.MatchKind) {
+	case "any", "":
+		match = c.checkAllEmpty(meta) || c.checkIfLabeled(meta)
+		if !match {
+			for _, section := range sections {
+				match = match || section.Match(meta)
+			}
+		}
+	case "all":
+		match = c.checkAllEmpty(meta)
+		if !match {
+			match = len(c.IfLabeled) == 0 || c.checkIfLabeled(meta)
+			for _, section := range sections {
+				match = match && (section.IsEmpty() || section.Match(meta))
+			}
+		}
+	default:
+		lc.WarningWith(
+			log.MetaFields{log.F("match-kind", c.MatchKind), log.F("issue", meta.GetShortName())},
+			"Unknown match kind")
+	}
 
 	if match && len(c.SkipIfLabeled) > 0 {
 		blockByLabelConditionCounter.Inc()
@@ -372,6 +449,7 @@ var (
 	fileConditionCounter         = createCounter("files")
 	refConditionCounter          = createCounter("ref")
 	titleConditionCounter        = createCounter("title")
+	patchConditionCounter        = createCounter("patch")
 )
 
 func buildConditionFromConfiguration(config *viper.Viper) Condition {
@@ -395,4 +473,5 @@ func init() {
 	prometheus.Register(fileConditionCounter)
 	prometheus.Register(refConditionCounter)
 	prometheus.Register(titleConditionCounter)
+	prometheus.Register(patchConditionCounter)
 }

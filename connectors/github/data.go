@@ -33,6 +33,10 @@ type data struct {
 	repoLabels    []string
 }
 
+func (d *data) GetPatch() map[string]*string {
+	return d.client.GetPatch(d.number)
+}
+
 func (d *data) GetAvailableLabels() []string {
 	if len(d.repoLabels) == 0 {
 		d.repoLabels = d.client.GetAvailableLabels()
