@@ -1,4 +1,4 @@
-# Setting SHA Status
+# Setting Commit Status
 
 ## Goal
 
