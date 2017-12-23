@@ -9,7 +9,7 @@ import (
 )
 
 func assertClientConfig(t *T, config client.ClientConfig) {
-	assert.Equal(t, config.GetOAuthToken(), "github-token", "oath token")
+	assert.Equal(t, config.GetOAuthToken(), "github-token", "oauth token")
 	assert.Equal(t, config.GetSecret(), "github-secret", "secret")
 }
 

@@ -8,7 +8,7 @@ The action will assign users from matched roles provided that are available "spo
 
 ## Requirements
 
-`roles` section must be configured with valid user login
+`roles` [section](../../../docs/roles.md) must be configured with valid user login
 
 ## Options
 

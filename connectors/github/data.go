@@ -33,6 +33,10 @@ type data struct {
 	repoLabels    []string
 }
 
+func (d *data) GetPatch() map[string]*string {
+	return d.client.GetPatch(d.number)
+}
+
 func (d *data) GetAvailableLabels() []string {
 	if len(d.repoLabels) == 0 {
 		d.repoLabels = d.client.GetAvailableLabels()
@@ -211,4 +215,15 @@ func (d *data) GetFileExtensions() []string {
 
 func (d *data) GetChanges() (int, int) {
 	return d.additions, d.deletions
+}
+
+func (d *data) SetStatus(description string, state types.State) {
+	set := "pending"
+	switch state {
+	case types.Failure:
+		set = "failure"
+	case types.Success:
+		set = "success"
+	}
+	d.client.SetStatus(d.origin.SHA, description, set)
 }

@@ -229,14 +229,28 @@ func TestCommentsCountGreaterThanEquals(t *testing.T) {
 }
 
 func TestCheckPatternNoPatterns(t *testing.T) {
-	result := patternCheck("test", []string{}, &mockData{}, func(types.Data) []string {
+	result := matchPatterns("test", []string{}, &mockData{}, func(types.Data) []string {
 		return nil
 	})
 	assert.False(t, result, "no pattern")
 }
 
 func TestCheckPatternNothingCompiles(t *testing.T) {
-	result := patternCheck("test", []string{"[a"}, &mockData{}, func(types.Data) []string {
+	result := matchPatterns("test", []string{"[a"}, &mockData{}, func(types.Data) []string {
+		return nil
+	})
+	assert.False(t, result, "no pattern compiled")
+}
+
+func TestCheckNotPatternNoPatterns(t *testing.T) {
+	result := matchNotPatterns("test", []string{}, &mockData{}, func(types.Data) []string {
+		return nil
+	})
+	assert.False(t, result, "no pattern")
+}
+
+func TestCheckNotPatternNothingCompiles(t *testing.T) {
+	result := matchNotPatterns("test", []string{"[a"}, &mockData{}, func(types.Data) []string {
 		return nil
 	})
 	assert.False(t, result, "no pattern compiled")
