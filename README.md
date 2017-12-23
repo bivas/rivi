@@ -93,6 +93,7 @@ Find out about available `condition` options [here](docs/condition.md)
 - [`trigger`](engine/actions/trigger/trigger.md) - Send HTTP triggers
 - [`locker`](engine/actions/locker/locker.md) - Lock an issue
 - [`slack`](engine/actions/slack/slack.md) - Send Slack messages
+- [`status`](engine/actions/status/status.md) - Update pull request commit status
 
 # Example Configuration
 
