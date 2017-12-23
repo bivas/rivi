@@ -8,33 +8,40 @@ import (
 )
 
 type MockData struct {
-	Number           int
-	Title            string
-	Description      string
-	State            string
-	Owner            string
-	Repo             string
-	Ref              string
-	Origin           types.Origin
-	Assignees        []string
-	AddedAssignees   []string
-	RemovedAssignees []string
-	Labels           []string
-	AddedLabels      []string
-	RemovedLabels    []string
-	FileNames        []string
-	FileExtensions   []string
-	Comments         []types.Comment
-	AddedComments    []string
-	ChangedFiles     int
-	ChangesAdd       int
-	ChangesRemove    int
-	Provider         string
-	RawPayload       []byte
-	Collaborators    []string
-	AvailableLabels  []string
-	RulesFileContent string
-	EventType        string
+	Number            int
+	Title             string
+	Description       string
+	State             string
+	Owner             string
+	Repo              string
+	Ref               string
+	Origin            types.Origin
+	Assignees         []string
+	AddedAssignees    []string
+	RemovedAssignees  []string
+	Labels            []string
+	AddedLabels       []string
+	RemovedLabels     []string
+	FileNames         []string
+	FileExtensions    []string
+	Comments          []types.Comment
+	AddedComments     []string
+	ChangedFiles      int
+	ChangesAdd        int
+	ChangesRemove     int
+	Provider          string
+	RawPayload        []byte
+	Collaborators     []string
+	AvailableLabels   []string
+	RulesFileContent  string
+	EventType         string
+	StatusDescription string
+	StatusState       types.State
+}
+
+func (m *MockData) SetStatus(desc string, state types.State) {
+	m.StatusDescription = desc
+	m.StatusState = state
 }
 
 func (m *MockData) GetRawType() string {

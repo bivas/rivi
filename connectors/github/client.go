@@ -36,6 +36,17 @@ func (c *ghClient) handleFileContentResponse(file *github.RepositoryContent, err
 	return content
 }
 
+func (c *ghClient) SetStatus(sha string, description string, state string) {
+	status := &github.RepoStatus{
+		Context:     github.String("rivi"),
+		Description: &description,
+		State:       &state,
+	}
+	if _, _, err := c.client.Repositories.CreateStatus(context.Background(), c.owner, c.repo, sha, status); err != nil {
+		c.logger.ErrorWith(log.MetaFields{log.E(err), log.F("repo", c.repo), log.F("sha", sha)}, "Unable to set status")
+	}
+}
+
 func (c *ghClient) GetFileContentFromRef(path, owner, repo, ref string) string {
 	opts := &github.RepositoryContentGetOptions{Ref: ref}
 	file, _, _, err := c.client.Repositories.GetContents(context.Background(), owner, repo, path, opts)

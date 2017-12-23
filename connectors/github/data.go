@@ -216,3 +216,14 @@ func (d *data) GetFileExtensions() []string {
 func (d *data) GetChanges() (int, int) {
 	return d.additions, d.deletions
 }
+
+func (d *data) SetStatus(description string, state types.State) {
+	set := "pending"
+	switch state {
+	case types.Failure:
+		set = "failure"
+	case types.Success:
+		set = "success"
+	}
+	d.client.SetStatus(d.origin.SHA, description, set)
+}
