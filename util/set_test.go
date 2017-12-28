@@ -18,7 +18,7 @@ func TestSet(t *testing.T) {
 }
 
 func TestSetWithTransform(t *testing.T) {
-	values := []string{"ONE", "ONE", "TWO"}
+	values := []string{"ONE", "ONE", "TwO"}
 	set := StringSet{Transformer: strings.ToLower}
 	set.AddAll(values)
 	result := set.Values()
