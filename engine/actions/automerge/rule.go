@@ -6,7 +6,7 @@ var (
 	approvedPhrases = []string{
 		"approve",
 		"approved",
-		"lgtm",
+		"LGTM :100",
 		"looks good to me",
 	}
 	approvedSearchPhrases map[string]bool
