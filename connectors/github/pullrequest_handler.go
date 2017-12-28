@@ -37,6 +37,7 @@ func (h *pullRequestEventHandler) readFromJson(context *builderContext, payload 
 		Repo:   head.Repo.Name,
 		Ref:    head.Ref,
 		Head:   head.Sha[0:6],
+		SHA:    head.Sha,
 		GitURL: head.Repo.GitURL,
 	}
 	context.data.state = pr.State
