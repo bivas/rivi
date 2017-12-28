@@ -5,5 +5,6 @@ type Origin struct {
 	Repo   string
 	Ref    string
 	Head   string
+	SHA    string
 	GitURL string
 }

@@ -36,6 +36,17 @@ func (c *ghClient) handleFileContentResponse(file *github.RepositoryContent, err
 	return content
 }
 
+func (c *ghClient) SetStatus(sha string, description string, state string) {
+	status := &github.RepoStatus{
+		Context:     github.String("rivi"),
+		Description: &description,
+		State:       &state,
+	}
+	if _, _, err := c.client.Repositories.CreateStatus(context.Background(), c.owner, c.repo, sha, status); err != nil {
+		c.logger.ErrorWith(log.MetaFields{log.E(err), log.F("repo", c.repo), log.F("sha", sha)}, "Unable to set status")
+	}
+}
+
 func (c *ghClient) GetFileContentFromRef(path, owner, repo, ref string) string {
 	opts := &github.RepositoryContentGetOptions{Ref: ref}
 	file, _, _, err := c.client.Repositories.GetContents(context.Background(), owner, repo, path, opts)
@@ -186,6 +197,20 @@ func (c *ghClient) RemoveAssignees(issue int, assignees ...string) []string {
 	} else {
 		for _, p := range response.Assignees {
 			result = append(result, *p.Login)
+		}
+	}
+	return result
+}
+
+func (c *ghClient) GetPatch(issue int) map[string]*string {
+	c.logger.DebugWith(log.MetaFields{log.F("issue.id", issue)}, "Getting file names")
+	files, _, err := c.client.PullRequests.ListFiles(context.Background(), c.owner, c.repo, issue, nil)
+	result := make(map[string]*string, 0)
+	if err != nil {
+		c.logger.ErrorWith(log.MetaFields{log.E(err), log.F("issue.id", issue)}, "Unable to get patch for issue")
+	} else {
+		for _, p := range files {
+			result[*p.Filename] = p.Patch
 		}
 	}
 	return result

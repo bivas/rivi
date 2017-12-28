@@ -8,5 +8,6 @@ import (
 	_ "github.com/bivas/rivi/engine/actions/locker"
 	_ "github.com/bivas/rivi/engine/actions/sizing"
 	_ "github.com/bivas/rivi/engine/actions/slack"
+	_ "github.com/bivas/rivi/engine/actions/status"
 	_ "github.com/bivas/rivi/engine/actions/trigger"
 )

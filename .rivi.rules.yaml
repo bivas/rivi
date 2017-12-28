@@ -111,6 +111,14 @@ rules:
     labeler:
       label: area/actions/slack
 
+  action-status:
+    condition:
+      files:
+        patterns:
+          - "engine/actions/status/"
+    labeler:
+      label: area/actions/status
+
   action-trigger:
     condition:
       files:

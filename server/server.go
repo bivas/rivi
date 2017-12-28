@@ -28,7 +28,9 @@ func (server *BotServer) initDefaults() {
 		server.Uri = "/" + server.Uri
 	}
 	gin.SetMode(gin.ReleaseMode)
-	server.engine = gin.Default()
+	server.engine = gin.New()
+	server.engine.Use(gin.Recovery())
+	server.engine.Use(gin.ErrorLogger())
 }
 
 func (server *BotServer) registerMetrics() {
