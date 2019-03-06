@@ -1,6 +1,6 @@
 # Sizing check and approval
 
-## Example `rivi.rules.yaml`
+## Example `rivi.yaml`
 
 ```yaml
 rules:

@@ -1,6 +1,6 @@
 # Detect configuration changes
 
-## Example `rivi.rules.yaml`
+## Example `rivi.yaml`
 
 ```yaml
 rules:

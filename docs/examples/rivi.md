@@ -1,6 +1,6 @@
 # Changed to rivi rules file
 
-## Example `rivi.rules.yaml`
+## Example `rivi.yaml`
 
 ```yaml
 rules:
@@ -8,7 +8,7 @@ rules:
         condition:
           files:
             patterns:
-              - ".rivi.rules.yaml"
+              - ".rivi.yaml"
         labeler:
           label: rivi-rules
 ```
@@ -17,7 +17,7 @@ rules:
 
 ## Result
 
-When there pull-request tries to change `.rivi.rules.yaml` file:
+When there pull-request tries to change `.rivi.yaml` file:
 <p><img src="rivi.before.png"/></p>
 
 Rivi will add label `rivi-rules`:

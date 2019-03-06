@@ -1,6 +1,6 @@
 # Configuration File Structure
 
-In your `.rivi.rules.yaml` file you can add the following `roles` section
+In your `.rivi.yaml` file you can add the following `roles` section
 
 ## Roles Section
 

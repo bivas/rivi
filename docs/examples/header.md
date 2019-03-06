@@ -1,6 +1,6 @@
 # Check if copyright header is missing
 
-## Example `rivi.rules.yaml`
+## Example `rivi.yaml`
 
 ```yaml
 rules:

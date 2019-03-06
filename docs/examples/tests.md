@@ -1,6 +1,6 @@
 # Check if tests exist
 
-## Example `rivi.rules.yaml`
+## Example `rivi.yaml`
 
 ```yaml
 rules:

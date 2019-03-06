@@ -1,6 +1,6 @@
 # Changes to a module
 
-## Example `.rivi.rules.yaml`
+## Example `.rivi.yaml`
 
 ```yaml
 rules:
