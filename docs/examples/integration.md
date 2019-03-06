@@ -1,6 +1,6 @@
 # Pull-requests to integration branch
 
-## Example `rivi.rules.yaml`
+## Example `rivi.yaml`
 
 ```yaml
 rules:

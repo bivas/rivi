@@ -1,6 +1,6 @@
 # Warn if committing binaries
 
-## Example `rivi.rules.yaml`
+## Example `rivi.yaml`
 
 ```yaml
 rules:

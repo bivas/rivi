@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/bivas/rivi.svg?branch=development)](https://travis-ci.org/bivas/rivi)
-[![Go Report Card](https://goreportcard.com/badge/github.com/bivas/rivi)](https://goreportcard.com/report/github.com/bivas/rivi)
+[![Go Report Card](https://goreportcard.com/badge/github.com/bivas/rivi/pkg)](https://goreportcard.com/report/github.com/bivas/rivi/pkg)
 [![codecov](https://codecov.io/gh/bivas/rivi/branch/development/graph/badge.svg)](https://codecov.io/gh/bivas/rivi)
 
 # rivi - Simplify your review process
@@ -12,13 +12,13 @@ Rivi enables automatic labeling with common parameters so that maitainers can im
 With Rivi, developers can focus on the actual code base and less on administrative unambiguous actions made every day.  We are looking to add more automation features to make the repository management process seamless, and our highest priority is to ensure that Rivi lives up to the community standards by providing true value and efficiency.
 
 ## Usage
-Rivi is available as a Github Application. Find out more at [rivi-cm.org](http://rivi-cm.org)
+Rivi is available as a Github Application. Find out more at [rivi-cm.org](https://rivi-cm.org)
 
 If you wish to host rivi on your local environment, please follow the [installation guide](docs/installation.md)
 
 ## Configuration File Structure
 
-Place a `.rivi.rules.yaml` file at the repository root directory to be processed.
+Place a `.rivi.yaml` file at the repository root directory to be processed.
 
 This configuration file might have multiple sections (depending on your scenario), but the only required one is `rules` section
 
@@ -85,15 +85,15 @@ The entire `condition` section is optional - you can run all rules all the time 
 Find out about available `condition` options [here](docs/condition.md)
 
 ### Available Actions
-- [`autoassign`](engine/actions/autoassign/autoassign.md) - Automatic assignment of issue reviewers
-- [`automerge`](engine/actions/automerge/automerge.md) - Automatic merge for approved pull requests
-- [`commenter`](engine/actions/commenter/commenter.md) - Add comment to an issue
-- [`labeler`](engine/actions/labeler/labeler.md) - Add/Remove label to/from an issue
-- [`sizing`](engine/actions/sizing/sizing.md) - Size a pull request
-- [`trigger`](engine/actions/trigger/trigger.md) - Send HTTP triggers
-- [`locker`](engine/actions/locker/locker.md) - Lock an issue
-- [`slack`](engine/actions/slack/slack.md) - Send Slack messages
-- [`status`](engine/actions/status/status.md) - Update pull request commit status
+- [`autoassign`](pkg/engine/actions/autoassign/autoassign.md) - Automatic assignment of issue reviewers
+- [`automerge`](pkg/engine/actions/automerge/automerge.md) - Automatic merge for approved pull requests
+- [`commenter`](pkg/engine/actions/commenter/commenter.md) - Add comment to an issue
+- [`labeler`](pkg/engine/actions/labeler/labeler.md) - Add/Remove label to/from an issue
+- [`sizing`](pkg/engine/actions/sizing/sizing.md) - Size a pull request
+- [`trigger`](pkg/engine/actions/trigger/trigger.md) - Send HTTP triggers
+- [`locker`](pkg/engine/actions/locker/locker.md) - Lock an issue
+- [`slack`](pkg/engine/actions/slack/slack.md) - Send Slack messages
+- [`status`](pkg/engine/actions/status/status.md) - Update pull request commit status
 
 # Example Configuration
 

@@ -1,6 +1,6 @@
 # Prevent review comments war
 
-## Example `rivi.rules.yaml`
+## Example `rivi.yaml`
 
 ```yaml
 rules:
